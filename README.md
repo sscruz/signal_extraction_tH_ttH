@@ -92,10 +92,4 @@ Where `input_folder` is the folder that contains the output of (1)
 
 ### For kt-kv parameter scan (and eventually CP-angle scan)
 
-Most of the scripts are based on the original [here](https://github.com/stiegerb/cmgtools-lite/tree/80X_M17_tHqJan30_bbcombination/TTHAnalysis/python/plotter/tHq-multilepton/signal_extraction). 
-
-The main difference is that only the necessary scripts to make the interpretatio
-It assumes the datacards for both ttH, tHq and tHW are done assuming the respective 
-
-python ../test/kt_kv_scan/makeWorkspaces.py K7 tHq_*card.txt -j 8
-python ../test/kt_kv_scan/runNLLScan.py -t comb6 ws_tHq_3l_*_K7.card.root -j 8
+See the README inside `kt_kv_scan`
