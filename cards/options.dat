@@ -1,0 +1,65 @@
+#####################################################################
+## How to do?
+blinded         = False
+blindedOutput   = False ## do not draw the rate on the impacts plot
+sendToCondor    = False ## Impacts / GOF / likelihood scans for combo need it
+sendToLXBatch   = False ## the mu's result retrieval are not working in condor -- but they work with lxbatch
+#####################################################################
+
+#####################################################################
+## What to do:
+doFits = True ## To do any of the rest you must have ran with this being True once
+## but, once it is done one there is no need to loose time repeating it
+
+#######################
+## Each of the steps bellow take time, I suggest to do on one separated runs
+# (like this they can be also done in parallel)
+
+# 1)
+doCategories = False # for mu's
+doLimitsByCat = False
+
+# 2)
+# for combo is almost mandatory send impacts calculation to grid,
+# if you run on lxplus combineTool is already set to send to Condor (see bellow 'How')
+doImpactCombo = False
+doImpact2017 = False
+# If you will run in Condor this must be done in two steps:
+#  -  the first with impactsSubmit= True ---> wait for the jobs to be ready
+#      - To see that is all done: check that you have the same number of root files than the number of nuissances to be considered
+#  - after the jobs are done run again with impactsSubmit = False to wrap up the plot
+impactsSubmit = False
+
+# 3) -- optional
+# fast version of the impacts -- Hessian approximation for quick checks
+doHessImpactCombo = False
+doHessImpact2017 = False
+
+# 4)
+# the bellow take lots of time, better to do on one run
+# It is almost mandatory send to grid,
+# if you run on lxplus combineTool is already set to send to Condor (see bellow 'How')
+doGOFCombo = False
+doGOF2017 = False
+# If you will run in Condor this must be done in two steps:
+#  -  the first with GOF_submit = True ---> wait for the jobs to be ready
+#     -- each job will contain 2 toys
+#        (if needed run the submission bash script created again up to you be happy with the number of toys)
+#  - after the jobs are done run again with GOF_submit = False  to wrap up the plot
+GOF_submit = False
+
+# 5)
+# OR you do from Combine or from from Havester
+preparePostFitCombine = False
+preparePostFitHavester = False
+
+doYieldsAndPlots = False # will do the prefit and postfit table of yields.
+# If any of the bellow are true it also do prefit and postfit plots
+# You must have ran the respective preparePostFit... before (or put as true as well)
+doPostFitCombine = False # doYieldsAndPlots must be true
+doPostFitHavester = False # doYieldsAndPlots must be true
+
+doRatesByLikScan = True
+#####################################################################
+
+

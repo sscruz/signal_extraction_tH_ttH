@@ -21,6 +21,7 @@ from process_limits import scale_limits
 from process_limits import xs_limit, xs_limit_ratio
 from process_limits import print_limits
 
+## type 1
 
 def setUpMPL():
     mpl.rcParams['text.latex.preamble'] = [

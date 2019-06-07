@@ -21,6 +21,7 @@ from process_limits import scale_limits
 from plotLimit import readConfig
 from plotLimit import setUpMPL
 
+## type 1
 
 def process(inputfile, added=None):
     df = pd.read_csv(inputfile, sep=",", index_col=None)

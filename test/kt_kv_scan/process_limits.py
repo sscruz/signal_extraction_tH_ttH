@@ -9,6 +9,7 @@ from functools import partial
 from ctcv_helper import print_table
 from ctcv_helper import read_dataframe
 
+## type 1
 
 def xs_limit(ct, cv, df_xsecs, df_limits, limval='exp', att='tot'):
     """Multiply a limit by the cross section for cv=1.0, ct=ct/cv"""

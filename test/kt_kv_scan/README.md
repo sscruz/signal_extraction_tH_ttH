@@ -19,4 +19,4 @@ python ../test/kt_kv_scan/runNLLScan.py -t comb6 ws_tHq_3l_*_K7.card.root -j 8
 
 Where `ws_tHq_3l_*_K7.card.root` was created by the previous step.
 
-In this repository there is only commited to model K7, if you want to make other model please refer to the original set of scripts linked on the beggining of this README.
+In this repository there are input for scalings commited to model K7, if you want to make other model please refer to the original set of scripts linked on the beggining of this README.

@@ -61,7 +61,7 @@ For prefit:
 python makePostFitPlots_FromCombine.py --channel  ttH_4l  --input WS_3poi_shapes_combo.root  --minY -0.35 --maxY 13.9  --notFlips --notConversions
 ```
 
-Where WS_3poi_shapes_combo.root is the output of running (1) with option `preparePostFitCombine = True` OR `preparePostFitHavester = True` (if you use the second you need to add to comand line `--fromHavester`)
+Where WS_3poi_shapes_combo.root is the output of running (1) with option `preparePostFitCombine = True` OR `preparePostFitHavester = True` (if you use the second you need to add to comand line `--fromHavester` into the above)
 
 By default all the processes are added on the plot (including flips/conversions), some command lines can be used/added as:   "--notFlips" or "--notConversions".
 
@@ -73,17 +73,10 @@ For postfit:
 python makePostFitPlots_FromCombine.py --channel  ttH_4l  --input WS_3poi_shapes_combo.root --minY -0.35 --maxY 13.9  --notFlips --notConversions --unblind  --original datacard_combo.root --doPostFit
 ```
 
-* 4) To make the prefit plots through combine may take time depending
-
-test/draw_prefit_plain_bin_list.py
-
-* 5) The limits/mu plots done as frozen to PAS-HIG-18-019 are ran as:
+* 6) The limits/mu plots done as frozen to PAS-HIG-18-019 are ran as:
 
 ```
 python test/makeMuPlot.py --input_folder input_folder
-```
-
-```
 python test/make_limit_plot.py --input_folder input_folder
 ```
 

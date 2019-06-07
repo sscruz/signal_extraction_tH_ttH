@@ -9,6 +9,8 @@ workingDir = os.getcwd()
 execfile("../python/data_manager.py")
 from collections import OrderedDict
 
+## type 1
+
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--input_folder", type="string", dest="input_folder", help="Where the ", default="categories_comb_2017/")
