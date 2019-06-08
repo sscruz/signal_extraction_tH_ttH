@@ -5,13 +5,17 @@ Most of the scripts are based on the original [here](https://github.com/stiegerb
 The main difference is that only the necessary scripts to make the interpretation in the context of the ttH.tH multilepton analyses.
 
 
-The scripts assumes the datacards for both ttH, tHq and tHW are done assuming the respective to be signal.
+The scripts assumes the datacards for both ttH, tHq and tHW are done assuming the respective to be signal has SM cross section (independently of the kinematics that the card correspond to). 
+
+In the datacards both ttH, tHq must be marked as signal on the datacard.txt (as a negative entry).
+
+To make workspaces from all datacards you do:
 
 ```
 python ../test/kt_kv_scan/makeWorkspaces.py K7 tHq_*card.txt -j 8
 ```
 
-Where `tHq_*card.txt` are the cards for the parameter scans (the naming conventions can be tunned [here](bla))
+Where `tHq_*card.txt` are the cards for the parameter scans (the naming conventions can be tunned [here](https://github.com/acarvalh/signal_extraction_tH_ttH/blob/master/test/kt_kv_scan/runAllLimits.py#L27-L39))
 
 ```
 python ../test/kt_kv_scan/runNLLScan.py -t comb6 ws_tHq_3l_*_K7.card.root -j 8
