@@ -12,15 +12,20 @@ In the datacards both ttH, tHq must be marked as signal on the datacard.txt (as 
 To make workspaces from all datacards you do:
 
 ```
-python ../test/kt_kv_scan/makeWorkspaces.py K7 tHq_*card.txt -j 8
+python test/kt_kv_scan/makeWorkspaces.py K7 /where/cards/are/tHq_*card.txt -j 8 --outputFolder /where/to/save
 ```
 
 Where `tHq_*card.txt` are the cards for the parameter scans (the naming conventions can be tunned [here](https://github.com/acarvalh/signal_extraction_tH_ttH/blob/master/test/kt_kv_scan/runAllLimits.py#L27-L39))
 
 ```
-python ../test/kt_kv_scan/runNLLScan.py -t comb6 ws_tHq_3l_*_K7.card.root -j 8
+python test/kt_kv_scan/runNLLScan.py -t comb6 /where/ws/are/saved/ws_tHq_3l_*_K7.card.root -j 8 --blind --outputFolder /where/to/save
 ```
 
-Where `ws_tHq_3l_*_K7.card.root` was created by the previous step.
+Where `ws_tHq_3l_*_K7.card.root` was created by the previous step and `outputFolder` is recomended to be the same of the last step.
 
-In this repository there are input for scalings commited to model K7, if you want to make other model please refer to the original set of scripts linked on the beggining of this README.
+```
+python test/kt_kv_scan/plotNLLScans.py cards/nllscan_1.json cards/nllscan_2.json ...
+```
+
+Where `cards/nllscan_1.json` is a file that contains the location of the .csv file with the results of the nll scan done on the previous step (see exemple [here]()) 
+

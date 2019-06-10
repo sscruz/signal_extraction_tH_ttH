@@ -7,7 +7,7 @@ import multiprocessing
 from subprocess import Popen, PIPE
 # python ../test/kt_kv_scan/makeWorkspaces.py K7 tHq_*card.txt -j 8
 
-def makeWorkspace(card, outname, options, verbose=False):
+def makeWorkspace(card, outname, options, outputFolder, verbose=False):
     starttime = time.time()
     cmd = "text2workspace.py"
     cmd += " %s" % options
@@ -20,7 +20,7 @@ def makeWorkspace(card, outname, options, verbose=False):
         print 40*'-'
 
     try:
-        p = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+        p = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE, cwd=outputFolder)
         comboutput = p.communicate()[0]
     except OSError:
         print "text2workspace.py not known. Try this: cd /afs/cern.ch/user/s/stiegerb/combine/ ; cmsenv ; cd -"
@@ -56,6 +56,8 @@ if __name__ == '__main__':
                       help="Print the combine command that is run")
     parser.add_option("-j","--jobs", dest="jobs", type="int", default=1,
                       help="Number of jobs to run in parallel")
+    parser.add_option("-o","--outputFolder", dest="outputFolder", type="string", default="",
+                      help="where to save the outputs of combine run")
     (options, args) = parser.parse_args()
 
     pool = multiprocessing.Pool(processes=options.jobs)
@@ -65,14 +67,14 @@ if __name__ == '__main__':
     print 'Using model %s:\033[1m%s \033[0m' % (options.baseModel, options.model)
     for card in args:
         #print (os.path.isfile(card), card.endswith('.txt'))
-        if not (os.path.isfile(card) and card.endswith('.txt')):
+        if not (os.path.isfile( card) and card.endswith('.txt')):# options.outputFolder + "/" +
             print "... ignoring", card
             continue
 
         copts = "-P %s:%s -m 125" % (options.baseModel, options.model)
 
         trunk = os.path.basename(card).replace('.card.txt', '')
-        outname = "ws_%s_%s" % (trunk, options.model)
+        outname = options.outputFolder + "/ws_%s_%s" % (trunk, options.model)
         if options.tag:
             outname += '_%s' % options.tag
         outname += '.card.root'
@@ -80,6 +82,7 @@ if __name__ == '__main__':
         future = pool.apply_async(makeWorkspace, (card,
                                                   outname,
                                                   copts,
+                                                  options.outputFolder,
                                                   options.verbose))
         futures.append((card, future))
 

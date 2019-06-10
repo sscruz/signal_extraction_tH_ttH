@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 ## FIXME: This should dump the limits for each card as it is running,
 ##        not all together at the end.
 
-def runCombineCommand(combinecmd, card, verbose=False, queue=None, submitName=None):
+def runCombineCommand(combinecmd, card, verbose=False, outfolder=".", queue=None, submitName=None):
     if queue:
         combinecmd = combinecmd.replace('combine', 'combineTool.py')
         combinecmd += ' --job-mode lxbatch --sub-opts="-q %s"' % queue
@@ -17,7 +17,7 @@ def runCombineCommand(combinecmd, card, verbose=False, queue=None, submitName=No
         print "%s %s" % (combinecmd, card)
         print 40*'-'
     try:
-        p = Popen(shlex.split(combinecmd) + [card] , stdout=PIPE, stderr=PIPE)
+        p = Popen(shlex.split(combinecmd) + [card] , stdout=PIPE, stderr=PIPE, cwd=outfolder)
         comboutput = p.communicate()[0]
     except OSError:
         print ("combine command not known\n", combinecmd)
@@ -26,6 +26,8 @@ def runCombineCommand(combinecmd, card, verbose=False, queue=None, submitName=No
 
 def parseName(card, printout=True):
     # Turn the tag into floats:
+    toparse = card.split("/")[len(card.split("/"))-1]
+    if printout : print ("parsing ", toparse)
     tag = re.match(r'.*\_([\dpm]+\_[\dpm]+).*\.card\.(txt|root)', os.path.basename(card))
     if tag == None:
         print "Couldn't figure out this one: %s" % card

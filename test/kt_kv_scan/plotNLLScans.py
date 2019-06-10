@@ -119,12 +119,12 @@ def addInterpolatingPoints(dframe, filename, npoints=3):
 def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
     print ("entered plotNLLScans")
     for entry in cfg['entries']:
-        filename = "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/tHq_pdas_3l_cards/nll_scan_comb6.csv" # entry['csv_file']
-        print ("filename = ", filename )
-        #if 'inputdir' in cfg:
-        #    filename = os.path.join(cfg['inputdir'], entry['csv_file'])
-        entry['df'] = process(filename)
-        # entry['df'] = process(filename, added=entry.get('csv_file_interp'))
+        filename = entry['csv_file']
+        print ("reading: ", filename )
+        if 'inputdir' in cfg:
+            filename = os.path.join(cfg['inputdir'], entry['csv_file'])
+        #entry['df'] = process(filename)
+        entry['df'] = process(filename, added=entry.get('csv_file_interp'))
 
     fig, ax = plt.subplots(1)
 
@@ -133,6 +133,7 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
 
     for entry in cfg['entries']:
         df = entry['df']
+        print (df.loc[df.ratio<=cfg['xmax']].loc[df.ratio>=-cfg['xmax']].dnll)
         if nosplines:
             ax.plot(df.loc[df.ratio<=cfg['xmax']].loc[df.ratio>=-cfg['xmax']].ratio,
                     df.loc[df.ratio<=cfg['xmax']].loc[df.ratio>=-cfg['xmax']].dnll,
@@ -225,7 +226,7 @@ if __name__ == '__main__':
     parser.add_option("--nosplines", dest="nosplines",
                       action="store_true", default=False)
     parser.add_option("--defaultOptions", dest="defaultOptions",
-                      type="string", default="defaults_nllscan.json",
+                      type="string", default="cards/defaults_nllscan.json",
                       help="Config file for default options")
 
     parser.add_option("--inputdir", dest="inputdir",
@@ -274,7 +275,6 @@ if __name__ == '__main__':
                 plotConfig[attr] = str(getattr(options, attr, plotConfig[attr]))
         
         print ("before entered plotNLLScans")
-        print (plotConfig)
         plotNLLScans(plotConfig, outdir=options.outdir, tag=options.tag, nosplines=options.nosplines)
 
     sys.exit(0)
