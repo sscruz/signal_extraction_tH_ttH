@@ -17,7 +17,7 @@ python test/kt_kv_scan/makeWorkspaces.py K7 /where/cards/are/tHq_*card.txt -j 8 
 
 Where `tHq_*card.txt` are the cards for the parameter scans (the naming conventions can be tunned [here](https://github.com/acarvalh/signal_extraction_tH_ttH/blob/master/test/kt_kv_scan/runAllLimits.py#L27-L39))
 
-The workspace is done without considering float BKGs -- to correct that.
+*WARNING*: The workspace is now done without considering float BKGs -- to correct that.
 
 The next step is to run the multidimensional fit.
 
@@ -28,10 +28,10 @@ python test/kt_kv_scan/runNLLScan.py -t comb6 /where/ws/are/saved/ws_tHq_3l_*_K7
 Where `ws_tHq_3l_*_K7.card.root` was created by the previous step and `outputFolder` is recomended to be the same of the last step.
 
 ```
-python test/kt_kv_scan/plotNLLScans.py cards/nllscan_1.json cards/nllscan_2.json ...
+python test/kt_kv_scan/plotNLLScans.py cards/nllscan_test.json
 ```
 
-Where `cards/nllscan_1.json` is a file that contains the location of the .csv file with the results of the nll scan done on the previous step (see exemple [here]()).
+Where `cards/nllscan_test.json` is a file that contains the location of the .csv file with the results of the nll scan done on the previous step (see exemple [here]()).
 By now only the 
 
 
