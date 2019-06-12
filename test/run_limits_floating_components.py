@@ -14,6 +14,7 @@ parser.add_option("--namePlot", type="string", dest="namePlot", help="  Set ", d
 parser.add_option("--cardFolder", type="string", dest="cardFolder", help="  Set ", default="multilep_3l_withTH_withMET_only_CRs_2017")
 parser.add_option("--ttW", action="store_true", dest="ttW", help="add as POI", default=False)
 parser.add_option("--ttZ", action="store_true", dest="ttZ", help="add as POI", default=False)
+parser.add_option("--tH", action="store_true", dest="tH", help="do results also with tH floating", default=False)
 (options, args) = parser.parse_args()
 
 ## type-3
@@ -61,11 +62,13 @@ floating_ttV = " "
 if options.ttW : floating_ttV += " --PO 'map=.*/TTW.*:r_ttW[1,0,6]' --PO 'map=.*/TTWW.*:r_ttW[1,0,6]'"
 if options.ttZ : floating_ttV += " --PO 'map=.*/TTZ.*:r_ttZ[1,0,6]' "
 
-float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'  --PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]' "
+float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'"
+if options.tH : float_sig_rates += "--PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
 
 WS_output = cardToRead + "_3poi"
 blindStatement = " -t -1 "
 if do_kt_scan_no_kin :
+    ## add break if not options.tH
     cmd = "text2workspace.py"
     cmd += " %s.txt" % cardToRead
     cmd += " %s" % floating_ttV
@@ -96,8 +99,11 @@ if doWS :
 doFor = [blindStatement]
 if not blinded : doFor += [" "]
 
+signals = ["ttH"]
+if options.tH : signals == ["tH"]
+
 if doRateAndSignificance :
-    for signal in ["ttH", "tH"] :
+    for signal in signals :
       for ss, statements in enumerate(doFor) :
         if ss == 1 : label = "data"
         if ss == 0 : label = "asimov"
@@ -135,7 +141,7 @@ if doRateAndSignificance :
 
 if doLimits :
     ## do in two steps: fit to data + limits mu=1 injected
-    for signal in ["ttH", "tH"] :
+    for signal in signals :
         cmd = "combine -M AsymptoticLimits "
         cmd += " %s_3poi.root" % cardToRead 
         cmd += " %s" % blindStatement
@@ -174,6 +180,7 @@ if do2Dlikelihoods :
         runCombineCmd("python test/plot2DLLScan.py %s/%s_2Dlik_ttH_%s_%s.root  \"r_%s\" \"%s\" \"%s\" 0 0 "  % (cardFolder, cardToRead, bkg, label, bkg, cardToRead, cardFolder), '.')
 
 if do2Dlikelihoods_with_tH :
+  ## add break if not options.tH
   for ss, statements in enumerate(doFor) :
     if ss == 1 : label = "data"
     if ss == 0 : label = "asimov"
