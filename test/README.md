@@ -18,7 +18,7 @@ Different datacard_channelX.txt can be combined with the following command (type
 combineCards.py  datacard_channel1.txt datacard_channel2.txt > datacard.txt
 ```
 
-* 2) The systematics entries of the combine .txt datacard can be manipulated (eg) with CombineHavester, examples of how to do it "test/"
+* 2) The systematics entries of the combine .txt datacard can be manipulated (eg) with CombineHavester, examples of how to do it are found on `manipulate_datacards.py`. This one is not directly usable right now, as we do not know yet how we want to manipulate cards or not.
 
 * 3) Standalone prefit/postfit plots can be made with the example bellow:
 
@@ -49,6 +49,6 @@ python test/makeMuPlot.py --input_folder input_folder
 python test/make_limit_plot.py --input_folder input_folder
 ```
 
-Where `input_folder` is the folder that contains the output of (1)
+Where `input_folder` is the folder that contains the output of (i)
 
 
