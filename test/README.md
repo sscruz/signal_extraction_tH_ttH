@@ -40,7 +40,7 @@ For postfit:
 python makePostFitPlots_FromCombine.py --channel  ttH_4l  --input WS_3poi_shapes_combo.root --minY -0.35 --maxY 13.9  --notFlips --notConversions --unblind  --original datacard_combo.root --doPostFit
 ```
 
-If you do not add the `--original` entry the on the resultant plot the bins witll be numbered by bin number and equidistant. 
+If you do not add the `--original` entry the on the command line the resultant plot the bins will be numbered by bin number and equidistant. 
 
 * 6) The limits/mu plots done as frozen to PAS-HIG-18-019 are ran as:
 
