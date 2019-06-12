@@ -13,6 +13,11 @@ import CombineHarvester.CombineTools.ch as ch
 # The bellow is going to construct the combo card from scratch given the path of the cards by channel (see mom_2017/mom_2016)
 copy_cards =  False
 combine_cards = False
+
+    
+btag_correlated = True # if true it does not manipulate the cards
+JES_correlated  = True # if true it does not manipulate the cards
+remove_Clos_t   = False
 #####################################################################
 
 # Download the bellow folders to mom and untar them on the same location than this script
@@ -124,3 +129,12 @@ if combine_cards :
     run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; "+string_combine+" ; cd %s"  % (os.getcwd()+"/"))
     string_combine_2017 = string_combine_2017+" > "+cardToWrite_2017+".txt"
     run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; "+string_combine_2017+" ; cd %s"  % (os.getcwd()+"/"))
+
+if remove_Clos_t :
+    add = '_group'
+    newFile = os.getcwd()+"/"+mom_result+cardToWrite_2017+add+'.txt'
+    path_to_file = os.getcwd()+"/"+mom_result+cardToWrite_2017+".txt"
+    with open(newFile, 'w') as out_file:
+        with open(path_to_file, 'r') as in_file:
+            for line in in_file:
+                if "CMS_ttHl17_Clos_t_shape" not in line : out_file.write(line)

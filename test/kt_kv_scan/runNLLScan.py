@@ -44,7 +44,10 @@ def getNLLFromRootFile(rfilename):
 def runNLLScan(card, outfolder, setratio=None, verbose=False, toysFile=None, blind=True):
     cv, ct, tag = parseName(card, printout=False)
     printout = "%-40s CV=%5.2f, Ct=%5.2f" % (os.path.basename(card), cv, ct)
-    combinecmd = "combine -M MultiDimFit --algo fixed --fixedPointPOIs r=0,r_others=0"
+    combinecmd = "combine -M MultiDimFit"
+    #if blind :
+    #    combinecmd += " -t -1" 
+    combinecmd += " --algo fixed --fixedPointPOIs r=0,r_others=0"
     combinecmd += " --rMin=0 --rMax=20 --X-rtd ADDNLL_RECURSIVE=0"
     combinecmd += " --cminDefaultMinimizerStrategy 0" # default is 1
     combinecmd += " --cminDefaultMinimizerTolerance 0.01" # default is 0.1
@@ -55,19 +58,29 @@ def runNLLScan(card, outfolder, setratio=None, verbose=False, toysFile=None, bli
     filetag = "%s_%s" % (tag, str(ratio))
     printout += ", Ratio=%7.4f: " % setratio
     combinecmd += " -m 125 --verbose 0 -n _nll_scan_r1_%s" % (filetag)
-    if blind :
-        combinecmd += " -t -1 " 
     combinecmd += " --setParameters kappa_t=%.2f,kappa_V=1.0,r=1,r_others=1" % ratio
     combinecmd += " --freezeParameters r,r_others,kappa_t,kappa_V,"
     combinecmd += "kappa_tau,kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam,"
     combinecmd += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
     combinecmd += " --redefineSignalPOIs r"
 
-    if toysFile:
-        assert(os.path.isfile(toysFile)), "file not found %s" % toysFile
-        combinecmd += " -t -1 --toysFile %s" % toysFile
+    if blind:
+        #assert(os.path.isfile(toysFile)), "file not found %s" % toysFile
+        combinecmd += " -t -1  --toysFile higgsCombine_nll_scan_r1_%stoys.GenerateOnly.mH125.*.root" % (filetag)
 
-    print (combinecmd)
+    if blind:
+        combinecmd_toys = "combine -M GenerateOnly  -t -1"
+        combinecmd_toys += " -m 125 --verbose 0 -n _nll_scan_r1_%stoys" % (filetag)
+        combinecmd_toys += " --setParameters kappa_t=%.2f,kappa_V=1.0,r=1,r_others=1" % ratio
+        combinecmd_toys += " --freezeParameters r,r_others,kappa_t,kappa_V,"
+        combinecmd_toys += "kappa_tau,kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam,"
+        combinecmd_toys += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
+        combinecmd_toys += " --saveToys "
+        #print (combinecmd_toys)
+        comboutput = runCombineCommand(combinecmd_toys, card, verbose=verbose, outfolder=outfolder)
+        elapsed = parseOutput(comboutput)
+        
+    #print (combinecmd)
     comboutput = runCombineCommand(combinecmd, card, verbose=verbose, outfolder=outfolder)
     elapsed = parseOutput(comboutput)
     try:
@@ -119,7 +132,8 @@ def main(args, options):
         for card, ratio, future in futures:
             cv, ct, tag = parseName(card, printout=False)
             bfr, dnll = future.get() # catch timeout?
-            csvfile.write(','.join(map(str, [card, cv, ct, ratio, bfr, dnll])) + '\n')
+            toparse = card.split("/")[len(card.split("/"))-1]
+            csvfile.write(','.join(map(str, [toparse, cv, ct, ratio, bfr, dnll])) + '\n')
 
         csvfile.write('\n')
 
