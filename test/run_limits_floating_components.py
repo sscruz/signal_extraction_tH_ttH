@@ -286,15 +286,15 @@ if doCategoriesLimitsFromMu1 :
         cmd += " -n from0_%s " % (rate) 
         runCombineCmd(cmd, folderCat, saveout="%s/%s_limit_from0_%s.log" % (folderCat, WS_output_byCat, rate))
 
-
-    #### ---- stop the update here: to be continued
+###############################################
+#### ---- stoped the update here: to be continued
+if 0 > 1 :
     if doLimitsByCat :
-        #parameters0 = "r_ttW=1,r_ttZ=1" Xanda
         parameters0 = "r_ttW=1"
         for rate in sigRates :
             parameters0 = parameters0+","+rate+"=0"
 
-        for rate in sigRates + [ "r_ttW" ]: # Xanda [ "r_ttW" , "r_ttZ" ]
+        for rate in sigRates + [ "r_ttW" ]:
 
             if sendToCondor : run_cmd("cd "+enterHere+" ; combineTool.py -M AsymptoticLimits %s.root %s --setParameters %s --redefineSignalPOI %s  -n from0_%s %s from0_%s > %s_limit_from0_%s.log  ; cd -"  % (WS_output_byCat, blindStatement, parameters0, rate, rate , ToCondor, rate , WS_output_byCat, rate)) #  --floatOtherPOI=1
             else :
