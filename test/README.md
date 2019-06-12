@@ -2,7 +2,13 @@
 
 * 1) To run the combined limits
 
-Where datacard.txt contains all the channels one wants to calculate limits to.
+```
+python test/run_limits_floating_components.py --cardToRead  datacard --cardFolder /relative/or/full/path --ttW --ttZ
+```
+
+Where `datacard.txt` contains all the channels one wants to calculate limits to and `/relative/or/full/path` is the folder that contains `datacard.txt` and its relative root file.
+
+The `--ttW` / `--ttW` command line adds it floating (that is false if not used).
 
 Different datacard_channelX.txt can be combined with the following command (type-2):
 
@@ -11,7 +17,6 @@ combineCards.py  datacard_channel1.txt datacard_channel2.txt > datacard.txt
 ```
 
 * 2) The systematics entries of the combine .txt datacard can be manipulated (eg) with CombineHavester, examples of how to do it "test/"
-
 
 * 3) Standalone prefit/postfit plots can be made with the example bellow:
 
