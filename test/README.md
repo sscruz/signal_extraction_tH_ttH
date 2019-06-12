@@ -3,12 +3,14 @@
 * 1) To run the combined limits
 
 ```
-python test/run_limits_floating_components.py --cardToRead  datacard --cardFolder /relative/or/full/path --ttW --ttZ
+python test/run_limits_floating_components.py --cardToRead  datacard --cardFolder /relative/or/full/path --ttW --ttZ --tH
 ```
 
 Where `datacard.txt` contains all the channels one wants to calculate limits to and `/relative/or/full/path` is the folder that contains `datacard.txt` and its relative root file.
 
 The `--ttW` / `--ttW` command line adds it floating (that is false if not used).
+
+The fits options are enetered in [cards/options.dat](https://github.com/acarvalh/signal_extraction_tH_ttH/blob/master/cards/options.dat) -- one needs to read carefully to know what its being booked as fit.
 
 Different datacard_channelX.txt can be combined with the following command (type-2):
 
