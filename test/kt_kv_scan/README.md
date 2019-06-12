@@ -2,7 +2,7 @@
 
 Most of the scripts are based on the original [here](https://github.com/stiegerb/cmgtools-lite/tree/80X_M17_tHqJan30_bbcombination/TTHAnalysis/python/plotter/tHq-multilepton/signal_extraction). 
 
-The main difference is that only the necessary scripts to make the interpretation in the context of the ttH.tH multilepton analyses.
+The main difference is that only the necessary scripts to make the interpretation in the context of the ttH/tH multilepton analyses. Morover, we will be adding fit options specifically for ttH/tH multilepton.
 
 
 The scripts assumes the datacards for both ttH, tHq and tHW are done assuming the respective to be signal has SM cross section (independently of the kinematics that the card correspond to). 
