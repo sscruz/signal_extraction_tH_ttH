@@ -8,200 +8,266 @@ def run_cmd(command):
   stdout, stderr = p.communicate()
   return stdout
 
-def rebin_total(template, folder, fin, divideByBinWidth, name_total) :
-    total_hist = fin.Get(folder+"/"+name_total)
-    print folder+"/"+name_total
-    hist = template.Clone()
-    hist.SetMarkerSize(0);
+def getCats(dirToLook, fileToLook, fromHavester) :
+    catcats = []
+    dirlist = fileToLook.GetListOfKeys()
+    iter = dirlist.MakeIterator()
+    key = iter.Next()
+    dirs = {}
+    td = ROOT.TDirectoryFile ()
+    while key:
+        if  key.GetClassName() == 'TDirectoryFile':
+            td = key.ReadObj()
+            dirName = td.GetName()
+            if fromHavester : 
+                catcats += [dirName]
+                key = iter.Next()
+                continue
+            print "found directory", dirName
+            if dirName != dirToLook : 
+                key = iter.Next()
+                continue
+            print (key)
+            dirs[dirName] = td
+            iter2 = td.GetNkeys()
+            print("Number of subcategories on the plot: ", iter2)
+            for nkey, key2 in enumerate(td.GetListOfKeys()) :
+                    #tfileout.get()
+                    obj =  key2.ReadObj()
+                    obj_name = key2.GetName()
+                    print (obj_name)
+                    catcats += [obj_name]
+        key = iter.Next()
+    return catcats
+
+
+def GetNonZeroBins(template) :
+    nbins = 0
+    for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+        binContent_original = template.GetBinContent(ii)
+        if binContent_original > 0 : nbins += 1
+    return nbins
+
+def GetNonZeroPoints(dataTGraph) :
+    nbins = 0
+    for ii in xrange(1, dataTGraph.GetN()+1) :
+        xp = ROOT.Double()
+        yp = ROOT.Double()
+        dataTGraph.GetPoint(ii, xp, yp)
+        if yp > 0 : nbins += 1
+    return nbins
+
+def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin) :
+    total_hist = fin.Get(folder + "/" + name_total)
+    print folder
+    allbins = GetNonZeroBins(total_hist)
+    #hist.Sumw2() ## if prefit
+    hist.SetMarkerSize(0)
     hist.SetFillColorAlpha(12, 0.40)
     hist.SetLineWidth(0)
     hist.SetMinimum(options.minY)
     hist.SetMaximum(options.maxY)
-    for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+    #hist.Sumw2() ## if prefit
+    for ii in xrange(1, allbins + 1) :
         bin_width = 1.
-        if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
-        hist.SetBinContent(ii, total_hist.GetBinContent(ii)/bin_width)
-        hist.SetBinError(ii, total_hist.GetBinError(ii)/bin_width)
+        if divideByBinWidth : bin_width = total_hist.GetXaxis().GetBinWidth(ii)
+        hist.SetBinContent(ii + lastbin, total_hist.GetBinContent(ii)/bin_width)
+        hist.SetBinError(  ii + lastbin, total_hist.GetBinError(ii)/bin_width)
     if not hist.GetSumw2N() : hist.Sumw2()
-    hist.GetXaxis().SetTitleOffset(0.7);
-    hist.GetXaxis().SetLabelColor(10);
-    hist.GetYaxis().SetTitleOffset(1.);
-    hist.GetYaxis().SetTitleSize(0.055);
-    hist.GetYaxis().SetLabelSize(0.050);
-    hist.GetYaxis().SetTickLength(0.04);
-    hist.GetXaxis().SetTickLength(0.04);
-    return hist
+    hist.GetXaxis().SetTitleOffset(0.7)
+    hist.GetXaxis().SetLabelColor(10)
+    hist.GetYaxis().SetTitleOffset(1.)
+    hist.GetYaxis().SetTitleSize(0.055)
+    hist.GetYaxis().SetLabelSize(0.050)
+    hist.GetYaxis().SetTickLength(0.04)
+    hist.GetXaxis().SetTickLength(0.04)
+    return allbins
 
-def rebin_hist(template, fin, name, itemDict, divideByBinWidth) :
+def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend) :
     print folder+"/"+name
     hist = fin.Get(folder+"/"+name)
-    hist_rebin = template.Clone()
-    hist_rebin.SetMarkerSize(0);
+    try  : hist.Integral()
+    except :
+        if name in ["Flips", "Conv"] :
+            print ("Doesn't exist" + folder+"/"+name)
+            return 0
+    hist_rebin.SetMarkerSize(0)
     hist_rebin.SetFillColor(itemDict[0])
     hist_rebin.SetFillStyle(itemDict[1])
-    if "none" not in itemDict[2] : legend1.AddEntry(hist_rebin, itemDict[2], "f");
-    if itemDict[3] == True :  hist_rebin.SetLineColor(1);
-    else : hist_rebin.SetLineColor(itemDict[0]);
-    for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+    allbins = GetNonZeroBins(hist)
+    if "none" not in itemDict[2] and addlegend : legend1.AddEntry(hist_rebin, itemDict[2], "f")
+    if itemDict[3] == True :  hist_rebin.SetLineColor(1)
+    else : hist_rebin.SetLineColor(itemDict[0])
+    for ii in xrange(1, allbins + 1) :
         bin_width = 1.
-        if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
+        if divideByBinWidth : bin_width = hist.GetXaxis().GetBinWidth(ii)
         ### remove negatives
         binContent_original = hist.GetBinContent(ii)
-        binError2_original = hist.GetBinError(ii)**2;
+        binError2_original = hist.GetBinError(ii)**2
         if binContent_original < 0. :
             binContent_modified = 0.
             print ("bin with negative entry: ", ii, '\t', binContent_original)
             binError2_modified = binError2_original + math.pow((binContent_original-binContent_modified),2)
             if not binError2_modified >= 0. : print "Bin error negative!"
-            hist_rebin.SetBinError(ii, math.sqrt(binError2_modified)/bin_width);
-            hist_rebin.SetBinContent(ii, 0.)
+            hist_rebin.SetBinError(  ii + lastbin, math.sqrt(binError2_modified)/bin_width)
+            hist_rebin.SetBinContent(ii + lastbin, 0.)
             print 'binerror_original= ', binError2_original, '\t',  'bincontent_original', '\t', binContent_original,'\t', 'bincontent_modified', '\t', binContent_modified, '\t', 'binerror= ', hist_rebin.GetBinError(ii)
         else :
-            hist_rebin.SetBinError(ii,   hist.GetBinError(ii)/bin_width);
-            hist_rebin.SetBinContent(ii, hist.GetBinContent(ii)/bin_width)
+            hist_rebin.SetBinError(  ii + lastbin,   hist.GetBinError(ii)/bin_width)
+            hist_rebin.SetBinContent(ii + lastbin, hist.GetBinContent(ii)/bin_width)
     if not hist.GetSumw2N() : hist.Sumw2()
-    return hist_rebin
+    return allbins
 
-def rebin_data(template, folder, fin, fromHavester) :
+def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histtotal) :
     if not fromHavester :
-        dataTGraph = fin.Get(folder+"/data")
-        dataTGraph1 = ROOT.TGraphAsymmErrors()
-        for ii in xrange(0, template.GetXaxis().GetNbins()) :
+        dataTGraph = fin.Get(folder + "/data")
+        allbins = GetNonZeroBins(histtotal)
+        #dataTGraph1 = ROOT.TGraphAsymmErrors()
+        for ii in xrange(0, allbins) :
+            print("rebin_data", ii + lastbin)
             bin_width = 1.
-            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
+            if divideByBinWidth : 
+                bin_width = histtotal.GetXaxis().GetBinWidth(ii+1)
             xp = ROOT.Double()
             yp = ROOT.Double()
-            dataTGraph.GetPoint(ii,xp,yp)
-            dataTGraph1.SetPoint(ii,       template.GetBinCenter(ii+1) , yp/bin_width)
-            dataTGraph1.SetPointEYlow(ii,  dataTGraph.GetErrorYlow(ii)/bin_width)
-            dataTGraph1.SetPointEYhigh(ii, dataTGraph.GetErrorYhigh(ii)/bin_width)
-            dataTGraph1.SetPointEXlow(ii,  template.GetBinWidth(ii+1)/2.)
-            dataTGraph1.SetPointEXhigh(ii, template.GetBinWidth(ii+1)/2.)
+            dataTGraph.GetPoint(ii, xp, yp)
+            print("rebin_data", ii, ii + lastbin, yp)
+            dataTGraph1.SetPoint(      ii + lastbin,  template.GetBinCenter(ii + lastbin + 1) , yp/bin_width)
+            dataTGraph1.SetPointEYlow( ii + lastbin,  dataTGraph.GetErrorYlow(ii)/bin_width)
+            dataTGraph1.SetPointEYhigh(ii + lastbin,  dataTGraph.GetErrorYhigh(ii)/bin_width)
+            dataTGraph1.SetPointEXlow( ii + lastbin,  template.GetBinWidth(ii+1)/2.)
+            dataTGraph1.SetPointEXhigh(ii + lastbin,  template.GetBinWidth(ii+1)/2.)
     else :
-        dataTGraph = fin.Get(folder+"/data_obs")
-        dataTGraph1 = template.Clone()
-        for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+        dataTGraph = fin.Get(folder + "/data_obs")
+        allbins = GetNonZeroBins(dataTGraph)
+        #dataTGraph1 = template.Clone()
+        for ii in xrange(0, allbins) :
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
             if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 :
-              dataTGraph1.SetBinContent(ii, 0)
-              dataTGraph1.SetBinError(ii, 0)
+              dataTGraph1.SetBinContent(ii + lastbin, 0)
+              dataTGraph1.SetBinError(  ii + lastbin, 0)
             else :
-              dataTGraph1.SetBinContent(ii, dataTGraph.GetBinContent(ii)/bin_width)
-              dataTGraph1.SetBinError(ii, dataTGraph.GetBinError(ii)/bin_width)
-            
-    dataTGraph1.SetMarkerColor(1);
-    dataTGraph1.SetMarkerStyle(20);
-    dataTGraph1.SetMarkerSize(0.8);
-    dataTGraph1.SetLineColor(1);
-    dataTGraph1.SetLineWidth(1);
+              dataTGraph1.SetBinContent(ii + lastbin, dataTGraph.GetBinContent(ii)/bin_width)
+              dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)  
+    dataTGraph1.SetMarkerColor(1)
+    dataTGraph1.SetMarkerStyle(20)
+    dataTGraph1.SetMarkerSize(0.8)
+    dataTGraph1.SetLineColor(1)
+    dataTGraph1.SetLineWidth(1)
     dataTGraph1.SetLineStyle(1)
     dataTGraph1.SetMinimum(options.minY)
     dataTGraph1.SetMaximum(options.maxY)
-    return dataTGraph1
+    return allbins
 
-def err_data(template, folder, fromHavester) :
+def err_data(dataTGraph1, template, folder, fromHavester, lastbin, histtotal) :
     if not fromHavester :
         dataTGraph = fin.Get(folder+"/data")
-        dataTGraph1 = ROOT.TGraphAsymmErrors()
-        for ii in xrange(0, template.GetXaxis().GetNbins()) :
-            if ii == template.GetXaxis().GetNbins() -1 or ii == template.GetXaxis().GetNbins()-2 : continue
+        allbins = GetNonZeroBins(histtotal)
+        #dataTGraph1 = ROOT.TGraphAsymmErrors()
+        for ii in xrange(0, allbins) :
+            if ii == histtotal.GetXaxis().GetNbins() -1 or ii == histtotal.GetXaxis().GetNbins()-2 : continue
             bin_width = 1.
-            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
-            dividend = template.GetBinContent(ii+1)*bin_width
+            if divideByBinWidth : 
+                bin_width = histtotal.GetXaxis().GetBinWidth(ii+1)
+            if histtotal.GetBinContent(ii+1) == 0 : continue
+            dividend = histtotal.GetBinContent(ii+1)*bin_width
             xp = ROOT.Double()
             yp = ROOT.Double()
             dataTGraph.GetPoint(ii,xp,yp)
             if yp > 0 :
-                if dividend > 0 : dataTGraph1.SetPoint(ii, template.GetBinCenter(ii+1) , yp/dividend-1)
-                else : dataTGraph1.SetPoint(ii, template.GetBinCenter(ii+1) , -2.6)
-            else : dataTGraph1.SetPoint(ii, template.GetBinCenter(ii+1) , -2.6)
-
-            dataTGraph1.SetPointEYlow(ii,  dataTGraph.GetErrorYlow(ii)/dividend)
-            dataTGraph1.SetPointEYhigh(ii, dataTGraph.GetErrorYhigh(ii)/dividend)
-            dataTGraph1.SetPointEXlow(ii,  template.GetBinWidth(ii+1)/2.)
-            dataTGraph1.SetPointEXhigh(ii, template.GetBinWidth(ii+1)/2.)
+                if dividend > 0 : 
+                    dataTGraph1.SetPoint(ii + lastbin, template.GetBinCenter(ii + lastbin + 1) , yp/dividend-1)
+                else : 
+                    dataTGraph1.SetPoint(ii + lastbin, template.GetBinCenter(ii + lastbin + 1) , -2.6)
+            else : 
+                dataTGraph1.SetPoint(ii + lastbin, template.GetBinCenter(ii + lastbin +1) , -2.6)
+            dataTGraph1.SetPointEYlow(ii + lastbin,  dataTGraph.GetErrorYlow(ii)/dividend)
+            dataTGraph1.SetPointEYhigh(ii + lastbin, dataTGraph.GetErrorYhigh(ii)/dividend)
+            dataTGraph1.SetPointEXlow(ii + lastbin,  template.GetBinWidth(ii+1)/2.)
+            dataTGraph1.SetPointEXhigh(ii + lastbin, template.GetBinWidth(ii+1)/2.)
     else :
         dataTGraph = fin.Get(folder+"/data_obs")
-        dataTGraph1 = template.Clone()
-        for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+        allbins = GetNonZeroBins(dataTGraph)
+        #dataTGraph1 = template.Clone()
+        for ii in xrange(1, allbins + 1) :
             if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 : continue
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
             dividend = template.GetBinContent(ii)*bin_width
             if dataTGraph.GetBinContent(ii) > 0 :
               if dividend > 0 :
-                dataTGraph1.SetBinContent(ii, (dataTGraph.GetBinContent(ii)/dividend)-1)
-                dataTGraph1.SetBinError(ii,    dataTGraph.GetBinError(ii)/dividend) #
+                dataTGraph1.SetBinContent(ii + lastbin, (dataTGraph.GetBinContent(ii)/dividend)-1)
+                dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/dividend) #
             else :
-                dataTGraph1.SetBinContent(ii, -2.6)
+                dataTGraph1.SetBinContent(ii + lastbin, -2.6)
         if not dataTGraph1.GetSumw2N() : dataTGraph1.Sumw2()
-    dataTGraph1.SetMarkerColor(1);
-    dataTGraph1.SetMarkerStyle(20);
-    dataTGraph1.SetMarkerSize(0.8);
-    dataTGraph1.SetLineColor(1);
-    dataTGraph1.SetLineWidth(1);
+    dataTGraph1.SetMarkerColor(1)
+    dataTGraph1.SetMarkerStyle(20)
+    dataTGraph1.SetMarkerSize(0.8)
+    dataTGraph1.SetLineColor(1)
+    dataTGraph1.SetLineWidth(1)
     dataTGraph1.SetLineStyle(1)
-    return dataTGraph1
+    return allbins
 
-def do_hist_total_err(template, labelX, name_total) :
+def do_hist_total_err(hist_total_err, labelX, name_total, folder, lastbin) :
     total_hist = fin.Get(folder+"/"+name_total)
-    hist_total_err = template.Clone()
-    hist_total_err.GetYaxis().SetTitle("#frac{Data - Expectation}{Expectation}");
-    hist_total_err.GetXaxis().SetTitleOffset(1.15);
-    hist_total_err.GetYaxis().SetTitleOffset(1.0);
-    hist_total_err.GetXaxis().SetTitleSize(0.14);
-    hist_total_err.GetYaxis().SetTitleSize(0.055);
-    hist_total_err.GetYaxis().SetLabelSize(0.105);
-    hist_total_err.GetXaxis().SetLabelSize(0.10);
-    hist_total_err.GetYaxis().SetTickLength(0.04);
-    hist_total_err.GetXaxis().SetLabelColor(1);
+    allbins = GetNonZeroBins(total_hist)
+    #hist_total_err = template.Clone()
+    hist_total_err.GetYaxis().SetTitle("#frac{Data - Expectation}{Expectation}")
+    hist_total_err.GetXaxis().SetTitleOffset(1.15)
+    hist_total_err.GetYaxis().SetTitleOffset(1.0)
+    hist_total_err.GetXaxis().SetTitleSize(0.14)
+    hist_total_err.GetYaxis().SetTitleSize(0.055)
+    hist_total_err.GetYaxis().SetLabelSize(0.105)
+    hist_total_err.GetXaxis().SetLabelSize(0.10)
+    hist_total_err.GetYaxis().SetTickLength(0.04)
+    hist_total_err.GetXaxis().SetLabelColor(1)
     hist_total_err.GetXaxis().SetTitle("BDT")
-    hist_total_err.SetMarkerSize(0);
+    hist_total_err.SetMarkerSize(0)
     hist_total_err.SetFillColorAlpha(12, 0.40)
-    hist_total_err.SetLineWidth(2)
-    hist_total_err.SetMinimum(-2.6)
-    hist_total_err.SetMaximum(2.6)
-    for bin in xrange(0, hist_total_err.GetXaxis().GetNbins()) :
+    hist_total_err.SetLineWidth(0)
+    hist_total_err.SetMinimum(-3.6)
+    hist_total_err.SetMaximum(3.6)
+    for bin in xrange(0, allbins) :
         hist_total_err.SetBinContent(bin+1, 0)
         if total_hist.GetBinContent(bin+1) > 0. :
-            hist_total_err.SetBinError(bin+1, total_hist.GetBinError(bin+1)/total_hist.GetBinContent(bin+1))
-    return hist_total_err
+            hist_total_err.SetBinError(lastbin + bin + 1, total_hist.GetBinError(bin+1)/total_hist.GetBinContent(bin+1))
+    return allbins
 
 def addLabel_CMS_preliminary() :
-
     x0 = 0.2
     y0 = 0.953
     ypreliminary = 0.95
     xlumi = 0.5
-    label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC");
-    label_cms.AddText("CMS");
-    label_cms.SetTextFont(50);
-    label_cms.SetTextAlign(13);
-    label_cms.SetTextSize(0.0575);
-    label_cms.SetTextColor(1);
-    label_cms.SetFillStyle(0);
-    label_cms.SetBorderSize(0);
-    label_preliminary = ROOT.TPaveText(x0 + 0.1055, ypreliminary - 0.0010, x0 + 0.2950, ypreliminary + 0.0500, "NDC");
-    label_preliminary.AddText("Preliminary");
-    label_preliminary.SetTextFont(48);
-    label_preliminary.SetTextAlign(13);
-    label_preliminary.SetTextSize(0.045);
-    label_preliminary.SetTextColor(1);
-    label_preliminary.SetFillStyle(0);
-    label_preliminary.SetBorderSize(0);
-    label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0050, xlumi + 0.1900, y0 + 0.0550, "NDC");
-    label_luminosity.AddText("41.53 fb^{-1} (13 TeV)");
-    label_luminosity.SetTextAlign(13);
-    label_luminosity.SetTextSize(0.050);
-    label_luminosity.SetTextColor(1);
-    label_luminosity.SetFillStyle(0);
-    label_luminosity.SetBorderSize(0);
+    label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
+    label_cms.AddText("CMS")
+    label_cms.SetTextFont(50)
+    label_cms.SetTextAlign(13)
+    label_cms.SetTextSize(0.0575)
+    label_cms.SetTextColor(1)
+    label_cms.SetFillStyle(0)
+    label_cms.SetBorderSize(0)
+    label_preliminary = ROOT.TPaveText(x0 + 0.1055, ypreliminary - 0.0010, x0 + 0.2950, ypreliminary + 0.0500, "NDC")
+    label_preliminary.AddText("Preliminary")
+    label_preliminary.SetTextFont(48)
+    label_preliminary.SetTextAlign(13)
+    label_preliminary.SetTextSize(0.045)
+    label_preliminary.SetTextColor(1)
+    label_preliminary.SetFillStyle(0)
+    label_preliminary.SetBorderSize(0)
+    label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0050, xlumi + 0.1900, y0 + 0.0550, "NDC")
+    label_luminosity.AddText("41.53 fb^{-1} (13 TeV)")
+    label_luminosity.SetTextAlign(13)
+    label_luminosity.SetTextSize(0.050)
+    label_luminosity.SetTextColor(1)
+    label_luminosity.SetFillStyle(0)
+    label_luminosity.SetBorderSize(0)
 
     return [label_cms, label_preliminary, label_luminosity]
 
 def finMaxMin(histSource) :
-    file = TFile(histSource+".root","READ");
+    file = TFile(histSource+".root","READ")
     file.cd()
     hSum = TH1F()
     for keyO in file.GetListOfKeys() :
@@ -215,8 +281,8 @@ def finMaxMin(histSource) :
     [hSum.GetBinLowEdge(hSum.FindFirstBinAbove(0.0)),  hSum.GetBinCenter(hSum.FindLastBinAbove (0.0))+hSum.GetBinWidth(hSum.FindLastBinAbove (0.0))/2.]]
 
 def getQuantiles(histoP,ntarget,xmax) :
-    histoP.Scale(1./histoP.Integral());
-    histoP.GetCumulative()#.Draw();
+    histoP.Scale(1./histoP.Integral())
+    histoP.GetCumulative()#.Draw()
     histoP.GetXaxis().SetRangeUser(0.,1.)
     histoP.GetYaxis().SetRangeUser(0.,1.)
     histoP.SetMinimum(0.0)
@@ -244,7 +310,7 @@ def rebinRegular(local, histSource, nbin, BINtype) :
     else :
         xmin=minmax[0][0]
         xmax=minmax[0][1]
-    file = TFile(local+"/"+histSource+".root","READ");
+    file = TFile(local+"/"+histSource+".root","READ")
     file.cd()
     histograms=[]
     histograms2=[]
@@ -254,7 +320,7 @@ def rebinRegular(local, histSource, nbin, BINtype) :
     for nkey, keyO in enumerate(file.GetListOfKeys()) :
        obj =  keyO.ReadObj()
        if type(obj) is not TH1F : continue
-       h2 = obj.Clone();
+       h2 = obj.Clone()
        factor=1.
        if  not h2.GetSumw2N() : h2.Sumw2()
        histograms.append(h2.Clone())
@@ -264,7 +330,7 @@ def rebinRegular(local, histSource, nbin, BINtype) :
            if not hSumAll.Integral()>0 : hSumAll=hSumDumb2.Clone()
            else : hSumAll.Add(hSumDumb2)
     name=histSource+"_"+str(nbin)+"bins_"+BINtype
-    fileOut  = TFile(local+"/"+name+".root", "recreate");
+    fileOut  = TFile(local+"/"+name+".root", "recreate")
     histo = TH1F()
     for nn, histogram in enumerate(histograms) :
         histogramCopy=histogram.Clone()
@@ -283,9 +349,9 @@ def rebinRegular(local, histSource, nbin, BINtype) :
         histo.Sumw2()
         for place in range(0,histogramCopy.GetNbinsX() + 1) :
             content =      histogramCopy.GetBinContent(place)
-            binErrorCopy = histogramCopy.GetBinError(place);
+            binErrorCopy = histogramCopy.GetBinError(place)
             newbin =       histo.GetXaxis().FindBin(histogramCopy.GetXaxis().GetBinCenter(place))
-            binError =     histo.GetBinError(newbin);
+            binError =     histo.GetBinError(newbin)
             contentNew =   histo.GetBinContent(newbin)
             histo.SetBinContent(newbin, content+contentNew)
             histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))

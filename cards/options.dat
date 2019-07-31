@@ -1,6 +1,6 @@
 #####################################################################
 ## How to do?
-blinded         = False
+blinded         = True
 blindedOutput   = False ## do not draw the rate on the impacts plot
 sendToCondor    = False ## Impacts / GOF / likelihood scans for combo need it
 sendToLXBatch   = False ## the mu's result retrieval are not working in condor -- but they work with lxbatch
@@ -8,12 +8,11 @@ sendToLXBatch   = False ## the mu's result retrieval are not working in condor -
 
 #####################################################################
 ## What to do:
-doWS                    = False ## To do any of the rest you must have ran with this being True once
+doWS                    = True ## To do any of the rest you must have ran with this being True once
 ## but, once it is done one there is no need to loose time repeating it
 doRateAndSignificance   = False
 doLimits                = False
 do2Dlikelihoods         = False
-do2Dlikelihoods_with_tH = True ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
 
 doCategoriesLimitsFromMu1 = False
 doCategoriesMuAndLimits   = False
@@ -56,8 +55,10 @@ GOF_submit = False
 
 # 5)
 # OR you do from Combine or from from Havester
-preparePostFitCombine = False
-preparePostFitHavester = False
+preparePlotCombine  = False
+preparePlotHavester = True
+doPostFit           = False # if False do Prefit
+plainBins           = True
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
@@ -68,7 +69,8 @@ doPostFitHavester = False # doYieldsAndPlots must be true
 doRatesByLikScan = False
 
 ## The bellow makes a fit on kt assuming SM kinematics all the way: useful to setups and checks
-do_kt_scan_no_kin = False
+do_kt_scan_no_kin       = False
+do2Dlikelihoods_with_tH = False ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
 #####################################################################
 
 
