@@ -7,7 +7,7 @@ import numpy as np
 import glob
 import pandas as pd 
 import ROOT
-execfile("../../python/data_manager_makePostFitPlots.py")
+execfile(os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/python/data_manager_makePostFitPlots.py")
 ROOT.gStyle.SetOptStat(0)
 import matplotlib
 matplotlib.use('agg')
@@ -78,6 +78,7 @@ data["kvstring"] = [ (("m" if kvv < 0 else "") + str(abs(kvv))).replace(".", "p"
 
 for key in list_channel_opt.keys() :
     if "ctrl" in key : continue
+    if key in ["4l_0tau", "2l_2tau", "3l_1tau"] : continue
     yield_tHq   = []
     yield_tHW   = []
     yield_ttHLO = []
@@ -123,6 +124,7 @@ for process in ["tHq", "tHW"] :
     for key in list_channel_opt.keys() :
         print key
         if "ctrl" in key : continue
+        if key in ["4l_0tau", "2l_2tau", "3l_1tau"] : continue
         plt.plot(data["ratio"], data[key + "_" + process], 'o-', markersize=3, color=colors[ii], linestyle='-', markeredgewidth=0, linewidth=1, label=list_channel_opt[key]["latex"] )
         #list_labels += [list_channel_opt[key]["latex"]]
         ii += 1

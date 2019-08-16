@@ -65,8 +65,8 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin) :
     hist.SetMarkerSize(0)
     hist.SetFillColorAlpha(12, 0.40)
     hist.SetLineWidth(0)
-    hist.SetMinimum(options.minY)
-    hist.SetMaximum(options.maxY)
+    hist.SetMinimum(minY)
+    hist.SetMaximum(maxY)
     #hist.Sumw2() ## if prefit
     for ii in xrange(1, allbins + 1) :
         bin_width = 1.
@@ -88,16 +88,20 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
     hist = fin.Get(folder+"/"+name)
     try  : hist.Integral()
     except :
-        if name in ["Flips", "Conv"] :
-            print ("Doesn't exist" + folder+"/"+name)
-            return 0
+        #if name in ["Flips", "Conv", "flips_data", "conversions"] :
+        print ("Doesn't exist " + folder+"/"+name)
+        return {
+        "lastbin" : 0,
+        "binEdge" : 0,
+        "labelPos" : 0
+        }
     hist_rebin.SetMarkerSize(0)
-    hist_rebin.SetFillColor(itemDict[0])
-    hist_rebin.SetFillStyle(itemDict[1])
+    hist_rebin.SetFillColor(itemDict["color"])
+    hist_rebin.SetFillStyle(itemDict["fillStype"])
     allbins = GetNonZeroBins(hist)
-    if "none" not in itemDict[2] and addlegend : legend1.AddEntry(hist_rebin, itemDict[2], "f")
-    if itemDict[3] == True :  hist_rebin.SetLineColor(1)
-    else : hist_rebin.SetLineColor(itemDict[0])
+    if "none" not in itemDict["label"] and addlegend : legend1.AddEntry(hist_rebin, itemDict["label"], "f")
+    if itemDict["make border"] == True :  hist_rebin.SetLineColor(1)
+    else : hist_rebin.SetLineColor(itemDict["color"])
     for ii in xrange(1, allbins + 1) :
         bin_width = 1.
         if divideByBinWidth : bin_width = hist.GetXaxis().GetBinWidth(ii)
@@ -116,7 +120,11 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
             hist_rebin.SetBinError(  ii + lastbin,   hist.GetBinError(ii)/bin_width)
             hist_rebin.SetBinContent(ii + lastbin, hist.GetBinContent(ii)/bin_width)
     if not hist.GetSumw2N() : hist.Sumw2()
-    return allbins
+    return {
+        "lastbin" : allbins,
+        "binEdge" : hist.GetXaxis().GetBinLowEdge(lastbin) + hist.GetXaxis().GetBinWidth(lastbin) - 0.5 if lastbin > 0 else 0,
+        "labelPos" : float(allbins/2)
+        }
 
 def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histtotal) :
     if not fromHavester :
@@ -156,8 +164,8 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
     dataTGraph1.SetLineColor(1)
     dataTGraph1.SetLineWidth(1)
     dataTGraph1.SetLineStyle(1)
-    dataTGraph1.SetMinimum(options.minY)
-    dataTGraph1.SetMaximum(options.maxY)
+    dataTGraph1.SetMinimum(minY)
+    dataTGraph1.SetMaximum(maxY)
     return allbins
 
 def err_data(dataTGraph1, template, folder, fromHavester, lastbin, histtotal) :
@@ -223,7 +231,7 @@ def do_hist_total_err(hist_total_err, labelX, name_total, folder, lastbin) :
     hist_total_err.GetXaxis().SetLabelSize(0.10)
     hist_total_err.GetYaxis().SetTickLength(0.04)
     hist_total_err.GetXaxis().SetLabelColor(1)
-    hist_total_err.GetXaxis().SetTitle("BDT")
+    hist_total_err.GetXaxis().SetTitle(labelX)
     hist_total_err.SetMarkerSize(0)
     hist_total_err.SetFillColorAlpha(12, 0.40)
     hist_total_err.SetLineWidth(0)

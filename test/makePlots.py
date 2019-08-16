@@ -30,9 +30,14 @@ parser.add_option(
     default="ttH_1l_2tau_OS"
     )
 parser.add_option(
+    "--typeCat", type="string", dest="typeCat",
+    help="Name of the category as it is appear on the input file",
+    default="ttH_1l_2tau_OS"
+    )
+parser.add_option(
     "--labelX", type="string", dest="labelX",
     help="To appear on final plot",
-    default="NN bin#"
+    default="none"
     )
 parser.add_option(
     "--nameOut", type="string", dest="nameOut",
@@ -102,7 +107,8 @@ parser.add_option(
 (options, args) = parser.parse_args()
 
 divideByBinWidth = options.divideByBinWidth
-category = options.channel
+category         = options.channel
+typeCat          = options.typeCat
 print ("category", category)
 
 labelY = "Events"
@@ -129,51 +135,45 @@ else :
 print ("folder", folder)
 
 if not options.fromHavester : name_total = "total"
-elif not options.doPostFit : name_total = "TotalBkg"
+#elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
 
-conversions = "Conv" #"conversions"
-fakes       = "Fakes" #"fakes_data"
-flips       = "Flips" #"flips_data"
-
-dprocs = OrderedDict()
-
-# if label == "none" it means that this process is to be merged with the anterior key
-#                      color, fillStype, label,       , make border
-dprocs[fakes]        = [12,     3345,      "Non-prompt",        True]
-dprocs[flips]        = [1,     3006,      "Charge mis-m",       True]
-dprocs[conversions]  = [5,     1001,      "Conv.", True]
-dprocs["Rares"]      = [851,   1001,      "Rares",       True]
-#if "tau" in category :
 if 1 > 0 :
-    dprocs["EWK"]        = [610,   1001,      "EWK",         True]
-#else :
-#    dprocs["ZZ"]        = [610,   1001,      "none",         True]
-#    dprocs["WZ"]        = [610,   1001,      "EWK",         True]
-if not "2los_1tau" in category and not "2eos_1tau" in category and not "2muos_1tau" in category and not "1mu1eos_1tau" in category:
-    dprocs["TTW"]        = [823,   1001,      "none",        False]
-    dprocs["TTWW"]       = [823,   1001,      "ttW + ttWW",        True]
-else : dprocs["TTW"]        = [823,   1001,      "ttWW",        True]
-dprocs["TTZ"]        = [822,   1001,      "ttZ",         True]
-#if not "2los_1tau" in category and not "2eos_1tau" in category and not "2muos_1tau" in category and not "1mu1eos_1tau" in category:
-#    dprocs["ttH_hzg"]    = [2,     1001,      "none",        False]
-#    dprocs["ttH_hmm"]    = [2,     1001,      "none",        False]
-dprocs["ttH_hww"]    = [2,     1001,      "none",        False]
-dprocs["ttH_hzz"]    = [2,     1001,      "none",        False]
-dprocs["ttH_htt"]    = [2,     1001,      "ttH",     True]
+    conversions = "Conv" #"conversions"
+    fakes       = "Fakes" #"fakes_data"
+    flips       = "Flips" #"flips_data"
+else :
+    conversions = "conversions"
+    fakes       = "fakes_data"
+    flips       = "flips_data"
 
-label_head = "2017 fit,"
 
-if typeFit == "prefit" : label_head = label_head+" "+typeFit
-else : label_head = label_head+" #mu(ttH)=#hat{#mu}"
+info_file = os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/configs/plot_options.py"
+execfile(info_file)
+print ("list of signals/bkgs by channel taken from: " +  info_file)
+procs  = list_channels_draw("ttH")[category] #: OrderedDict()
+print procs
+dprocs = options_plot ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg_procs_from_MC'] + procs["signal"])
+
+label_head = ""
 
 if not options.nameLabel == "none" :
-    label_head += " " + options.nameLabel
+    label_head += options.nameLabel
+else :
+    if typeCat in options_plot_ranges("ttH").keys() :
+        label_head += options_plot_ranges("ttH")[typeCat]["label"]
 
-print label_head
+if typeFit == "prefit" : 
+    label_head = label_head+", "+typeFit
+else : 
+    label_head = label_head+", #mu(ttH)=#hat{#mu}"
 
-if options.notFlips : del dprocs[flips]
-if options.notConversions : del dprocs[conversions]
+if not options.labelX == "none" :
+    labelX = options.labelX
+elif typeCat in options_plot_ranges("ttH").keys() :
+    labelX = options_plot_ranges("ttH")[typeCat]["labelX"]
+else : labelX = "BDT"
+
 print ("will draw processes", list(dprocs.keys()))
 
 if not options.original == "none" :
@@ -181,6 +181,18 @@ if not options.original == "none" :
 else :
     fileOrig = options.input
 print ("template on ", fileOrig)
+
+minY = 1
+if options.maxY == 1 :
+    if typeCat in options_plot_ranges("ttH").keys() : minY = options_plot_ranges("ttH")[typeCat]["minY"]
+else : minY = options.minY
+
+maxY = 1
+if options.maxY == 1 :
+    if typeCat in options_plot_ranges("ttH").keys() : maxY = options_plot_ranges("ttH")[typeCat]["maxY"]
+else : minY = options.maxY
+
+
 
 fin = ROOT.TFile(options.input, "READ")
 if not options.original == "none" :
@@ -207,7 +219,7 @@ else :
         print (readFrom, nbinscat)
         nbinstotal += nbinscat
         datahist = fin.Get(readFrom + "/data")
-    template = ROOT.TH1F("my_hist", "", nbinstotal, 0, nbinstotal+1)
+    template = ROOT.TH1F("my_hist", "", nbinstotal, 0 - 0.5 , nbinstotal - 0.5)
 
 legend_y0 = 0.650
 legend1 = ROOT.TLegend(0.2400, legend_y0, 0.9450, 0.9150)
@@ -216,6 +228,7 @@ legend1.SetFillStyle(0)
 legend1.SetBorderSize(0)
 legend1.SetFillColor(10)
 legend1.SetTextSize(0.040)
+print label_head
 legend1.SetHeader(label_head)
 
 if options.unblind :
@@ -260,7 +273,7 @@ topPad.SetLeftMargin(0.20)
 topPad.SetBottomMargin(0.00)
 topPad.SetRightMargin(0.04)
 if options.useLogPlot : topPad.SetLogy()
-bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.01, 1.00, 0.34)
+bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.05, 1.00, 0.34)
 bottomPad.SetFillColor(10)
 bottomPad.SetTopMargin(0.0)
 bottomPad.SetLeftMargin(0.20)
@@ -276,7 +289,10 @@ del dumb
 histogramStack_mc = ROOT.THStack()
 print ("list of processes considered and their integrals")
 
-for key in  dprocs.keys() :
+linebin = []
+linebinW = []
+y0 = (legend_y0 - 0.001)*maxY
+for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
     lastbin = 0 
     addlegend = True
@@ -285,13 +301,26 @@ for key in  dprocs.keys() :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat  
         else : 
-            readFrom = catcat 
-        lastbin += rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend) 
+            readFrom = catcat
+        info_hist = rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend) 
+        lastbin += info_hist["lastbin"]
         print (readFrom, lastbin)
+        if kk == 0 :
+            if info_hist["binEdge"] > 0 : 
+                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], (legend_y0 + 0.05)*maxY)]
+            x0 = float(lastbin - info_hist["labelPos"] -1)
+            linebinW += [ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)]
     if hist_rebin == 0 : continue
+    if "tHW" in key or "tHq" in key :
+        hist_rebin.Scale(3.)
     dumb = histogramStack_mc.Add(hist_rebin)
     del dumb
     print (key, hist_rebin.Integral())
+
+for line1 in linebin :
+    line1.SetLineColor(1)
+    line1.SetLineStyle(3)
+    line1.Draw()
 
 dumb = histogramStack_mc.Draw("hist,same")
 del dumb
@@ -308,6 +337,29 @@ labels = addLabel_CMS_preliminary()
 for label in labels :
     dumb = label.Draw("same")
     del dumb
+
+for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
+    linebinW[cc].AddText(cat)
+    linebinW[cc].SetTextFont(50)
+    #label_cat.SetTextAlign(13)
+    linebinW[cc].SetTextSize(0.05)
+    linebinW[cc].SetTextColor(1)
+    linebinW[cc].SetFillStyle(0)
+    linebinW[cc].SetBorderSize(0)
+    linebinW[cc].Draw("same")
+
+"""x0 = float( (12. - 6./2.) /(nbinstotal))
+y0 = legend_y0 - 0.05
+label_cat2 = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
+label_cat2.AddText("2b")
+label_cat2.SetTextFont(50)
+label_cat2.SetTextAlign(13)
+label_cat2.SetTextSize(0.055)
+label_cat2.SetTextColor(1)
+label_cat2.SetFillStyle(0)
+label_cat2.SetBorderSize(0)
+label_cat2.Draw("same")"""
+
 #################################
 canvas.cd()
 dumb = bottomPad.Draw()
@@ -323,7 +375,7 @@ for cc, catcat in enumerate(catcats) :
     else : 
         readFrom = catcat 
     histtotal = fin.Get(readFrom + "/" + name_total )
-    lastbin += do_hist_total_err(hist_total_err, options.labelX, name_total, readFrom, lastbin) 
+    lastbin += do_hist_total_err(hist_total_err, labelX, name_total, readFrom, lastbin) 
     print (readFrom, lastbin)
 dumb = hist_total_err.Draw("e2")
 del dumb
@@ -358,7 +410,7 @@ print ("made log")
 #canvas.Print(options.odir+category+"_"+typeFit+"_"+optbin+"_unblind"+str(options.unblind)+"_"+oplin+".pdf")
 #canvas.Close()
 
-savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.nameLabel + ".pdf"
+savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat + ".pdf"
 dumb = canvas.SaveAs(savepdf)
 del dumb
 print ("saved", savepdf)
