@@ -11,9 +11,30 @@ from ROOT import TLatex
 
 gROOT.SetBatch(1)
 
-def contourPlot(tree, pmin, pmax, bestFit=(10.194, 1.655)):
-    n = tree.Draw("r_ttH:"+to_do, "%f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1" % (pmin,pmax), "")
-    print "Drawing for %f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1 yielded %d points" % (pmin, pmax, n)
+from optparse import OptionParser
+parser = OptionParser()
+parser.add_option("--second", type="string", dest="second", help="from grid in multidim fit", default="none")
+parser.add_option("--label", type="string", dest="label", help="from grid in multidim fit", default="none")
+parser.add_option("--plotName", type="string", dest="plotName", help="from grid in multidim fit", default="none")
+parser.add_option("--outputFolder", type="string", dest="outputFolder", help="  Set ", default="")
+parser.add_option("--input", type="string", dest="input", help="from grid in multidim fit", default="none")
+parser.add_option("--input68", type="string", dest="input68", help="from grid in multidim fit", default="none")
+parser.add_option("--input95", type="string", dest="input95", help="from grid in multidim fit", default="none")
+(options, args) = parser.parse_args()
+
+to_do  = options.second
+folder = options.outputFolder
+
+def BestFit(tree):
+    n = tree.Draw( "r_ttH:r_"+to_do, "quantileExpected == -1", "")
+    gr = gROOT.FindObject("Graph").Clone()
+    bestFit = (gr.GetX()[0], gr.GetY()[0])
+    print "BestFit from tree68: (%s, r_ttH)"%to_do, bestFit
+    return bestFit
+
+def contourPlot(tree, pmin, pmax, bestFit=(10.1, 1.5)):
+    n = tree.Draw("r_ttH:r_"+to_do, "%f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1" % (pmin,pmax), "")
+    print "Drawing for r_ttH:%s, %f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1 yielded %d points" % (to_do,pmin, pmax, n)
     gr = gROOT.FindObject("Graph").Clone()
 
     xi = gr.GetX()
@@ -43,26 +64,25 @@ def contourPlot(tree, pmin, pmax, bestFit=(10.194, 1.655)):
     return sorted_graph
 
 
-tf = TFile.Open(sys.argv[1], "READ")
+tf = TFile.Open(options.input, "READ")
 tree = tf.Get("limit")
 
-to_do = sys.argv[2]
-if to_do == "r_ttW" or to_do == "r_ttZ" : limitssecond = "0,3"
+#to_do = sys.argv[2]
+if to_do == "ttW" or to_do == "ttZ" : limitssecond = "-5,5"
 else : limitssecond = "-40,40"
 
-addLabel = sys.argv[3]
-folder = sys.argv[4]
+addLabel = options.label
 
-doContours = False
+doContours = True
 
-tf3 = TFile.Open(sys.argv[5], "READ")
+tf3 = TFile.Open(options.input95, "READ")
 if doContours :
     try: tree95 = tf3.Get("limit")
     except AttributeError or ReferenceError:
         doContours = False
 else : tree95 = None
 
-tf2 = TFile.Open(sys.argv[6], "READ")
+tf2 = TFile.Open(options.input68, "READ")
 if doContours :
     try:  tree68 = tf2.Get("limit")
     except AttributeError or ReferenceError:
@@ -70,19 +90,19 @@ if doContours :
 else : tree68 = None
 
 try:
-    print "%s tree loaded from %s" % (tree.GetName(), sys.argv[1])
+    print "%s tree loaded from %s" % (tree.GetName(), options.input)
 except AttributeError:
     print "tree not found!"
     sys.exit(-1)
 
 if doContours :
     try:
-        print "%s tree loaded from %s" % (tree68.GetName(), sys.argv[5])
+        print "%s tree loaded from %s" % (tree68.GetName(), options.input68)
     except AttributeError:
         doContours = False
 
     try:
-        print "%s tree loaded from %s" % (tree95.GetName(), sys.argv[6])
+        print "%s tree loaded from %s" % (tree95.GetName(), options.input95)
     except AttributeError:
         doContours = False
 
@@ -90,15 +110,16 @@ gStyle.SetOptStat(0)
 gStyle.SetOptTitle(0)
 
 if doContours :
-    gr68 = contourPlot(tree68, 0.310, 1.0)
-    gr68.SetLineWidth(1)
+    bestfit = BestFit(tree68)
+    gr68 = contourPlot(tree68, 0.310, 1.0, bestfit)
+    gr68.SetLineWidth(2)
     gr68.SetLineStyle(1)
     gr68.SetLineColor(1)
     gr68.SetFillStyle(1001)
     gr68.SetFillColor(82)
 
-    gr95 = contourPlot(tree95, 0.049, 1.0)
-    gr95.SetLineWidth(1)
+    gr95 = contourPlot(tree95, 0.049, 1.0, bestfit)
+    gr95.SetLineWidth(2)
     gr95.SetLineStyle(7)
     gr95.SetLineColor(1)
     gr95.SetFillStyle(1001)
@@ -109,9 +130,10 @@ canv.SetBottomMargin(0.10)
 canv.SetLeftMargin(0.08)
 canv.SetRightMargin(0.12)
 
-tree.Draw("2*deltaNLL:r_ttH:"+to_do+">>hist(50,"+limitssecond+",50,-1,3)","2*deltaNLL<10","prof colz")
+tree.Draw("2*deltaNLL:r_ttH:r_"+to_do+">>hist(50,"+limitssecond+",50,-5,5)","2*deltaNLL<10","prof")
 
 hist = gDirectory.Get("hist")
+hist.SetMarkerColor(0)
 hist.GetXaxis().SetTitleFont(43)
 hist.GetYaxis().SetTitleFont(43)
 hist.GetXaxis().SetTitleSize(28)
@@ -127,7 +149,7 @@ hist.GetZaxis().SetTitle("-2#Delta lnL")
 
 print "GetCorrelationFactor: %.3f" % hist.GetCorrelationFactor()
 
-tree.Draw("r_ttH:"+to_do,"quantileExpected == -1","P same")
+tree.Draw("r_ttH:r_"+to_do,"quantileExpected == -1","P same")
 best_fit = gROOT.FindObject("Graph").Clone()
 best_fit.SetMarkerSize(2)
 best_fit.SetMarkerColor(0)
@@ -159,8 +181,7 @@ lat.SetTextFont(43)
 lat.SetTextSize(32)
 lat.DrawLatex(0.12, 0.92, "#bf{CMS} #it{Internal}")
 lat.SetTextSize(26)
-lat.DrawLatex(0.14, 0.845, "pp #rightarrow "+to_do.replace("r_","")+"+t#bar{t}H, H #rightarrow WW*/ZZ*/#tau#tau")
-##lat.DrawLatex(0.14, 0.8, "2lss only - ttH-sel + ttW-sel")
+lat.DrawLatex(0.14, 0.845, "pp #rightarrow tH+t#bar{t}H, H #rightarrow WW*/ZZ*/#tau#tau")
 lat.DrawLatex(0.14, 0.755, addLabel)
 
 leg = TLegend(0.12, 0.15, .3, .3)
@@ -176,5 +197,10 @@ if doContours :
     leg.AddEntry(gr95, "95% C.I.", 'L')
 leg.Draw()
 
-canv.SaveAs(folder+"/nllscan_"+to_do+"-vs_ttH_"+addLabel+".pdf")
+if folder == "" :
+    saveout = "nllscan_%s-vs_ttH_%s.pdf" % (folder, to_do, options.plotName)
+else :
+    saveout = "%s/nllscan_%s-vs_ttH_%s.pdf" % (folder, to_do, options.plotName)
+print "SaveAs %s" % (saveout)
+canv.SaveAs(saveout)
 

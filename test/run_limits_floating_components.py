@@ -171,24 +171,62 @@ bkgs = []
 if options.ttW : bkgs += ["ttW"]
 if options.ttZ : bkgs += ["ttZ"]
 
+#combine -M MultiDimFit  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/test_3l/results//datacard_3l_output_NN_3l_ttH_tH_3cat_v8_ttH_tH_quantiles_WS.root  
+#-t -1  -n For2D_ttH_ttW_68 --algo contour2d --points=20 --cl=0.68 --redefineSignalPOIs r_ttH,r_ttZ 
+#--setParameterRanges r_ttH=-1,3:r_ttW=-1,3
+
+#combine -M MultiDimFit  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/test_3l/results//datacard_3l_output_NN_3l_ttH_tH_3cat_v8_ttH_tH_quantiles_WS.root  
+#-t -1  -n For2D_ttH_ttW_95 --algo contour2d --points=20 --cl=0.95 --redefineSignalPOIs r_ttH,r_ttZ 
+#--setParameterRanges r_ttH=-1,3:r_ttW=-1,3
+
+#combine -M MultiDimFit  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/test_3l/results//datacard_3l_output_NN_3l_ttH_tH_3cat_v8_ttH_tH_quantiles_WS.root  
+#-t -1  -n For2D_ttH_ttW --algo grid --points 80000 --fastScan --redefineSignalPOIs r_ttH,r_ttZ 
+#--setParameterRanges r_ttH=-1,3:r_ttW=-1,3
+
 if do2Dlikelihoods :
   for ss, statements in enumerate(doFor) :
     if ss == 1 : label = "data"
     if ss == 0 : label = "asimov"
+    if do2Dlikelihoods_with_tH :
+        bkgs += ["tH"]
     ## ttH x (ttZ , ttW)
     for bkg in bkgs :
+      ranges = "-40,40" if bkg == "tH" else "-5,5"
+      for typeFit in ["central", "68", "95"] :
         cmd = "combine -M MultiDimFit "
         cmd += " %s_WS.root" % cardToRead 
         cmd += " %s" % blindStatement
-        cmd += " -n For2D_ttH_%s" % bkg
-        cmd += " --algo grid --points 80000 --fastScan"
+        cmd += " -n For2D_ttH_%s_%s" % (bkg, typeFit)
+        cmd += " --fastScan"
+        if not typeFit == "central":
+            cmd += " --cl=0.%s" % typeFit
+            cmd += " --algo contour2d --points=20 "
+        else :
+            cmd += " --algo grid --points 80000 "
         cmd += " --redefineSignalPOIs r_ttH,r_%s" % bkg
-        cmd += " --setParameterRanges r_ttH=-1,3:r_%s=-1,3" % bkg
+        cmd += " --setParameterRanges r_ttH=-5,5:r_%s=%s" % (bkg,ranges)
+        cmd += " --setParameters" 
+        ##TODO: set the other parameter to one
+        countcoma = 0
+        for rest in list(set(list(bkgs)) - set([bkg])) :
+            if countcoma == 0 : cmd += " r_%s=1.0" % rest
+            else : cmd += ",r_%s=1.0" % rest
+            countcoma += 1
+            #--setParameters kappa_t=1.0,kappa_V=1.0,r_ttH=1,r_tH=1
         runCombineCmd(cmd, FolderOut)
-        runCombineCmd("mv %s/higgsCombineFor2D_ttH_%s.MultiDimFit.mH120.root %s/%s_2Dlik_ttH_%s_%s.root"  % (cardFolder, bkg, cardFolder, cardToRead, bkg, label))
-        runCombineCmd("python test/plot2DLLScan.py %s/%s_2Dlik_ttH_%s_%s.root  \"r_%s\" \"%s\" \"%s\" 0 0 "  % (cardFolder, cardToRead, bkg, label, bkg, cardToRead, cardFolder), '.')
-
-if do2Dlikelihoods_with_tH :
+        runCombineCmd("mv higgsCombineFor2D_ttH_%s_%s.MultiDimFit.mH120.root %s_2Dlik_ttH_%s_%s_%s.root"  % (bkg, typeFit, cardToRead, bkg, typeFit, label), FolderOut)
+      cmd = "python test/plot2DLLScan.py "
+      cmd += " --input %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "central", label)
+      cmd += " --input68 %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "68", label)
+      cmd += " --input95 %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "95", label)
+      cmd += " --second %s" % bkg
+      cmd += " --plotName  %s" % namePlot
+      cmd += " --label  %s" % namePlot
+      cmd += " --outputFolder  %s" % FolderOut
+      runCombineCmd(cmd)
+      print ("saved " +  "%s/nllscan_%s-vs_ttH_%s.pdf" % (FolderOut, bkg, namePlot))
+ 
+"""if do2Dlikelihoods_with_tH :
   ## add break if not options.tH
   for ss, statements in enumerate(doFor) :
     if ss == 1 : label = "data"
@@ -209,7 +247,7 @@ if do2Dlikelihoods_with_tH :
     #    #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit -t -1 --algo contour2d --points=20 --cl=0.95  --X-rtd ADDNLL_RECURSIVE=0 -m 125 --verbose 0 -n contour_95_ttZ_%s %s.root --redefineSignalPOIs r_ttH,r_ttZ --freezeParameters r_tH -m 125 --setParameters r_ttH=1:r_ttZ=1 --cminDefaultMinimizerTolerance 0.01  --cminDefaultMinimizerStrategy 0 --cminPreScan --X-rtd MINIMIZER_analytic --setParameterRanges r_ttZ=-1.0,3.0:r_ttH=-1.0,3.0 ; cd -"  % (namePlot, WS_output))
     #    #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit -t -1 --algo contour2d --points=20 --cl=0.68  --X-rtd ADDNLL_RECURSIVE=0 -m 125 --verbose 0 -n contour_68_ttZ_%s %s.root --redefineSignalPOIs r_ttH,r_ttZ  --cminDefaultMinimizerTolerance 0.01  --cminDefaultMinimizerStrategy 0 --cminPreScan --X-rtd MINIMIZER_analytic --setParameterRanges r_ttZ=-1.0,3.0:r_ttH=-1.0,3.0 --freezeParameters r_tH -m 125 --setParameters r_ttH=1:r_ttZ=1; cd -"  % (namePlot, WS_output))
     #    #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; python %s/plot_rate_2D.py --input %s_2Dlik_asimov.root --output %s/%s_asimov.pdf --second 'r_ttZ'; cd -"  % (os.getcwd(), WS_output ,os.getcwd()+"/"+mom_result, WS_output))
-
+"""
 if doHessImpacts :
     # hessian impacts
     folderHessian = "%s/HesseImpacts_%s"  % (FolderOut, cardToRead)
