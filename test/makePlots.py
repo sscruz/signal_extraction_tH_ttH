@@ -21,7 +21,7 @@ parser.add_option(
     )
 parser.add_option(
     "--original", type="string", dest="original",
-    help="The original datacard: used only to rebin",
+    help="The original datacard: used only to rebin (the datacard.root)",
     default="none"
     )
 parser.add_option(
@@ -32,7 +32,7 @@ parser.add_option(
 parser.add_option(
     "--typeCat", type="string", dest="typeCat",
     help="Name of the category as it is appear on the input file",
-    default="ttH_1l_2tau_OS"
+    default="none"
     )
 parser.add_option(
     "--labelX", type="string", dest="labelX",
@@ -104,12 +104,21 @@ parser.add_option(
     help="The input file is from CombineHavester. In this case you do not need to enter 'original' if you called the PostFitShapesFromWorkspace with the -d option",
     default=False
     )
+parser.add_option(
+    "--do_bottom", action="store_true", dest="do_bottom",
+    help="If do bottom pad",
+    default=False
+    )
 (options, args) = parser.parse_args()
 
 divideByBinWidth = options.divideByBinWidth
 category         = options.channel
-typeCat          = options.typeCat
+if options.typeCat == "none" :
+    typeCat          = category
+else :
+    typeCat          = options.typeCat
 print ("category", category)
+do_bottom = options.do_bottom
 
 labelY = "Events"
 if divideByBinWidth : labelY = "Events / bin width"
@@ -138,9 +147,11 @@ if not options.fromHavester : name_total = "total"
 #elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
 
-if 1 > 0 :
-    conversions = "Conv" #"conversions"
-    fakes       = "Fakes" #"fakes_data"
+if 0 > 1 :
+    conversions = "Convs"
+    fakes       = "fakes_mc"
+    #conversions = "Conv" #"conversions"
+    #fakes       = "Fakes" #"fakes_data"
     flips       = "Flips" #"flips_data"
 else :
     conversions = "conversions"
@@ -163,9 +174,9 @@ else :
     if typeCat in options_plot_ranges("ttH").keys() :
         label_head += options_plot_ranges("ttH")[typeCat]["label"]
 
-if typeFit == "prefit" : 
+if typeFit == "prefit" :
     label_head = label_head+", "+typeFit
-else : 
+else :
     label_head = label_head+", #mu(ttH)=#hat{#mu}"
 
 if not options.labelX == "none" :
@@ -192,15 +203,13 @@ if options.maxY == 1 :
     if typeCat in options_plot_ranges("ttH").keys() : maxY = options_plot_ranges("ttH")[typeCat]["maxY"]
 else : minY = options.maxY
 
-
-
 fin = ROOT.TFile(options.input, "READ")
 if not options.original == "none" :
     catcats = [category]
-    readFrom = category  
+    readFrom =  "ttH_"  + category
     print ("readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
-    template = fileorriginal.Get(readFrom + "/" + name_total)
+    template = fileorriginal.Get(readFrom + "/data_fakes" ) #name_total)
     template.GetYaxis().SetTitle(labelY)
     template.SetTitle(" ")
     datahist = fileorriginal.Get(readFrom + "/data_obs")
@@ -210,9 +219,9 @@ else :
     nbinstotal = 0
     for catcat in catcats :
         if not options.fromHavester :
-            readFrom = folder + "/" + catcat  
-        else : 
-            readFrom = catcat 
+            readFrom = folder + "/" + catcat
+        else :
+            readFrom = "ttH_"  + catcat
         hist = fin.Get(readFrom + "/" + name_total )
         print (readFrom + "/" + name_total)
         nbinscat = GetNonZeroBins(hist)
@@ -238,53 +247,74 @@ if options.unblind :
         dataTGraph1.Set(template.GetXaxis().GetNbins())
     else :
         dataTGraph1 = template.Clone()
-    lastbin = 0 
+    lastbin = 0
     for cc, catcat in enumerate(catcats) :
         if not options.fromHavester :
-            readFrom = folder + "/" + catcat  
-        else : 
-            readFrom = catcat 
+            readFrom = folder + "/" + catcat
+        else :
+            readFrom = catcat
         histtotal = fin.Get(readFrom + "/" + name_total )
-        lastbin += rebin_data(template, dataTGraph1, readFrom, fin, options.fromHavester, lastbin, histtotal) 
+        lastbin += rebin_data(template, dataTGraph1, readFrom, fin, options.fromHavester, lastbin, histtotal)
         print (readFrom, lastbin)
     dataTGraph1.Draw()
     legend1.AddEntry(dataTGraph1, "Observed", "p")
 print folder
 hist_total = template.Clone()
-lastbin = 0 
+lastbin = 0
 for cc, catcat in enumerate(catcats) :
     if not options.fromHavester :
-        readFrom = folder + "/" + catcat  
-    else : 
-        readFrom = catcat  
-    lastbin += rebin_total(hist_total, readFrom, fin, divideByBinWidth, name_total, lastbin) 
+        if options.original == "none" :
+            readFrom = folder + "/" + catcat
+        else :
+            readFrom = folder + "/ttH_" + catcat
+    else :
+        readFrom = catcat
+    print (readFrom, catcat)
+    lastbin += rebin_total(hist_total, readFrom, fin, divideByBinWidth, name_total, lastbin, do_bottom, labelX)
 legend1.AddEntry(hist_total, "Uncertainty", "f")
 
-canvas = ROOT.TCanvas("canvas", "canvas", 600, 1500)
+if do_bottom :
+    canvas = ROOT.TCanvas("canvas", "canvas", 600, 1500)
+else :
+    canvas = ROOT.TCanvas("canvas", "canvas", 700, 700)
 canvas.SetFillColor(10)
 canvas.SetBorderSize(2)
 dumb = canvas.Draw()
 del dumb
 
-topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.34, 1.00, 0.995)
-topPad.SetFillColor(10)
-topPad.SetTopMargin(0.075)
-topPad.SetLeftMargin(0.20)
-topPad.SetBottomMargin(0.00)
-topPad.SetRightMargin(0.04)
-if options.useLogPlot : topPad.SetLogy()
-bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.05, 1.00, 0.34)
-bottomPad.SetFillColor(10)
-bottomPad.SetTopMargin(0.0)
-bottomPad.SetLeftMargin(0.20)
-bottomPad.SetBottomMargin(0.35)
-bottomPad.SetRightMargin(0.04)
+if do_bottom :
+    topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.34, 1.00, 0.995)
+    topPad.SetFillColor(10)
+    topPad.SetTopMargin(0.075)
+    topPad.SetLeftMargin(0.20)
+    topPad.SetBottomMargin(0.00)
+    topPad.SetRightMargin(0.04)
+    if options.useLogPlot or options_plot_ranges("ttH")[typeCat]["useLogPlot"]:
+        topPad.SetLogy()
+
+    bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.05, 1.00, 0.34)
+    bottomPad.SetFillColor(10)
+    bottomPad.SetTopMargin(0.0)
+    bottomPad.SetLeftMargin(0.20)
+    bottomPad.SetBottomMargin(0.35)
+    bottomPad.SetRightMargin(0.04)
+else :
+    topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.05, 1.00, 0.995)
+    topPad.SetFillColor(10)
+    topPad.SetTopMargin(0.075)
+    topPad.SetLeftMargin(0.20)
+    topPad.SetBottomMargin(0.1)
+    topPad.SetRightMargin(0.04)
+    if options.useLogPlot or options_plot_ranges("ttH")[typeCat]["useLogPlot"]:
+        topPad.SetLogy()
 ####################################
 canvas.cd()
 dumb = topPad.Draw()
 del dumb
 topPad.cd()
+
 dumb = hist_total.Draw("axis")
+
 del dumb
 histogramStack_mc = ROOT.THStack()
 print ("list of processes considered and their integrals")
@@ -294,24 +324,33 @@ linebinW = []
 y0 = (legend_y0 - 0.001)*maxY
 for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
-    lastbin = 0 
+    lastbin = 0
     addlegend = True
     for cc, catcat in enumerate(catcats) :
         if not cc == 0 : addlegend = False
         if not options.fromHavester :
-            readFrom = folder + "/" + catcat  
-        else : 
+            readFrom = folder + "/" + catcat
+            print ("readFrom", catcat)
+            if options.original == "none" :
+                readFrom = folder + "/" + catcat
+            else :
+                readFrom = folder + "/ttH_" + catcat
+            # ('readFrom', 'ttH_2lss_1tau')
+            # shapes_prefit/ttH_2lss_1tau/ttH_htt
+        else :
             readFrom = catcat
-        info_hist = rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend) 
+            print ("readFrom", catcat)
+        info_hist = rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend)
         lastbin += info_hist["lastbin"]
         print (readFrom, lastbin)
         if kk == 0 :
-            if info_hist["binEdge"] > 0 : 
+            if info_hist["binEdge"] > 0 :
                 linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], (legend_y0 + 0.05)*maxY)]
             x0 = float(lastbin - info_hist["labelPos"] -1)
             linebinW += [ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)]
-    if hist_rebin == 0 : continue
-    if "tHW" in key or "tHq" in key :
+    if hist_rebin == 0 or not hist_rebin.Integral() > 0 or info_hist["labelPos"] == 0 : 
+        continue
+    if "tHq" in key :
         hist_rebin.Scale(3.)
     dumb = histogramStack_mc.Add(hist_rebin)
     del dumb
@@ -361,52 +400,59 @@ label_cat2.SetBorderSize(0)
 label_cat2.Draw("same")"""
 
 #################################
-canvas.cd()
-dumb = bottomPad.Draw()
-del dumb
-bottomPad.cd()
-bottomPad.SetLogy(0)
-print ("doing bottom pad")
-hist_total_err = template.Clone()
-lastbin = 0
-for cc, catcat in enumerate(catcats) :
-    if not options.fromHavester :
-        readFrom = folder + "/" + catcat  
-    else : 
-        readFrom = catcat 
-    histtotal = fin.Get(readFrom + "/" + name_total )
-    lastbin += do_hist_total_err(hist_total_err, labelX, name_total, readFrom, lastbin) 
-    print (readFrom, lastbin)
-dumb = hist_total_err.Draw("e2")
-del dumb
-if options.unblind :
-    if not options.fromHavester :
-        dataTGraph2 = ROOT.TGraphAsymmErrors()
-    else :
-        dataTGraph2 = template.Clone()
+if do_bottom :
+    canvas.cd()
+    dumb = bottomPad.Draw()
+    del dumb
+    bottomPad.cd()
+    bottomPad.SetLogy(0)
+    print ("doing bottom pad")
+    hist_total_err = template.Clone()
     lastbin = 0
     for cc, catcat in enumerate(catcats) :
         if not options.fromHavester :
-            readFrom = folder + "/" + catcat  
-        else : 
-            readFrom = catcat  
+            #readFrom = folder + "/" + catcat
+            if options.original == "none" :
+                readFrom = folder + "/" + catcat
+            else :
+                readFrom = folder + "/ttH_" + catcat
+        else :
+            readFrom = catcat
         histtotal = fin.Get(readFrom + "/" + name_total )
-        lastbin += err_data(dataTGraph2, hist_total, readFrom, options.fromHavester, lastbin, histtotal) 
+        lastbin += do_hist_total_err(hist_total_err, labelX, name_total, readFrom, lastbin)
         print (readFrom, lastbin)
-    dumb = dataTGraph2.Draw("e1P,same")
+    dumb = hist_total_err.Draw("e2")
     del dumb
-line = ROOT.TF1("line", "0", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax()) 
-line.SetLineStyle(3)
-line.SetLineColor(ROOT.kBlack)
-dumb = line.Draw("same")
-del dumb
-print ("done bottom pad")
+    if options.unblind :
+        if not options.fromHavester :
+            dataTGraph2 = ROOT.TGraphAsymmErrors()
+        else :
+            dataTGraph2 = template.Clone()
+        lastbin = 0
+        for cc, catcat in enumerate(catcats) :
+            if not options.fromHavester :
+                readFrom = folder + "/" + catcat
+            else :
+                readFrom = catcat
+            histtotal = fin.Get(readFrom + "/" + name_total )
+            lastbin += err_data(dataTGraph2, hist_total, readFrom, options.fromHavester, lastbin, histtotal)
+            print (readFrom, lastbin)
+        dumb = dataTGraph2.Draw("e1P,same")
+        del dumb
+    line = ROOT.TF1("line", "0", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax())
+    line.SetLineStyle(3)
+    line.SetLineColor(ROOT.kBlack)
+    dumb = line.Draw("same")
+    del dumb
+    print ("done bottom pad")
 ##################################
 oplin = "linear"
-if options.useLogPlot : oplin = "log"
+if options.useLogPlot :
+    oplin = "log"
+    print ("made log")
 optbin = "plain"
-if divideByBinWidth : optbin = "divideByBinWidth"
-print ("made log")
+if divideByBinWidth :
+    optbin = "divideByBinWidth"
 #canvas.Print(options.odir+category+"_"+typeFit+"_"+optbin+"_unblind"+str(options.unblind)+"_"+oplin+".pdf")
 #canvas.Close()
 

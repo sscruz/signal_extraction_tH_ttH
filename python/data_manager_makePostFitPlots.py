@@ -19,12 +19,12 @@ def getCats(dirToLook, fileToLook, fromHavester) :
         if  key.GetClassName() == 'TDirectoryFile':
             td = key.ReadObj()
             dirName = td.GetName()
-            if fromHavester : 
+            if fromHavester :
                 catcats += [dirName]
                 key = iter.Next()
                 continue
             print "found directory", dirName
-            if dirName != dirToLook : 
+            if dirName != dirToLook :
                 key = iter.Next()
                 continue
             print (key)
@@ -57,9 +57,9 @@ def GetNonZeroPoints(dataTGraph) :
         if yp > 0 : nbins += 1
     return nbins
 
-def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin) :
+def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bottom, labelX) :
     total_hist = fin.Get(folder + "/" + name_total)
-    print folder
+    print (folder + "/" + name_total)
     allbins = GetNonZeroBins(total_hist)
     #hist.Sumw2() ## if prefit
     hist.SetMarkerSize(0)
@@ -74,13 +74,20 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin) :
         hist.SetBinContent(ii + lastbin, total_hist.GetBinContent(ii)/bin_width)
         hist.SetBinError(  ii + lastbin, total_hist.GetBinError(ii)/bin_width)
     if not hist.GetSumw2N() : hist.Sumw2()
-    hist.GetXaxis().SetTitleOffset(0.7)
-    hist.GetXaxis().SetLabelColor(10)
+    if not do_bottom :
+        hist.GetXaxis().SetTitle(labelX)
+        hist.GetXaxis().SetTitleOffset(1.0)
+        hist.GetXaxis().SetTitleSize(0.05)
+        hist.GetXaxis().SetLabelSize(0.05)
+        hist.GetXaxis().SetLabelColor(1)
+    else :
+        hist.GetXaxis().SetLabelColor(10)
+        hist.GetXaxis().SetTitleOffset(0.7)
+        hist.GetXaxis().SetTickLength(0.04)
     hist.GetYaxis().SetTitleOffset(1.)
     hist.GetYaxis().SetTitleSize(0.055)
-    hist.GetYaxis().SetLabelSize(0.050)
     hist.GetYaxis().SetTickLength(0.04)
-    hist.GetXaxis().SetTickLength(0.04)
+    hist.GetYaxis().SetLabelSize(0.050)
     return allbins
 
 def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend) :
@@ -134,7 +141,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
         for ii in xrange(0, allbins) :
             print("rebin_data", ii + lastbin)
             bin_width = 1.
-            if divideByBinWidth : 
+            if divideByBinWidth :
                 bin_width = histtotal.GetXaxis().GetBinWidth(ii+1)
             xp = ROOT.Double()
             yp = ROOT.Double()
@@ -157,7 +164,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
               dataTGraph1.SetBinError(  ii + lastbin, 0)
             else :
               dataTGraph1.SetBinContent(ii + lastbin, dataTGraph.GetBinContent(ii)/bin_width)
-              dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)  
+              dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)
     dataTGraph1.SetMarkerColor(1)
     dataTGraph1.SetMarkerStyle(20)
     dataTGraph1.SetMarkerSize(0.8)
@@ -176,7 +183,7 @@ def err_data(dataTGraph1, template, folder, fromHavester, lastbin, histtotal) :
         for ii in xrange(0, allbins) :
             if ii == histtotal.GetXaxis().GetNbins() -1 or ii == histtotal.GetXaxis().GetNbins()-2 : continue
             bin_width = 1.
-            if divideByBinWidth : 
+            if divideByBinWidth :
                 bin_width = histtotal.GetXaxis().GetBinWidth(ii+1)
             if histtotal.GetBinContent(ii+1) == 0 : continue
             dividend = histtotal.GetBinContent(ii+1)*bin_width
@@ -184,11 +191,11 @@ def err_data(dataTGraph1, template, folder, fromHavester, lastbin, histtotal) :
             yp = ROOT.Double()
             dataTGraph.GetPoint(ii,xp,yp)
             if yp > 0 :
-                if dividend > 0 : 
+                if dividend > 0 :
                     dataTGraph1.SetPoint(ii + lastbin, template.GetBinCenter(ii + lastbin + 1) , yp/dividend-1)
-                else : 
+                else :
                     dataTGraph1.SetPoint(ii + lastbin, template.GetBinCenter(ii + lastbin + 1) , -2.6)
-            else : 
+            else :
                 dataTGraph1.SetPoint(ii + lastbin, template.GetBinCenter(ii + lastbin +1) , -2.6)
             dataTGraph1.SetPointEYlow(ii + lastbin,  dataTGraph.GetErrorYlow(ii)/dividend)
             dataTGraph1.SetPointEYhigh(ii + lastbin, dataTGraph.GetErrorYhigh(ii)/dividend)
