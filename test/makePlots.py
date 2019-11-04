@@ -143,20 +143,16 @@ else :
         typeFit = "prefit"
 print ("folder", folder)
 
-if not options.fromHavester : name_total = "total"
+if not options.fromHavester : name_total = "total_background" #"total"
 #elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
 
-if 0 > 1 :
-    conversions = "Convs"
-    fakes       = "fakes_mc"
-    #conversions = "Conv" #"conversions"
-    #fakes       = "Fakes" #"fakes_data"
-    flips       = "Flips" #"flips_data"
-else :
-    conversions = "conversions"
-    fakes       = "fakes_data"
-    flips       = "flips_data"
+
+conversions = "Convs"
+fakes       = "fakes_mc"
+#conversions = "Conv" #"conversions"
+#fakes       = "Fakes" #"fakes_data"
+flips       = "flips_mc" #"Flips" #"flips_data"
 
 
 info_file = os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/configs/plot_options.py"
@@ -209,7 +205,7 @@ if not options.original == "none" :
     readFrom =  "ttH_"  + category
     print ("readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
-    template = fileorriginal.Get(readFrom + "/data_fakes" ) #name_total)
+    template = fileorriginal.Get(readFrom + "/ttH_htt" ) #name_total)
     template.GetYaxis().SetTitle(labelY)
     template.SetTitle(" ")
     datahist = fileorriginal.Get(readFrom + "/data_obs")
@@ -255,7 +251,7 @@ if options.unblind :
             readFrom = catcat
         histtotal = fin.Get(readFrom + "/" + name_total )
         lastbin += rebin_data(template, dataTGraph1, readFrom, fin, options.fromHavester, lastbin, histtotal)
-        print (readFrom, lastbin)
+        #print (readFrom, lastbin)
     dataTGraph1.Draw()
     legend1.AddEntry(dataTGraph1, "Observed", "p")
 print folder
@@ -276,7 +272,7 @@ legend1.AddEntry(hist_total, "Uncertainty", "f")
 if do_bottom :
     canvas = ROOT.TCanvas("canvas", "canvas", 600, 1500)
 else :
-    canvas = ROOT.TCanvas("canvas", "canvas", 700, 700)
+    canvas = ROOT.TCanvas("canvas", "canvas", 900, 900)
 canvas.SetFillColor(10)
 canvas.SetBorderSize(2)
 dumb = canvas.Draw()
@@ -321,7 +317,7 @@ print ("list of processes considered and their integrals")
 
 linebin = []
 linebinW = []
-y0 = (legend_y0 - 0.001)*maxY
+y0 = (legend_y0 - 0.01)*maxY
 for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
     lastbin = 0
@@ -330,31 +326,27 @@ for kk, key in  enumerate(dprocs.keys()) :
         if not cc == 0 : addlegend = False
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
-            print ("readFrom", catcat)
             if options.original == "none" :
                 readFrom = folder + "/" + catcat
             else :
                 readFrom = folder + "/ttH_" + catcat
-            # ('readFrom', 'ttH_2lss_1tau')
-            # shapes_prefit/ttH_2lss_1tau/ttH_htt
         else :
             readFrom = catcat
-            print ("readFrom", catcat)
         info_hist = rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend)
         lastbin += info_hist["lastbin"]
-        print (readFrom, lastbin)
         if kk == 0 :
             if info_hist["binEdge"] > 0 :
                 linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], (legend_y0 + 0.05)*maxY)]
             x0 = float(lastbin - info_hist["labelPos"] -1)
             linebinW += [ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)]
-    if hist_rebin == 0 or not hist_rebin.Integral() > 0 or info_hist["labelPos"] == 0 : 
+
+    if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # :
         continue
+    print (key,  0 if hist_rebin == 0 else hist_rebin.Integral() )
     if "tHq" in key :
         hist_rebin.Scale(3.)
     dumb = histogramStack_mc.Add(hist_rebin)
     del dumb
-    print (key, hist_rebin.Integral())
 
 for line1 in linebin :
     line1.SetLineColor(1)
@@ -363,8 +355,9 @@ for line1 in linebin :
 
 dumb = histogramStack_mc.Draw("hist,same")
 del dumb
-dumb = hist_total.Draw("e2,same")
-del dumb
+## Xanda
+##dumb = hist_total.Draw("e2,same")
+##del dumb
 if options.unblind :
     dumb = dataTGraph1.Draw("e1P,same")
     del dumb
@@ -436,7 +429,7 @@ if do_bottom :
                 readFrom = catcat
             histtotal = fin.Get(readFrom + "/" + name_total )
             lastbin += err_data(dataTGraph2, hist_total, readFrom, options.fromHavester, lastbin, histtotal)
-            print (readFrom, lastbin)
+            #print (readFrom, lastbin)
         dumb = dataTGraph2.Draw("e1P,same")
         del dumb
     line = ROOT.TF1("line", "0", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax())
