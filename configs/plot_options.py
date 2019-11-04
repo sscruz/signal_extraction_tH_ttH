@@ -16,7 +16,7 @@ def options_plot (analysis, channel, all_procs) :
         #flips       = "flips_data"
         # if label == "none" it means that this process is to be merged with the anterior key
         if "data_fakes" in all_procs       : dprocs["data_fakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
-        elif fakes in all_procs       : dprocs[fakes]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
+        if "fakes_mc" in all_procs       : dprocs["fakes_mc"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
         if "flips_mc" in all_procs       : dprocs["flips_mc"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
         elif "data_flips" in all_procs       : dprocs["data_flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
         if conversions in all_procs : dprocs[conversions] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
@@ -25,7 +25,6 @@ def options_plot (analysis, channel, all_procs) :
         if "EWK" in all_procs       : dprocs["EWK"]       = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
         if "ZZ" in all_procs        : dprocs["ZZ"]        = {"color" : 52,  "fillStype" : 1001, "label" : "ZZ"          , "make border" : True}
         if "WZ" in all_procs        : dprocs["WZ"]        = {"color" : 6, "fillStype" : 1001, "label" : "WZ"          , "make border" : True}
-        #if "DY" in all_procs        : dprocs["DY"]        = {"color" : 221, "fillStype" : 1001, "label" : "WZ"          , "make border" : True}
         if "TTWW" in all_procs :
             dprocs["TTW"]                                 = {"color" : 823, "fillStype" : 1001, "label" : "none"        , "make border" : False}
             dprocs["TTWW"]                                = {"color" : 823, "fillStype" : 1001, "label" : "ttW + ttWW"  , "make border" : True}
@@ -102,40 +101,54 @@ def options_plot_ranges (analysis) :
             "ttWctrl"   : { "minY" : -5.,   "maxY" :  115.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
             #"2lss_1tau" : { "minY" : 0,  "maxY" :  20.,   "minYerr":  0.0,  "maxYerr" : 2.75, "useLogPlot" : False, "label" : '2l ss + 1#tau_{h}', "labelX" : "DNN bin#", "cats" : ["BKG - region", "tH - refion", "ttH - region"]},
             "2lss_1tau" : {
-                "minY" : 0,  "maxY" :  40.,
+                "minY" : 0,  "maxY" :  25.,
                 "minYerr":  0.0,  "maxYerr" : 2.75,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
                 "labelX" : "DNN bin#", "cats" : [""]
+                },
+            "2lss_1tau_NN" : {
+                "minY" : 0,  "maxY" :  25.,
+                "minYerr":  0.0,  "maxYerr" : 2.75,
+                "useLogPlot" : False,
+                "label" : '2l ss + 1#tau_{h}',
+                "labelX" : "DNN bin#",
+                "cats" : ["ttH-reg", "tH-reg", "BKG-reg"]
                 },
             "3l_0tau"   : {
                 "minY" : -6,    "maxY" :  229.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}',
-                "labelX" : "BDT", "cats" : [""] # "ch1", "ch1", "ch1", "ch1", "ch1", "ch1",
+                "labelX" : "BDT", "cats" : [""]
+                },
+            "3l_0tau_NN"   : {
+                "minY" : -6,    "maxY" :  229.,
+                "minYerr": 0.501, "maxYerr" : 1.59,
+                "useLogPlot" : False,
+                "label" : '3l + 0#tau_{h}',
+                "labelX" : "BDT", "cats" : ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10", "ch11", "ch12", "ch13", "ch11", "ch12", "ch13"]
                 },
             "3l_0tau_ttH" : {
-                "minY" : 0,    "maxY" :  10.,
+                "minY" : 0,    "maxY" :  30.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, ttH region',
                 "labelX" : "DNN bin#",
-                "cats" : ["ch1", "ch2"]
+                "cats" : ["bl", "bt"]
                 },
             "3l_0tau_rest" : {
-                "minY" : 0,    "maxY" :  10.,
+                "minY" : 0,    "maxY" :  30.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, ttH region',
                 "labelX" : "DNN bin#",
-                "cats" : ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8"]
+                "cats" : ['', "", '', '', '', '', '']
                 },
-            "3l_0tau_rest" : { "minY" : 0,    "maxY" :  40.,   "minYerr": 0.501, "maxYerr" : 1.59, "useLogPlot" : False, "label" : '3l + 0#tau_{h}, BKG - region', "labelX" : "DNN bin#", "cats" : ["1b", "2b"]},
             "ttZctrl"   : { "minY" : -6,    "maxY" :  229.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
             "2l_2tau"   : {
                 "minY" : 0.0,
-                "maxY" :  1.5,
+                "maxY" :  3.5,
                 "minYerr":  0.0,
                 "maxYerr" : 2.75,
                 "useLogPlot" : False,
@@ -144,7 +157,7 @@ def options_plot_ranges (analysis) :
                 "cats" : [""]
                 },
             "3l_1tau"   : {
-                "minY" : 0.,  "maxY" :  1.5,
+                "minY" : 0.,  "maxY" :  4.0,
                 "minYerr":  0.0,  "maxYerr" : 5.35,
                 "useLogPlot" : False,
                 "label" : '3l + 1#tau_{h}',
@@ -176,11 +189,11 @@ def options_plot_ranges (analysis) :
             "WZctrl"    : { "minY" : 0.07,  "maxY" :  5000., "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
             "4l_0tau"   : {
                 "minY" : 0.,
-                "maxY" :  1.0,
+                "maxY" :  3.0,
                 "minYerr": 0.601,
                 "maxYerr" : 2.19,
                 "useLogPlot" : False,
-                "label" : '2l + 2#tau_{h}',
+                "label" : '4l + 0#tau_{h}',
                 "labelX" : "BDT", "cats" : [""]
                 },
             "2lss_0tau" : { "minY" : -0.35, "maxY" :  13.9,  "minYerr": 0.601, "maxYerr" : 2.19, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
@@ -266,12 +279,10 @@ def options_plot_labels (analysis) :
 
 def list_channels_draw(analysis) :
     if analysis == "ttH" :
-        sigs = ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "TTWH", "TTZH"]
-        #conversions = "conversions"
-        #fakes       = "fakes_data"
-        flips       = "data_flips"
+        sigs = ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "TTWH", "TTZH"]
+        flips       = "flips_mc" #"data_flips"
         conversions = "Convs"
-        fakes       = "data_fakes"
+        fakes       = "fakes_mc" #"data_fakes"
 
         info_channel = {
         "ttWctrl"   : { "bkg_proc_from_data" : [fakes, flips], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions], "signal" : []},
@@ -280,27 +291,37 @@ def list_channels_draw(analysis) :
         "ZZctrl"    : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTZ",  "ZZ", "Rares"],                                  "signal" : []},
         "2lss_0tau" : { "bkg_proc_from_data" : [fakes, flips], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", conversions], "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]},
         "2lss_1tau" : {
-            "bkg_proc_from_data" : ["data_fakes", "data_flips"],
+            "bkg_proc_from_data" : [fakes, flips], # , "data_flips"
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"]
             },
+        "2lss_1tau_NN" : {
+            "bkg_proc_from_data" : [fakes, flips], # , "data_flips"
+            "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT", "TTWH", "TTZH", "HH",],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH"] # , "TTWH", "TTZH"
+            },
         "3l_0tau"   : {
             "bkg_proc_from_data" : ["data_fakes", flips ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            },
+        "3l_0tau_NN"   : {
+            "bkg_proc_from_data" : [fakes,  flips ],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
         "3l_0tau_ttH"   : {
-            "bkg_proc_from_data" : ["data_fakes", flips ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
-            "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "bkg_proc_from_data" : [fakes,  flips ],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
         "3l_0tau_rest"   : {
-            "bkg_proc_from_data" : ["data_fakes", flips ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
+            "bkg_proc_from_data" : [fakes ], # ,  flips
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ",  "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
         "1l_2tau"   : {
-            "bkg_proc_from_data" : [fakes       ],
+            "bkg_proc_from_data" : ["fakes_mc"       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "VH", "HH", "TTWH", "TTZH"]
             },
@@ -314,7 +335,6 @@ def list_channels_draw(analysis) :
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions],
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
             },
-        #"1l_2tau"   : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ","EWK",  "Rares", conversions], "signal" : ["ttH", "tHq", "tHW", "VH",  "VH", "HH", "TTWH", "TTZH"]}, # "ggH", "qqH",
         "2los_1tau" : {
             "bkg_proc_from_data" : [fakes, flips],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
