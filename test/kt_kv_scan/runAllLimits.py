@@ -12,7 +12,7 @@ def runCombineCommand(combinecmd, card, verbose=False, outfolder=".", queue=None
         combinecmd += ' --job-mode lxbatch --sub-opts="-q %s"' % queue
         combinecmd += ' --task-name tHq_%s' % submitName
         # combinecmd += ' --dry-run'
-    if verbose: 
+    if verbose:
         print 40*'-'
         print "%s %s" % (combinecmd, card)
         print 40*'-'
@@ -24,21 +24,71 @@ def runCombineCommand(combinecmd, card, verbose=False, outfolder=".", queue=None
         comboutput = None
     return comboutput
 
-def parseName(card, printout=True):
+def parseName(card, printout=False):
     # Turn the tag into floats:
     toparse = card.split("/")[len(card.split("/"))-1]
     if printout : print ("parsing ", toparse)
-    tag = re.match(r'.*\_([\dpm]+\_[\dpm]+).*\.card\.(txt|root)', os.path.basename(card))
-    if tag == None:
+    #tag = re.match(r'.*\_([\dpm]+\_[\dpm]+).*\.card\_K7\.(txt|root)', os.path.basename(card))
+    tag = re.match(r'.*kt\_([\dpm]+\_kv\_[\dpm]+)\_K7\.(txt|root)', os.path.basename(card))
+    #tag = re.match(r'.*kt\_([\dpm]+\_kv\_[\dpm]+)\.(txt|root)', os.path.basename(card))
+    tag2 = re.match(r'.*kt\_([\dpm]+\_kv\_[\dpm]+\_cosa\_[\dpm]+)\_K7\.(txt|root)', os.path.basename(card))
+    #ws_datacard_1l_2tau_mvaOutput_final_cosa_kt_1_kv_1p1111_cosa_0p9_K7.root
+    # kappa_t=0.90,kappa_V=1.50,r=1,r_others=1
+    if tag == None and tag2 == None :
+        print "Couldn't figure out this one (parseName): %s" % card
+        return 0, 0, 0, 0
+
+    if not tag == None and tag2 == None:
+        tag = tag.groups()[0]
+        tagf = tag.replace('p', '.').replace('m','-')
+        #cv,ct = tuple(map(float, tagf.split('_')))
+        ct,cv = tuple(map(float, tagf.split('_kv_')))
+        cosa = 1.0
+        if printout:
+            print "%-40s CV=%5.2f, Ct=%5.2f, CosAlpha=%5.2f : " % (os.path.basename(card), cv, ct, cosa),
+        return cv, ct, cosa, tag
+
+    if not tag2 == None :
+        tag2 = tag2.groups()[0]
+        tagf = tag2.replace('p', '.').replace('m','-').replace('_kv_','_').replace('_cosa_','_')
+        #cv,ct = tuple(map(float, tagf.split('_')))
+        ct,cv,cosa = tuple(map(float, tagf.split('_')))
+        if printout:
+            print "%-40s CV=%5.2f, Ct=%5.2f, CosAlpha=%5.2f :" % (os.path.basename(card), cv, ct, cosa),
+        return cv, ct, cosa,  tag
+
+def parseName_txt(card, printout=False):
+    # Turn the tag into floats:
+    toparse = card.split("/")[len(card.split("/"))-1]
+    if printout : print ("parsing ", toparse)
+    #tag = re.match(r'.*\_([\dpm]+\_[\dpm]+).*\.card_K7\.(txt|root)', os.path.basename(card))
+    tag = re.match(r'.*kt\_([\dpm]+\_kv\_[\dpm]+)\.(txt|root)', os.path.basename(card))
+    tag2 = re.match(r'.*kt\_([\dpm]+\_kv\_[\dpm]+\_cosa\_[\dpm]+)\.(txt|root)', os.path.basename(card))
+    #ws_datacard_1l_2tau_mvaOutput_final_cosa_kt_1_kv_1p1111_cosa_0p9_K7.root
+    # kappa_t=0.90,kappa_V=1.50,r=1,r_others=1
+    if tag == None and tag2 == None :
         print "Couldn't figure out this one: %s" % card
         return
 
-    tag = tag.groups()[0]
-    tagf = tag.replace('p', '.').replace('m','-')
-    cv,ct = tuple(map(float, tagf.split('_')))
-    if printout:
-        print "%-40s CV=%5.2f, Ct=%5.2f : " % (os.path.basename(card), cv, ct),
-    return cv, ct, tag
+    if not tag == None and tag2 == None:
+        tag = tag.groups()[0]
+        tagf = tag.replace('p', '.').replace('m','-')
+        #cv,ct = tuple(map(float, tagf.split('_')))
+        ct,cv = tuple(map(float, tagf.split('_kv_')))
+        cosa = 1.0
+        if printout:
+            print "%-40s CV=%5.2f, Ct=%5.2f, CosAlpha=%5.2f : " % (os.path.basename(card), cv, ct, cosa),
+        return cv, ct, cosa, tag
+
+    if not tag2 == None :
+        tag2 = tag2.groups()[0]
+        tagf = tag2.replace('p', '.').replace('m','-').replace('_kv_','_').replace('_cosa_','_')
+        #cv,ct = tuple(map(float, tagf.split('_')))
+        ct,cv,cosa = tuple(map(float, tagf.split('_')))
+        if printout:
+            print "%-40s CV=%5.2f, Ct=%5.2f, CosAlpha=%5.2f :" % (os.path.basename(card), cv, ct, cosa),
+        return cv, ct, cosa,  tag
+
 
 def setParamatersFreezeAll(ct,cv,freezeAlso=None):
     addoptions = " --setParameters kappa_t=%.2f,kappa_V=%.2f" % (ct,cv)
@@ -52,23 +102,23 @@ def setParamatersFreezeAll(ct,cv,freezeAlso=None):
 
 def getLimits(card, model='K6', unblind=False, printCommand=False):
     """
-    Run combine on a single card, return a tuple of 
+    Run combine on a single card, return a tuple of
     (cv,ct,twosigdown,onesigdown,exp,onesigup,twosigup)
     """
-    cv,ct,tag = parseName(card, printout=False)
-    printout = "%-40s CV=%5.2f, Ct=%5.2f : " % (os.path.basename(card), cv, ct)
+    cv,ct,cosa,tag = parseName(card, printout=False)
+    printout = "%-40s CV=%5.2f, Ct=%5.2f , CosA=%5.2f : " % (os.path.basename(card), cv, ct, cosa)
 
     combinecmd =  "combine -M AsymptoticLimits"
     if not unblind:
-        combinecmd += " --run blind"
+        combinecmd += " --run blind  -t -1"
     combinecmd += " -m 125 --verbose 0 -n cvct%s"%tag
     if model in ['K4', 'K5', 'K6', 'K7']:
         if model == 'K6': # Rescale to cv = 1, we only care about the ct/cv ratio
             combinecmd += setParamatersFreezeAll(ct/cv,1.0)
         else:
-            combinecmd += setParamatersFreezeAll(ct, cv)
+            combinecmd += setParamatersFreezeAll((ct/cv)*kV, kV)
 
-    comboutput = runCombineCommand(combinecmd, card, verbose=printCommand)
+    comboutput = runCombineCommand(combinecmd, card, verbose=printCommand, outfolder=outputFolder)
 
     liminfo = {}
     for line in comboutput.split('\n'):
@@ -101,20 +151,20 @@ def getFitValues(card, model='K6', unblind=False, printCommand=False):
     if printCommand: print ""
 
     combinecmd =  "combine -M MaxLikelihoodFit"
-    combinecmd += " -m 125 --verbose 0 -n cvct%s"%tag
+    combinecmd += " -m 125 --verbose 0 -t -1 -n cvct%s"%tag
     if model in ['K4', 'K5', 'K6', 'K7']:
         if model == 'K6': # Rescale to cv = 1, we only care about the ct/cv ratio
             combinecmd += setParamatersFreezeAll(ct/cv,1.0)
         else:
-            combinecmd += setParamatersFreezeAll(ct, cv)
+            combinecmd += setParamatersFreezeAll((ct/cv)*kV, kV)
 
-        if abs(ct/cv) > 3:        
+        if abs(ct/cv) > 3:
             combinecmd += " --robustFit 1 --setParameterRanges r=0,1"
         else:
             # Note that these ranges don't work well for some points
             # e.g.: -3.0/1.0, -1.5/0.5, -1.25/0.5
             combinecmd += " --robustFit 1 --setParameterRanges r=-5,10"
-    comboutput = runCombineCommand(combinecmd, card, verbose=printCommand)
+    comboutput = runCombineCommand(combinecmd, card, verbose=printCommand, outfolder=outputFolder)
 
     fitinfo = {}
     for line in comboutput.split('\n'):
@@ -136,13 +186,13 @@ def getSignificance(card, model='K6', unblind=False, printCommand=False):
     if printCommand: print ""
 
     combinecmd =  "combine -M Significance --signif"
-    combinecmd += " -m 125 --verbose 0 -n cvct%s"%tag
+    combinecmd += " -m 125 --verbose 0 -t -1 -n cvct%s"%tag
     if model in ['K4', 'K5', 'K6', 'K7']:
         if model == 'K6': # Rescale to cv = 1, we only care about the ct/cv ratio
             combinecmd += setParamatersFreezeAll(ct/cv,1.0)
         else:
-            combinecmd += setParamatersFreezeAll(ct, cv)
-    comboutput = runCombineCommand(combinecmd, card, verbose=printCommand)
+            combinecmd += setParamatersFreezeAll((ct/cv)*kV, kV)
+    comboutput = runCombineCommand(combinecmd, card, verbose=printCommand, outfolder=outputFolder)
 
     significance = {}
     for line in comboutput.split('\n'):
@@ -156,8 +206,10 @@ def getSignificance(card, model='K6', unblind=False, printCommand=False):
 
 def processInputs(args, options):
     cards = []
+    #print(args[0], os.path.exists(args[0]))
     if os.path.isdir(args[0]):
         inputdir = args[0]
+        print(inputdir)
 
         if options.tag is not None:
             tag = "_" + options.tag
@@ -178,7 +230,7 @@ def processInputs(args, options):
             tag = '_' + tag
         cards = [c for c in args if os.path.exists(c)]
 
-    cards = [c for c in cards if any([c.endswith(ext) for ext in ['card.txt', 'card.root', '.log']])]
+    cards = [c for c in cards if any([c.endswith(ext) for ext in ['.txt', '.root', '.log']])]
     cards = sorted(cards)
 
     print "Found %d cards to run" % len(cards)
@@ -187,23 +239,33 @@ def processInputs(args, options):
 
 def main(args, options):
     cards, tag = processInputs(args, options)
+    print (options.runmode.lower())
 
     if options.runmode.lower() == 'limits':
         ## Individual limits, just process all cards and write
         ## the results to a csv file
-        csvfname = 'limits_%s.csv'%options.tag
+        #rescalect = ratio*kV
+        csvfname = '%s/limits_%s.csv' % (outputFolder, options.tag)
         with open(csvfname, 'w') as csvfile:
             if options.unblind:
-                csvfile.write('fname,cv,cf,twosigdown,onesigdown,exp,onesigup,twosigup,obs\n')
+                csvfile.write('fname,cv,cf,rescalecv,rescalect,ratio,twosigdown,onesigdown,exp,onesigup,twosigup,obs\n')
             else:
-                csvfile.write('fname,cv,cf,twosigdown,onesigdown,exp,onesigup,twosigup\n')
+                csvfile.write('fname,cv,cf,rescalecv,rescalect,ratio,twosigdown,onesigdown,exp,onesigup,twosigup\n')
 
             for card in cards:
+                print (card)
+                cv,ct,cosa,tag = parseName(card, printout=False)
+                if not cosa == 1.0 and not options.cosa:
+                    print ("skipping CP scan by now")
+                    continue
+                if not ct == 1 and options.cosa :
+                    print ("doing CP scan, skipping this one")
+                    continue
                 cv, ct, liminfo = getLimits(card, model=options.model,
                                             unblind=options.unblind,
                                             printCommand=options.printCommand)
-    
-                values = [card, cv, ct]
+
+                values = [card, cv, ct, kV, (ct/cv)*kV, (ct/cv)]
                 values += [liminfo[x] for x in ['twosigdown','onesigdown','exp','onesigup','twosigup']]
                 if options.unblind:
                     values += [liminfo['obs']]
@@ -215,7 +277,13 @@ def main(args, options):
         pool = multiprocessing.Pool(processes=options.jobs)
         futures = []
         for card in cards:
-
+            cv,ct,cosa,tag = parseName(card, printout=False)
+            if not cosa == 1.0 and not options.cosa:
+                print ("skipping CP scan by now")
+                continue
+            if not ct == 1 and options.cosa :
+                print ("doing CP scan, skipping this one")
+                continue
             future = pool.apply_async(getLimits, (card, options.model,
                                                   options.unblind,
                                                   options.printCommand))
@@ -229,7 +297,7 @@ def main(args, options):
         fnames = []
         for cv_ in [0.5, 1.0, 1.5]:
             if not cv_ in [v for v,_ in limdata.keys()]: continue
-            csvfname = 'limits%s_cv_%s.csv' % (tag, str(cv_).replace('.','p'))
+            csvfname = '%s/limits%s_cv_%s.csv' % (outputFolder, tag, str(cv_).replace('.','p'))
             with open(csvfname, 'w') as csvfile:
                 if options.unblind:
                     csvfile.write('cv,cf,twosigdown,onesigdown,exp,onesigup,twosigup,obs\n')
@@ -269,7 +337,7 @@ def main(args, options):
                     values += [fitdata[(cv,ct)][x] for x in ['median','downerror','uperror']]
                     csvfile.write(','.join(map(str, values)) + '\n')
             fnames.append(csvfname)
-    
+
         print "Wrote limits to: %s" % (" ".join(fnames))
 
     if options.runmode.lower() == 'sig':
@@ -325,6 +393,14 @@ if __name__ == '__main__':
                       help="For limits mode: add the observed limit")
     parser.add_option("-p","--printCommand", dest="printCommand", action='store_true',
                       help="Print the combine command that is run")
+    parser.add_option("-o","--outputFolder", dest="outputFolder", type="string", default="",
+                      help="where to save the outputs of combine run")
+    parser.add_option("-k","--kV", dest="kV", type="float", default=1.0,
+                      help="KappaV to consider")
+    parser.add_option("--cosa", dest="cosa", action='store_true', default=False,
+                      help="if true only consider cards with cos(alpha)")
     (options, args) = parser.parse_args()
+    outputFolder = options.outputFolder
+    kV           = options.kV
 
     sys.exit(main(args, options))

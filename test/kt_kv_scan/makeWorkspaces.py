@@ -13,6 +13,7 @@ def makeWorkspace(card, outname, options, outputFolder, verbose=False):
     cmd += " %s" % options
     cmd += " -o %s" % outname
     cmd += " %s" % card
+    #print (cmd)
 
     if verbose: 
         print 40*'-'
@@ -30,6 +31,9 @@ def makeWorkspace(card, outname, options, outputFolder, verbose=False):
     if os.path.isfile(outname):
         return " %-30s \033[92mDone\033[0m in %.2f min" % (card, elapsed/60.)
     else:
+        print ("Command: ", cmd)
+        print ("----------------------------------------------")
+        print (comboutput)
         return " %-30s \033[91mFailed\033[0m in %.2f min" % (card, elapsed/60.)
 
 
@@ -66,18 +70,17 @@ if __name__ == '__main__':
     starttime = time.time()
     print 'Using model %s:\033[1m%s \033[0m' % (options.baseModel, options.model)
     for card in args:
-        #print (os.path.isfile(card), card.endswith('.txt'))
-        if not (os.path.isfile( card) and card.endswith('.txt')):# options.outputFolder + "/" +
+        if not (os.path.isfile(card) and card.endswith('.txt')):# options.outputFolder + "/" +
             print "... ignoring", card
             continue
 
         copts = "-P %s:%s -m 125" % (options.baseModel, options.model)
 
-        trunk = os.path.basename(card).replace('.card.txt', '')
+        trunk = os.path.basename(card).replace('.txt', '')
         outname = options.outputFolder + "/ws_%s_%s" % (trunk, options.model)
         if options.tag:
             outname += '_%s' % options.tag
-        outname += '.card.root'
+        outname += '.root'
 
         future = pool.apply_async(makeWorkspace, (card,
                                                   outname,
