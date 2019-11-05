@@ -50,22 +50,19 @@ def runNLLScan(card, outfolder, kV, setratio=None, verbose=False, toysFile=None,
     filetag = "%s_kt_%s_kv_%s" % (tag, str(ratio*kV).replace("-","m").replace(".","p"), str(kV).replace("-","m").replace(".","p"))
     printout += ", Ratio=%7.4f: " % setratio
 
-    if blind and 0 > 1:
+    if blind :
         combinecmd_toys = "combine -M GenerateOnly  -t -1"
         combinecmd_toys += " -m 125 --verbose 0 -n _nll_scan_r1_%stoys" % (filetag)
-        combinecmd_toys += " --setParameters kappa_t=%.2f,kappa_V=%.2f,kappa_tau=1.0,r=1,r_others=1" % (ratio*kV, kV)
-        #combinecmd_toys += " --setParameters kappa_t=%.2f,kappa_V=%.2f,r=1" % (ratio*kV, kV)
+        combinecmd_toys += " --setParameters kappa_t=%.2f,kappa_V=%.2f,r=1,r_others=1" % (ratio*kV, kV) # kappa_tau=1.0,
         combinecmd_toys += " --freezeParameters r,r_others,kappa_t,kappa_V,"
         combinecmd_toys += "kappa_mu,kappa_b,kappa_c,"
-        combinecmd_toys += "kappa_tau,kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam"
+        combinecmd_toys += "kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam" # kappa_tau,
         #combinecmd_toys += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
         combinecmd_toys += " --saveToys "
         comboutput = runCombineCommand(combinecmd_toys, card, verbose=verbose, outfolder=outfolder)
         elapsed = parseOutput(comboutput)
 
     combinecmd = "combine -M MultiDimFit"
-    #if blind :
-    #    combinecmd += " -t -1"
     combinecmd += " --algo fixed --fixedPointPOIs r=0,r_others=1"
     combinecmd += " --rMin=0 --rMax=20 --X-rtd ADDNLL_RECURSIVE=0"
     combinecmd += " --cminDefaultMinimizerStrategy 0" # default is 1
@@ -76,17 +73,16 @@ def runNLLScan(card, outfolder, kV, setratio=None, verbose=False, toysFile=None,
 
 
     combinecmd += " -m 125 --verbose 0 -n _nll_scan_r1_%s" % (filetag)
-    combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f,kappa_tau=1.0,r=1,r_others=1" % (ratio*kV, kV)
-    #combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f,r=1" % (ratio*kV, kV)
+    combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f,r=1,r_others=1" % (ratio*kV, kV) # kappa_tau=1.0,
     combinecmd += " --freezeParameters r,r_others,kappa_t,kappa_V,"
     combinecmd += "kappa_mu,kappa_b,kappa_c,"
-    combinecmd += "kappa_tau,kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam"
+    combinecmd += "kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam" # kappa_tau,
     #combinecmd += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
     combinecmd += " --redefineSignalPOIs r"
 
-    #if blind:
-    #    #assert(os.path.isfile(toysFile)), "file not found %s" % toysFile
-    #    combinecmd += " -t -1 " # + " --toysFile higgsCombine_nll_scan_r1_%stoys.GenerateOnly.mH125.*.root" % (filetag)
+    if blind :
+        #assert(os.path.isfile(toysFile)), "file not found %s" % toysFile
+        combinecmd += " -t -1 " # + " --toysFile higgsCombine_nll_scan_r1_%stoys.GenerateOnly.mH125.*.root" % (filetag)
 
 
     comboutput = runCombineCommand(combinecmd, card, verbose=verbose, outfolder=outfolder)
@@ -101,7 +97,6 @@ def runNLLScan(card, outfolder, kV, setratio=None, verbose=False, toysFile=None,
     print printout
 
     return (data[0][0], data[1][1])
-
 
 def main(args, options):
     #cards, runtag = processInputs(args, options)
