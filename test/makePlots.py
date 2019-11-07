@@ -148,7 +148,7 @@ else :
         typeFit = "prefit"
 print ("folder", folder)
 
-if not options.fromHavester : name_total = "total_background" #"total"
+if not options.fromHavester : name_total = "total" # "total_background" #
 #elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
 
@@ -362,8 +362,8 @@ for line1 in linebin :
 dumb = histogramStack_mc.Draw("hist,same")
 del dumb
 ## Xanda
-##dumb = hist_total.Draw("e2,same")
-##del dumb
+dumb = hist_total.Draw("e2,same")
+del dumb
 if options.unblind :
     dumb = dataTGraph1.Draw("e1P,same")
     del dumb
