@@ -109,6 +109,11 @@ parser.add_option(
     help="If do bottom pad",
     default=False
     )
+parser.add_option(
+    "--IHEP", action="store_true", dest="IHEP",
+    help="IHEP cards do not have directories",
+    default=False
+    )
 (options, args) = parser.parse_args()
 
 divideByBinWidth = options.divideByBinWidth
@@ -147,13 +152,9 @@ if not options.fromHavester : name_total = "total_background" #"total"
 #elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
 
-
+flips       = "flips_mc" #"data_flips"
 conversions = "Convs"
-fakes       = "fakes_mc"
-#conversions = "Conv" #"conversions"
-#fakes       = "Fakes" #"fakes_data"
-flips       = "flips_mc" #"Flips" #"flips_data"
-
+fakes       = "fakes_mc" #"data_fakes"
 
 info_file = os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/configs/plot_options.py"
 execfile(info_file)
@@ -201,14 +202,17 @@ else : minY = options.maxY
 
 fin = ROOT.TFile(options.input, "READ")
 if not options.original == "none" :
-    catcats = [category]
-    readFrom =  "ttH_"  + category
+    #catcats = [category]
+    catcats = getCats(folder, fin, options.fromHavester)
+
+    if options.IHEP : readFrom = ""
+    else : readFrom =  "ttH_"  + category + "/"
     print ("readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
-    template = fileorriginal.Get(readFrom + "/ttH_htt" ) #name_total)
+    template = fileorriginal.Get(readFrom + "ttH_htt" ) #name_total)
     template.GetYaxis().SetTitle(labelY)
     template.SetTitle(" ")
-    datahist = fileorriginal.Get(readFrom + "/data_obs")
+    datahist = fileorriginal.Get(readFrom + "data_obs")
 else :
     catcats = getCats(folder, fin, options.fromHavester)
     print(catcats)
@@ -259,10 +263,11 @@ hist_total = template.Clone()
 lastbin = 0
 for cc, catcat in enumerate(catcats) :
     if not options.fromHavester :
-        if options.original == "none" :
-            readFrom = folder + "/" + catcat
-        else :
-            readFrom = folder + "/ttH_" + catcat
+        #if options.original == "none" :
+        #    readFrom = folder + "/" + catcat
+        #else :
+        #    readFrom = folder + "/ttH_" + catcat
+        readFrom = folder + "/" + catcat
     else :
         readFrom = catcat
     print (readFrom, catcat)
@@ -326,10 +331,11 @@ for kk, key in  enumerate(dprocs.keys()) :
         if not cc == 0 : addlegend = False
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
-            if options.original == "none" :
-                readFrom = folder + "/" + catcat
-            else :
-                readFrom = folder + "/ttH_" + catcat
+            #if options.original == "none" :
+            #    readFrom = folder + "/" + catcat
+            #else :
+            #    readFrom = folder + "/ttH_" + catcat
+            readFrom = folder + "/" + catcat
         else :
             readFrom = catcat
         info_hist = rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend)
@@ -380,18 +386,6 @@ for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
     linebinW[cc].SetBorderSize(0)
     linebinW[cc].Draw("same")
 
-"""x0 = float( (12. - 6./2.) /(nbinstotal))
-y0 = legend_y0 - 0.05
-label_cat2 = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
-label_cat2.AddText("2b")
-label_cat2.SetTextFont(50)
-label_cat2.SetTextAlign(13)
-label_cat2.SetTextSize(0.055)
-label_cat2.SetTextColor(1)
-label_cat2.SetFillStyle(0)
-label_cat2.SetBorderSize(0)
-label_cat2.Draw("same")"""
-
 #################################
 if do_bottom :
     canvas.cd()
@@ -404,11 +398,11 @@ if do_bottom :
     lastbin = 0
     for cc, catcat in enumerate(catcats) :
         if not options.fromHavester :
-            #readFrom = folder + "/" + catcat
-            if options.original == "none" :
-                readFrom = folder + "/" + catcat
-            else :
-                readFrom = folder + "/ttH_" + catcat
+            readFrom = folder + "/" + catcat
+            #if options.original == "none" :
+            #    readFrom = folder + "/" + catcat
+            #else :
+            #    readFrom = folder + "/ttH_" + catcat
         else :
             readFrom = catcat
         histtotal = fin.Get(readFrom + "/" + name_total )

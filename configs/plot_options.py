@@ -20,6 +20,7 @@ def options_plot (analysis, channel, all_procs) :
         if "flips_mc" in all_procs       : dprocs["flips_mc"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
         elif "data_flips" in all_procs       : dprocs["data_flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
         if conversions in all_procs : dprocs[conversions] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
+        if "Conv" in all_procs : dprocs["Conv"] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
         if "TT" in all_procs     : dprocs["TT"]           = {"color" : 114, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
         if "Rares" in all_procs     : dprocs["Rares"]     = {"color" : 851, "fillStype" : 1001, "label" : "Rares"       , "make border" : True}
         if "EWK" in all_procs       : dprocs["EWK"]       = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
@@ -280,16 +281,17 @@ def options_plot_labels (analysis) :
 def list_channels_draw(analysis) :
     if analysis == "ttH" :
         sigs = ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "TTWH", "TTZH"]
-        flips       = "flips_mc" #"data_flips"
-        conversions = "Convs"
-        fakes       = "fakes_mc" #"data_fakes"
 
         info_channel = {
         "ttWctrl"   : { "bkg_proc_from_data" : [fakes, flips], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions], "signal" : []},
         "ttZctrl"   : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions], "signal" : []},
         "WZctrl"    : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares"],              "signal" : []},
         "ZZctrl"    : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTZ",  "ZZ", "Rares"],                                  "signal" : []},
-        "2lss_0tau" : { "bkg_proc_from_data" : [fakes, flips], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", conversions], "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]},
+        "2lss_0tau" : {
+            "bkg_proc_from_data" : [ "Fakes", "Flips"],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "Conv"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
+            "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
+            },
         "2lss_1tau" : {
             "bkg_proc_from_data" : [fakes, flips], # , "data_flips"
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
