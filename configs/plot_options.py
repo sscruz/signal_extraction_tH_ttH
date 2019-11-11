@@ -23,6 +23,9 @@ def options_plot (analysis, channel, all_procs) :
         if "Fakes" in all_procs       : dprocs["Fakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
         if "Flips" in all_procs       : dprocs["Flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
         if "Conv" in all_procs : dprocs["Conv"] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
+        if "mcFakes" in all_procs       : dprocs["mcFakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
+        if "mcFlips" in all_procs       : dprocs["mcFlips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
+        if "Convs" in all_procs : dprocs["Convs"] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
         if "TT" in all_procs     : dprocs["TT"]           = {"color" : 114, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
         if "Rares" in all_procs     : dprocs["Rares"]     = {"color" : 851, "fillStype" : 1001, "label" : "Rares"       , "make border" : True}
         if "EWK" in all_procs       : dprocs["EWK"]       = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
@@ -100,7 +103,14 @@ def options_plot_ranges (analysis) :
         ### it will have the subcategories for the DNNs
         info_channel = {
             "2lss_0tau_BKG" : { "minY" : 0.,   "maxY" :  35.,  "minYerr": 0.501, "maxYerr" : 1.59, "useLogPlot" : False, "label" : '2l ss + 0#tau_{h}, BKG - region', "labelX" : "DNN bin#", "cats" : ["ee", "em", "mm"]},
-            "2lss_0tau_ttH" : { "minY" : 0.,   "maxY" :  15.,  "minYerr": 0.501, "maxYerr" : 1.59, "useLogPlot" : False, "label" : '2l ss + 0#tau_{h}, ttH - region', "labelX" : "DNN bin#", "cats" : ["ee", "em", "mm"]},
+            "2lss_0tau_NN" : {
+                "minY" : 0.,   "maxY" :  15.,
+                "minYerr": 0.501, "maxYerr" : 1.59,
+                "useLogPlot" : False,
+                "label" : '2l ss + 0#tau_{h}, ttH - region',
+                "labelX" : "DNN bin#",
+                "cats" : ["ee", "em", "mm"]
+                },
             "ttWctrl"   : { "minY" : -5.,   "maxY" :  115.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
             #"2lss_1tau" : { "minY" : 0,  "maxY" :  20.,   "minYerr":  0.0,  "maxYerr" : 2.75, "useLogPlot" : False, "label" : '2l ss + 1#tau_{h}', "labelX" : "DNN bin#", "cats" : ["BKG - region", "tH - refion", "ttH - region"]},
             "2lss_1tau" : {
@@ -199,7 +209,14 @@ def options_plot_ranges (analysis) :
                 "label" : '4l + 0#tau_{h}',
                 "labelX" : "BDT", "cats" : [""]
                 },
-            "2lss_0tau" : { "minY" : -0.35, "maxY" :  13.9,  "minYerr": 0.601, "maxYerr" : 2.19, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
+            "2lss_0tau" : {
+                "minY" : -0.35, "maxY" :  13.9,
+                "minYerr": 0.601, "maxYerr" : 2.19,
+                "useLogPlot" : False,
+                "label" : '2l ss + 0#tau_{h}',
+                "labelX" : "BDT",
+                "cats" : [""]
+                },
             "ZZctrl"    : { "minY" : -0.35, "maxY" :  13.9,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
         }
     else : sys.exit("analysis " + analysis + " not implemented")
@@ -211,10 +228,6 @@ def options_plot_labels (analysis) :
     if analysis == "ttH" :
         ### it will have the subcategories for the DNNs
         info_channel = {
-            #"ttWctrl"   : { "latex" : r'$2\ell ss +0\tau_{h}$', "prefix" : "tHq_3l_" , "mom" : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/tHq_pdas_3l_cards/" },
-            #"ttZctrl"   : { "latex" : r'$2\ell ss +0\tau_{h}$', "prefix" : "tHq_3l_" , "mom" : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/tHq_pdas_3l_cards/" },
-            #"WZctrl"    : { "latex" : r'$2\ell ss +0\tau_{h}$', "prefix" : "tHq_3l_" , "mom" : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/tHq_pdas_3l_cards/" },
-            #"ZZctrl"    : { "latex" : r'$2\ell ss +0\tau_{h}$', "prefix" : "tHq_3l_" , "mom" : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/tHq_pdas_3l_cards/" },
             "2lss_0tau" : {
                 "latex" : r'$2\ell ss +0\tau_{h}$',
                 "prefix" : "datacard_2lss_mvaDiscr_2lss_" ,
@@ -290,8 +303,13 @@ def list_channels_draw(analysis) :
         "WZctrl"    : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares"],              "signal" : []},
         "ZZctrl"    : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTZ",  "ZZ", "Rares"],                                  "signal" : []},
         "2lss_0tau" : {
-            "bkg_proc_from_data" : [ "Fakes", "Flips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "Conv"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
+            "bkg_proc_from_data" : [ "mcFakes", "mcFlips"],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
+            "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
+            },
+        "2lss_0tau_NN" : {
+            "bkg_proc_from_data" : [ "mcFakes", "mcFlips"],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
             },
         "2lss_1tau" : {

@@ -4,15 +4,19 @@ import os, sys, time,math
 import ROOT
 from optparse import OptionParser
 from collections import OrderedDict
-execfile("python/data_manager_makePostFitPlots.py")
-ROOT.gStyle.SetOptStat(0)
 
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option(
+    "--nameOut", type="string",
+    dest="nameOut",
+    help="To appear on the name of the file with the final plot",
+    default="test"
+    )
+parser.add_option(
     "--input", type="string", dest="input",
-    help="A valid file with the shapes as output of combine FitDiagnostics",
-    default="/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/posfit_3poi_ttVFromZero/ttH_fitDiagnostics.Test_shapes.root"
+    help="A valid file with the shapes as output of combine FitDiagnostics"#,
+    #default="/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/posfit_3poi_ttVFromZero/ttH_fitDiagnostics.Test_shapes.root"
     )
 parser.add_option(
     "--odir", type="string", dest="odir",
@@ -40,11 +44,6 @@ parser.add_option(
     default="none"
     )
 parser.add_option(
-    "--nameOut", type="string", dest="nameOut",
-    help="To appear on final plot",
-    default="test"
-    )
-parser.add_option(
     "--nameLabel", type="string", dest="nameLabel",
     help="To appear on final plot",
     default="none"
@@ -55,29 +54,9 @@ parser.add_option(
     default=False
     )
 parser.add_option(
-    "--notFlips", action="store_true", dest="notFlips",
-    help="Self explanatory",
-    default=False
-    )
-parser.add_option(
-    "--notConversions", action="store_true", dest="notConversions",
-    help="Self explanatory",
-    default=False
-    )
-parser.add_option(
-    "--MC_IsSplit", action="store_true", dest="MC_IsSplit",
-    help="If the MC components on card are separated as 'gentau' and 'faketau' ",
-    default=False
-    )
-parser.add_option(
     "--divideByBinWidth", action="store_true", dest="divideByBinWidth",
     help="If final plot shall be done dividing bin content by bin width ",
     default=False
-    )
-parser.add_option(
-    "--doMultilep", action="store_false", dest="doMultilep",
-    help="Do subcategories from multilepton cards ",
-    default=True
     )
 parser.add_option(
     "--unblind", action="store_true", dest="unblind",
@@ -124,6 +103,9 @@ else :
     typeCat          = options.typeCat
 print ("category", category)
 do_bottom = options.do_bottom
+shapes_input = options.input
+
+print ("nameOut", options.nameOut)
 
 labelY = "Events"
 if divideByBinWidth : labelY = "Events / bin width"
@@ -151,6 +133,9 @@ print ("folder", folder)
 if not options.fromHavester : name_total = "total" # "total_background" #
 #elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
+
+execfile("python/data_manager_makePostFitPlots.py")
+ROOT.gStyle.SetOptStat(0)
 
 flips       = "flips_mc" #"data_flips"
 conversions = "Convs"
@@ -187,7 +172,7 @@ print ("will draw processes", list(dprocs.keys()))
 if not options.original == "none" :
     fileOrig = options.original
 else :
-    fileOrig = options.input
+    fileOrig = shapes_input
 print ("template on ", fileOrig)
 
 minY = 1
@@ -200,7 +185,8 @@ if options.maxY == 1 :
     if typeCat in options_plot_ranges("ttH").keys() : maxY = options_plot_ranges("ttH")[typeCat]["maxY"]
 else : minY = options.maxY
 
-fin = ROOT.TFile(options.input, "READ")
+print("reading shapes from: ", shapes_input)
+fin = ROOT.TFile(shapes_input, "READ")
 if not options.original == "none" :
     #catcats = [category]
     catcats = getCats(folder, fin, options.fromHavester)
@@ -221,7 +207,10 @@ else :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
         else :
-            readFrom = "ttH_"  + catcat
+            if options.doPostFit :
+                if "prefit" in catcat : continue
+            elif "postfit" in catcat : continue
+            readFrom = catcat
         hist = fin.Get(readFrom + "/" + name_total )
         print (readFrom + "/" + name_total)
         nbinscat = GetNonZeroBins(hist)
@@ -258,7 +247,6 @@ if options.unblind :
         #print (readFrom, lastbin)
     dataTGraph1.Draw()
     legend1.AddEntry(dataTGraph1, "Observed", "p")
-print folder
 hist_total = template.Clone()
 lastbin = 0
 for cc, catcat in enumerate(catcats) :

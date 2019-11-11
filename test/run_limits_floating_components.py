@@ -307,9 +307,9 @@ if preparePlotHavester or preparePlotCombine :
         # redefineToTTH
         if doPostFit         :
             cmd += " --saveNormalization "
-            cmd += " --n _shapes_combine"
         else :
-            cmd += " -n _shapes_combine_%s" % namePlot
+            cmd += " --skipBOnlyFit "
+        cmd += " -n _shapes_combine_%s" % namePlot
         #if not plainBins : cmd += " -d %s.txt"        % cardToRead
         if sendToLXBatch or sendToCondor : cmd += " %s %s" % (ToSubmit, cardToRead)
         runCombineCmd(cmd, FolderOut)
@@ -336,7 +336,9 @@ if preparePlotHavester or preparePlotCombine :
         cmd += " --workspace %s_WS.root" % cardToRead
         cmd += " --o %s" % shapeDatacard
         cmd += " --sampling --print "
-        if doPostFit         : cmd += " --postfit "
+        if doPostFit         :
+            cmd += " --postfit "
+            cmd += "-f fitDiagnostics.Test.root:fit_s "
         if not plainBins : cmd += " -d %s.txt"        % cardToRead
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/" + shapeDatacard )
