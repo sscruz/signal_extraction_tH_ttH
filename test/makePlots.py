@@ -192,7 +192,7 @@ if not options.original == "none" :
     catcats = getCats(folder, fin, options.fromHavester)
 
     if options.IHEP : readFrom = ""
-    else : readFrom =  "ttH_"  + category + "/"
+    else : readFrom =   category + "/"
     print ("readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
     template = fileorriginal.Get(readFrom + "ttH_htt" ) #name_total)
@@ -201,7 +201,7 @@ if not options.original == "none" :
     datahist = fileorriginal.Get(readFrom + "data_obs")
 else :
     catcats = getCats(folder, fin, options.fromHavester)
-    print(catcats)
+    print("Categories:", catcats)
     nbinstotal = 0
     for catcat in catcats :
         if not options.fromHavester :
@@ -212,11 +212,11 @@ else :
             elif "postfit" in catcat : continue
             readFrom = catcat
         hist = fin.Get(readFrom + "/" + name_total )
-        print (readFrom + "/" + name_total)
+        print (readFrom + "/" + name_total, hist.Integral())
         nbinscat = GetNonZeroBins(hist)
         print (readFrom, nbinscat)
         nbinstotal += nbinscat
-        datahist = fin.Get(readFrom + "/data")
+        datahist = fin.Get(readFrom + "/data_obs")
     template = ROOT.TH1F("my_hist", "", nbinstotal, 0 - 0.5 , nbinstotal - 0.5)
 
 legend_y0 = 0.650
@@ -310,7 +310,7 @@ print ("list of processes considered and their integrals")
 
 linebin = []
 linebinW = []
-y0 = (legend_y0 - 0.01)*maxY
+y0 = options_plot_ranges("ttH")[typeCat]["labelPosY"] # (legend_y0 - 0.01)*maxY
 for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
     lastbin = 0
@@ -329,8 +329,10 @@ for kk, key in  enumerate(dprocs.keys()) :
         info_hist = rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend)
         lastbin += info_hist["lastbin"]
         if kk == 0 :
+            #print ("pllt category label at position: ", info_hist["labelPos"])
+            print (info_hist)
             if info_hist["binEdge"] > 0 :
-                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], (legend_y0 + 0.05)*maxY)]
+                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.2)]
             x0 = float(lastbin - info_hist["labelPos"] -1)
             linebinW += [ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)]
 

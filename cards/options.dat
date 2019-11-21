@@ -2,31 +2,32 @@
 ## How to do?
 blinded         = True
 blindedOutput   = False ## do not draw the rate on the impacts plot
-sendToCondor    = False ## Impacts / GOF / likelihood scans for combo need it
+sendToCondor    = True ## Impacts / GOF / likelihood scans for combo need it
 sendToLXBatch   = False ## the mu's result retrieval are not working in condor -- but they work with lxbatch
 #####################################################################
 
 #####################################################################
 ## What to do:
+
+
+#######################
+## Each of the steps bellow take time, I suggest to do on one separated runs
+# (like this they can be also done in parallel)
+
+# 0) Combo results
 doWS                    = True ## To do any of the rest you must have ran with this being True once
 ## but, once it is done one there is no need to loose time repeating it
 doRateAndSignificance   = False
 doLimits                = False
 do2Dlikelihoods         = False
 
+# 1) results by category
+doCategoriesWS            = False ## To do any of the rest you must have ran with this being True once
 doCategoriesLimitsFromMu1 = False
 doCategoriesMuAndLimits   = False
-doCategoriesWS            = False
-#######################
-## Each of the steps bellow take time, I suggest to do on one separated runs
-# (like this they can be also done in parallel)
-
-# 1)
-doCategories = False # for mu's
-doLimitsByCat = False
 
 # 2)
-# for combo is almost mandatory send impacts calculation to grid,
+# for combo is almost mandatory send impacts calculation to grid, -- update instructions
 # if you run on lxplus combineTool is already set to send to Condor (see bellow 'How')
 doImpactCombo = False
 doImpact2017 = False
@@ -70,7 +71,5 @@ doRatesByLikScan = False
 
 ## The bellow makes a fit on kt assuming SM kinematics all the way: useful to setups and checks
 do_kt_scan_no_kin       = False
-do2Dlikelihoods_with_tH = False ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
+do2Dlikelihoods_with_tH = True ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
 #####################################################################
-
-

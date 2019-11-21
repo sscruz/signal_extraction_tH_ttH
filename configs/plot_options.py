@@ -104,11 +104,12 @@ def options_plot_ranges (analysis) :
         info_channel = {
             "2lss_0tau_BKG" : { "minY" : 0.,   "maxY" :  35.,  "minYerr": 0.501, "maxYerr" : 1.59, "useLogPlot" : False, "label" : '2l ss + 0#tau_{h}, BKG - region', "labelX" : "DNN bin#", "cats" : ["ee", "em", "mm"]},
             "2lss_0tau_NN" : {
-                "minY" : 0.,   "maxY" :  15.,
+                "minY" : 1.,   "maxY" :  1000.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
-                "useLogPlot" : False,
+                "useLogPlot" : True,
                 "label" : '2l ss + 0#tau_{h}, ttH - region',
                 "labelX" : "DNN bin#",
+                "labelPosY" : 50.0, # for category label
                 "cats" : ["ee", "em", "mm"]
                 },
             "ttWctrl"   : { "minY" : -5.,   "maxY" :  115.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
@@ -304,12 +305,12 @@ def list_channels_draw(analysis) :
         "ZZctrl"    : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTZ",  "ZZ", "Rares"],                                  "signal" : []},
         "2lss_0tau" : {
             "bkg_proc_from_data" : [ "mcFakes", "mcFlips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
             },
         "2lss_0tau_NN" : {
-            "bkg_proc_from_data" : [ "mcFakes", "mcFlips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
+            "bkg_proc_from_data" : [ "data_fakes", "data_flips"],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
             },
         "2lss_1tau" : {

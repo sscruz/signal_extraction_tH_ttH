@@ -21,7 +21,7 @@ parser.add_option("--tH", action="store_true", dest="tH", help="do results also 
 
 ToSubmit = " "
 if sendToCondor :
-    ToSubmit = " --job-mode condor --sub-opt '+MaxRuntime = 18000' --task-name"
+    ToSubmit = " --job-mode condor --sub-opt '+MaxRuntime = 1800' --task-name"
 
 if sendToLXBatch :
     ToSubmit = "  --job-mode lxbatch --sub-opts=\"-q 1nh\" --task-name " ## you need to add a task name using it
@@ -108,9 +108,10 @@ doFor = [blindStatement]
 if not blinded : doFor += [" "]
 
 signals = ["ttH"]
-if options.tH : signals == ["tH"]
+if options.tH : signals += ["tH"]
 
 if doRateAndSignificance :
+    print ("do rate and significance to: ", signals)
     for signal in signals :
       for ss, statements in enumerate(doFor) :
         if ss == 1 : label = "data"
@@ -194,10 +195,10 @@ if do2Dlikelihoods :
     for bkg in bkgs :
       ranges = "-40,40" if bkg == "tH" else "0,6"
       for typeFit in ["central", "68", "95"] :
-        cmd = "combine -M MultiDimFit "
+        cmd = "combineTool.py -M MultiDimFit -m 125 "
         cmd += " %s_WS.root" % cardToRead
         cmd += " %s" % blindStatement
-        cmd += " -n For2D_ttH_%s_%s" % (bkg, typeFit)
+        cmd += " -n For2D_ttH_%s_%s_%s_%s" % (bkg, typeFit, label, namePlot)
         cmd += " --fastScan"
         if not typeFit == "central":
             cmd += " --cl=0.%s" % typeFit
@@ -207,6 +208,7 @@ if do2Dlikelihoods :
         cmd += " --redefineSignalPOIs r_ttH,r_%s" % bkg
         cmd += " --setParameterRanges r_ttH=-1,3:r_%s=%s" % (bkg,ranges)
         cmd += " --setParameters"
+
         ##TODO: set the other parameter to one
         countcoma = 0
         for rest in list(set(list(bkgs)) - set([bkg])) :
@@ -214,12 +216,14 @@ if do2Dlikelihoods :
             else : cmd += ",r_%s=1.0" % rest
             countcoma += 1
             #--setParameters kappa_t=1.0,kappa_V=1.0,r_ttH=1,r_tH=1
+        if sendToCondor :
+            cmd += "%s ttH_%s_%s_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 12000"), bkg, typeFit, label, namePlot)
         runCombineCmd(cmd, FolderOut)
-        runCombineCmd("mv higgsCombineFor2D_ttH_%s_%s.MultiDimFit.mH120.root %s_2Dlik_ttH_%s_%s_%s.root"  % (bkg, typeFit, cardToRead, bkg, typeFit, label), FolderOut)
+        #runCombineCmd("mv higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH120.root %s_2Dlik_ttH_%s_%s_%s_%s.root"  % (bkg, typeFit, label, namePlot,  cardToRead, bkg, typeFit, label, namePlot), FolderOut)
       cmd = "python test/plot2DLLScan.py "
-      cmd += " --input %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "central", label)
-      cmd += " --input68 %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "68", label)
-      cmd += " --input95 %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "95", label)
+      cmd += " --input %s/higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH125.root" % (FolderOut, bkg, "central", label, namePlot)
+      cmd += " --input68 %s/higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH125.root" % (FolderOut, bkg, "68", label, namePlot)
+      cmd += " --input95 %s/higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH125.root" % (FolderOut, bkg, "95", label, namePlot)
       cmd += " --second %s" % bkg
       cmd += " --plotName  %s" % namePlot
       cmd += " --label  %s" % namePlot
@@ -232,29 +236,44 @@ if doHessImpacts :
     folderHessian = "%s/HesseImpacts_%s"  % (FolderOut, cardToRead)
     runCombineCmd("mkdir %s"  % (folderHessian))
     cmd = "combineTool.py -M Impacts"
-    cmd += " -d %s_WS.root" % cardToRead
+    cmd += " -d ../%s_WS.root" % cardToRead
     cmd += " %s" % blindStatement
     cmd += " --rMin -2 --rMax 5"
+    #cmd += " -n _%s" % (namePlot)
     cmd += " -m 125 --doFits --approx hesse"
     runCombineCmd(cmd, folderHessian)
     cmd = "combineTool.py -M Impacts"
-    cmd += " -d %s_WS.root" % cardToRead
+    cmd += " -d ../%s_WS.root" % cardToRead
     cmd += " %s" % blindStatement
+    #cmd += " -n _%s" % (namePlot)
     cmd += "  -m 125 -o impacts.json --approx hesse --rMin -2 --rMax 5"
     runCombineCmd(cmd, folderHessian)
-    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts", folderHessian)
+    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s" % namePlot, folderHessian)
+
+##############################################################################
+## to make separate mu / limits
+## this needs to be adapted to the naming convention of the bins on the input card, and to how we want to do fit for legacy
+sigRates = [
+    "ttH_2lss_0tau",
+    "ttH_3l_0tau",
+    "ttH_4l_0tau",
+    "ttH_2lss_1tau",
+    "ttH_3l_1tau",
+    "ttH_2l_2tau",
+    "ttH_1l_2tau",
+    "ttH_0l_2tau",
+    "ttH_1l_1tau",
+    "ttH_2los_1tau"
+    ]
+folderCat = "%s/categories_%s"  % (FolderOut, cardToRead)
 
 if doCategoriesWS :
-    folderCat = "%s/categories_%s"  % (FolderOut, cardToRead)
     runCombineCmd("mkdir %s"  % (folderCat))
-    ## to make separate mu / limits
-    ## this needs to be adapted to the naming convention of the bins on the input card, and to how we want to do fit for legacy
-    sigRates = ["ttH_2lss_0tau", "ttH_3l_0tau", "ttH_4l", "ttH_2lss_1tau", "ttH_3l_1tau", "ttH_2l_2tau", "ttH_1l_2tau" ]
     floating_by_cat = ""
     for sigRate in sigRates :
-        floating_by_cat += " --PO 'map=.*%s*/ttH.*:r_%s[1,-5,10]" (sigRate, sigRate)
+        floating_by_cat += " --PO 'map=.*%s.*/ttH.*:r_%s[1,-5,10]'" % (sigRate, sigRate)
     cmd = "text2workspace.py "
-    cmd += " ../%s.txt" % cardToRead
+    cmd += " %s/../%s.txt" % (FolderOut, cardToRead)
     cmd += " -o %s_Catpoi_final.root" % cardToRead
     cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
     cmd += " %s" % floating_ttV
@@ -265,26 +284,34 @@ if doCategoriesWS :
 if doCategoriesMuAndLimits :
     ## test foldercat
     parameters = ""
-    if options.ttW : parameters += "r_ttW=1,"
-    if options.ttZ : parameters += "r_tH=1"
-    for rate in sigRates : parameters = parameters + ",r_ttH_"+rate+"=1"
+    if options.ttW : parameters += "r_ttW=1"
+    if options.ttZ :
+        if options.ttW : parameters += ","
+        parameters += "r_ttZ=1"
+    if options.tH :
+        if options.ttW or options.ttZ : parameters += ","
+        parameters += "r_tH=1"
+    for rate in sigRates : parameters = parameters + ",r_"+rate+"=1"
     print ("Will fit the parameters "+parameters)
-    for rate in sigRates + bkg :
+    for rate in sigRates + bkgs :
         cmd = "combineTool.py -M MultiDimFit"
+        cmd += " %s_Catpoi_final.root" % cardToRead
+        cmd += " %s" % blindStatement
+        cmd += " --setParameters %s" % parameters
+        cmd += " --algo singles --cl=0.68" # remember why it was --algo none
+        cmd += " -P r_%s" % rate
+        cmd += " -n rate_%s_%s" % (rate, namePlot)
+        cmd += " --floatOtherPOI=1 -S 0 --cminDefaultMinimizerType Minuit --keepFailures"
+        if sendToCondor :
+            cmd += " %s ttH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
+        runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
+        """cmd = "combineTool.py -M AsymptoticLimits"
         cmd += " -o %s_Catpoi_final.root" % cardToRead
         cmd += " %s" % blindStatement
         cmd += " --setParameters %s" % parameters
-        cmd += " --algo none --cl=0.68"
         cmd += " -P r_%s" % rate
         cmd += " --floatOtherPOI=1 -S 0 --cminDefaultMinimizerType Minuit --keepFailures"
-        runCombineCmd(cmd, folderCat, saveout="%s/%s_rate_%s.log" % (folderCat, cardToRead, rate))
-        cmd = "combineTool.py -M AsymptoticLimits"
-        cmd += " -o %s_Catpoi_final.root" % cardToRead
-        cmd += " %s" % blindStatement
-        cmd += " --setParameters %s" % parameters
-        cmd += " -P r_%s" % rate
-        cmd += " --floatOtherPOI=1 -S 0 --cminDefaultMinimizerType Minuit --keepFailures"
-        runCombineCmd(cmd, folderCat, saveout="%s/%s_limit_%s.log" % (folderCat, cardToRead, rate))
+        runCombineCmd(cmd, folderCat, saveout="%s/%s_limit_%s.log" % (folderCat, cardToRead, rate))"""
 
 # calculate limits mu=1 injected only for final runs
 ## This does not seem correct -- check before using it again
@@ -310,7 +337,6 @@ if preparePlotHavester or preparePlotCombine :
         else :
             cmd += " --skipBOnlyFit "
         cmd += " -n _shapes_combine_%s" % namePlot
-        #if not plainBins : cmd += " -d %s.txt"        % cardToRead
         if sendToLXBatch or sendToCondor : cmd += " %s %s" % (ToSubmit, cardToRead)
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/fitDiagnostics_shapes_combine_%s.root" % namePlot )
@@ -343,6 +369,7 @@ if preparePlotHavester or preparePlotCombine :
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/" + shapeDatacard )
 
+    print ("the execution of this command bellow is not working --- TODO: discover why. But by now this prints on the exemple of command that you should adapt/use.")
     cmd = "python test/makePlots.py "
     if preparePlotHavester  :
         cmd += " --input  %s" % FolderOut + "/" + shapeDatacard
@@ -356,19 +383,6 @@ if preparePlotHavester or preparePlotCombine :
     cmd += " --nameLabel %s" % namePlot
     runCombineCmd(cmd, FolderOut)
     print ("created " + FolderOut + "/*" + namePlot + "*.pdf"  )
-    #python test/makePlots.py --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/IHEP_NNs/datacards_V0624.1/V0624_DNN_datacards_All/DNNSubCat2_option1/DNN_maxval/by_bin//results//fitDiagnostics_shapes_combine.root
-    #--odir /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/IHEP_NNs/datacards_V0624.1/V0624_DNN_datacards_All/DNNSubCat2_option1/DNN_maxval/by_bin//results/
-    #--channel "ch1" --maxY 20. --nameLabel "ttH_region_2017"
-
-    #savePostfitHavester = "PlotHavester_"+cardToRead
-    #print ("[WARNING:] combine does not deal well with autoMCstats option for bin by bin stat uncertainty")
-    #run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/"+savePostfitHavester)
-    #enterHere = os.getcwd()+"/"+mom_result+"/"+savePostfitHavester
-    #run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics %s/../%s.root %s ; cd -' % (enterHere, WS_output, redefineToTTH))
-    #print ("the diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if you have a crash!")
-    #doPostfit = " -f fitDiagnostics.root:fit_s --postfit "
-    #run_cmd("cd "+enterHere+' ; PostFitShapesFromWorkspace --workspace %s/../%s.root -d %s/../%s.txt -o %s_shapes.root -m 125 --sampling --print %s ; cd -' % (enterHere, WS_output, enterHere, card, WS_output, doPostfit)) # --skip-prefit
-    #print ("the output with the shapes is "+enterHere+WS_output+"_shapes.root")
 
 ###############################################
 #### ---- stoped the update here: to be continued
