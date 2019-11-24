@@ -14,7 +14,16 @@ from collections import OrderedDict
 
 from optparse import OptionParser
 parser = OptionParser()
-parser.add_option("--input_folder", type="string", dest="input_folder", help="Where the ", default="categories_comb_2017/")
+parser.add_option(
+    "--input_folder", type="string",
+    dest="input_folder", help="Where the cards with result by category will be (it will guess where the ones with the full combo are based on that, assuming you used the script run_limits... for running everything)"
+    )
+parser.add_option(
+    "--era", type="int",
+    dest="era",
+    help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
+    default=2017
+    )
 # combined
 # combined stats only
 # era
@@ -25,20 +34,18 @@ input_folder = options.input_folder
 dprocs = OrderedDict()
 #dprocs["ttW"]           = [[], 12.25, "ttW"]
 #dprocs["ttZ"]           = [[], 10.25, "ttZ"]
-dprocs["ttH_1l_1tau"]    = [[], 14.25, "1l + 1#tau_{h}"]
-dprocs["ttH_0l_2tau"]    = [[], 12.75, "0l + 2#tau_{h}"]
-dprocs["ttH_2los_1tau"]  = [[], 11.25, "2los + 1#tau_{h}"]
-dprocs["ttH_1l_2tau"]    = [[], 9.75, "1l + 2#tau_{h}"]
-dprocs["ttH_2lss_0tau"]  = [[], 8.25, "2lss + 0#tau_{h}"]
-dprocs["ttH_2lss_1tau"]  = [[], 6.75, "2lss + 1#tau_{h}"]
-dprocs["ttH_2l_2tau"]    = [[], 5.25, "2l + 2#tau_{h}"]
-dprocs["ttH_3l_0tau"]    = [[], 3.75, "3l + 0#tau_{h}"]
-dprocs["ttH_3l_1tau"]    = [[], 2.25, "3l + 1#tau_{h}"]
-dprocs["ttH_4l"]         = [[], 0.75, "4l + 0#tau_{h}"]
+dprocs["ttH_2lss_0tau"]    = [[], 14.25, "2lss + 0#tau_{h}" ]
+dprocs["ttH_1l_1tau"]    = [[], 12.75, "1l + 1#tau_{h}"]
+dprocs["ttH_3l_0tau"]  = [[], 11.25, "3l + 0#tau_{h}"]
+dprocs["ttH_2lss_1tau"]    = [[], 9.75, "2lss + 1#tau_{h}"]
+dprocs["ttH_1l_2tau"]  = [[], 8.25, "1l + 2#tau_{h}"]
+dprocs["ttH_2los_1tau"]  = [[], 6.75, "2los + 1#tau_{h}"]
+dprocs["ttH_3l_1tau"]    = [[], 5.25, "3l + 1#tau_{h}"]
+dprocs["ttH_0l_2tau"]    = [[], 3.75, "0l + 2#tau_{h}"]
+dprocs["ttH_2l_2tau"]    = [[], 2.25, "2l + 2#tau_{h}"]
+dprocs["ttH_4l_0tau"]         = [[], 0.75, "4l + 0#tau_{h}"]
 
 for key in dprocs.keys() :
-    ## ttH_ttH_4l_0tau_ttHmultilep_2018_3.3601728.0.out
-    ## take rate instead
     my_file_pattern =  os.path.join(input_folder, "*rate_%s*.log" % (key)) #"%s/ttH_%s_rate.txt" % (input_folder, key)
     #my_file = os.path.join(input_folder, "ttH_%s*.out" % (key))
     my_files = glob.glob(my_file_pattern)
@@ -55,7 +62,7 @@ for key in dprocs.keys() :
         continue
     with open(my_file, 'r') as in_file :
       for line in in_file :
-        if "r_ttH :" in line :
+        if "r_%s :" % (key) in line :
             for li in line.split() :
                 try: float(li)
                 except ValueError:
@@ -72,7 +79,7 @@ for key in dprocs.keys() :
         dprocs[key][0] = [1, 1, 1]
 print " "
 ### read combined
-my_file = "%s/../ttHmultilep_2017_rate_asimov_ttH.log" % (input_folder)
+my_file = "%s/../ttHmultilep_all_rate_asimov_ttH.log" % (input_folder)
 print ("reading:", my_file)
 combined = []
 print "Combined: "
@@ -92,9 +99,10 @@ with open(my_file, 'r') as in_file :
             combined = combined + [float(li)]
 print combined
 ### read combined
-my_file = "%s/../ttHmultilep_2018_rate_asimov_ttH.log" % (input_folder)
+my_file = "%s/../ttHmultilep_all_rate_asimov_ttH.log" % (input_folder)
 combined_stas_only = []
 print "Combined stat only: "
+count = 0
 with open(my_file, 'r') as in_file :
   for line in in_file :
     if "r_ttH :" in line :
@@ -105,13 +113,15 @@ with open(my_file, 'r') as in_file :
                     try: float(li2)
                     except ValueError: continue
                     #print float(li2)
-                    combined_stas_only = combined_stas_only + [float(li2)]
+                    count += 1
+                    add = 0
+                    if count == 1 : add = 0.01
+                    if count == 2 : add = -0.01
+                    combined_stas_only = combined_stas_only + [float(li2) + add]
                 continue
             print li
             combined_stas_only = combined_stas_only + [float(li)]
 print combined_stas_only
-
-
 
 ########################
 y_comb = 7.5
@@ -146,9 +156,10 @@ mg.Add(gr_mu_comb, "PL")
 mg.Add(gr_mu_comb_syst, "E2")
 mg.Add(gr_mu_comb_stat, "E2")
 for kk, key in enumerate(dprocs.keys()) :
+    print (key, abs(dprocs[key][0][2]), dprocs[key][0][1])
     gr_mu = TGraphAsymmErrors()
     gr_mu.SetPoint(0,dprocs[key][0][0], dprocs[key][1])
-    gr_mu.SetPointError(0, abs(dprocs[key][0][2]), dprocs[key][0][1],0,0)
+    gr_mu.SetPointError(0, abs(dprocs[key][0][1]), dprocs[key][0][2], 0, 0)
     gr_mu.SetLineWidth(3)
     gr_mu.SetLineColor(2) #ROOT.kRed)
     gr_mu.SetMarkerStyle(21)
@@ -165,7 +176,7 @@ gStyle.SetEndErrorSize(0)
 mg.Draw("A")
 gPad.RedrawAxis()
 
-xmin = -2.8 #-2.8
+xmin = -1.8 #-2.8
 ymax = 17. # 12.
 ylinemax = 14. # 10.0
 
@@ -188,14 +199,18 @@ link.SetLineWidth(2)
 link.SetLineColor(1)
 link.Draw()
 
-luminosity=41400
+luminosity=137.2
+print ("era", options.era)
+if options.era == 2016 : luminosity = 35.92
+if options.era == 2017 : luminosity = 41.53
+if options.era == 2018 : luminosity = 59.74
+if options.era == 0    : luminosity = 137.2
 tex = TLatex()
-luminosity=41400
 tex.SetTextSize(0.035)
 tex.SetTextFont(61)
 tex.DrawLatexNDC(0.26, 0.91, "CMS")
 tex.SetTextFont(42)
-tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (41.5))
+tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (luminosity))
 tex.SetTextSize(0.035)
 tex.SetTextFont(52)
 tex.DrawLatexNDC(0.36,0.91,"Preliminary")
@@ -215,7 +230,9 @@ mu_comb_p1s_syst = sqrt(mu_comb_p1s*mu_comb_p1s-mu_comb_p1s_stat*mu_comb_p1s_sta
 ycomb = 15.5 # 11.
 tex2.DrawLatex(-2.0+xmin, ycomb, "Combined")
 tex2.SetTextSize(0.04)
-tex2.DrawLatex(0.5+xmin, ycomb, "#mu = %.2f ^{+%.2f}_{-%.2f}  #bf{#left[ {}^{+%.2f}_{-%.2f}(stat.) {}^{+%.2f}_{-%.2f}(syst.)#right]}" % (combined[0], mu_comb_p1s, mu_comb_m1s, mu_comb_p1s_stat, mu_comb_m1s_stat, mu_comb_p1s_syst, mu_comb_m1s_syst))
+#tex2.DrawLatex(0.5+xmin, ycomb, "#mu = %.2f ^{+%.2f}_{-%.2f}  #bf{#left[ {}^{+%.2f}_{-%.2f}(stat.) {}^{+%.2f}_{-%.2f}(syst.)#right]}" % (combined[0], mu_comb_p1s, mu_comb_m1s, mu_comb_p1s_stat, mu_comb_m1s_stat, mu_comb_p1s_syst, mu_comb_m1s_syst))
+tex2.DrawLatex(0.5+xmin, ycomb, "#mu = %.2f ^{+%.2f}_{-%.2f}" % (combined[0], mu_comb_p1s, mu_comb_m1s))
+
 
 """labels = addLabel_CMS_preliminary()
 for ll in labels :
