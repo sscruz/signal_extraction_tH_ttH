@@ -52,7 +52,6 @@ cardToRead = options.cardToRead
 namePlot = options.namePlot
 cardFolder = options.cardFolder
 blinded = True
-#runCombineCmd("mkdir %s"  % (cardFolder))
 FolderOut = cardFolder + "/results/"
 runCombineCmd("mkdir %s"  % (FolderOut))
 
@@ -72,7 +71,7 @@ WS_output = cardToRead + "_WS"
 blindStatement = " -t -1 "
 if do_kt_scan_no_kin :
     ## add break if not options.tH
-    cmd = "text2workspace.py"
+    cmd = "text2workspace.py" #"text2workspace.py" #
     cmd += " %s.txt" % cardToRead
     cmd += " %s" % floating_ttV
     cmd += "  -P HiggsAnalysis.CombinedLimit.LHCHCGModels:K5 --PO verbose  --PO BRU=0"
@@ -95,7 +94,7 @@ if do_kt_scan_no_kin :
     # python test/plot_1D_kappa_scan.py --input2 higgsCombinekt_scan_test.MultiDimFit.mH125.root --label2 "NN_v5" --outputFolder /afs/cern.ch/work/a/acarvalh/CMSSW_10_2_10/src/tth-bdt-training/treatDatacards/2lss_1tau_NN_tHcat_2019Jun17/
 
 if doWS :
-    cmd = "text2workspace.py"
+    cmd = "text2workspace.py" #"text2workspace.py"
     cmd += " %s.txt" % cardToRead
     cmd += " -o %s/%s_WS.root" % (FolderOut, cardToRead)
     cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
@@ -118,7 +117,7 @@ if doRateAndSignificance :
         if ss == 0 : label = "asimov"
         if signal == "ttH" :
             redefine = " --redefineSignalPOI r_ttH --setParameters r_ttH=1 "
-            if signal == "tH"  : redefine += " --freezeParameters r_tH  "
+            if options.tH  : redefine += " --freezeParameters r_tH  "
         if signal == "tH"  : redefine = " --freezeParameters r_ttH --redefineSignalPOI r_tH "
 
         cmd = "combineTool.py -M Significance --signif"
@@ -232,7 +231,6 @@ if do2Dlikelihoods :
       print ("saved " +  "%s/nllscan_%s-vs_ttH_%s.pdf" % (FolderOut, bkg, namePlot))
 
 if doHessImpacts :
-    # hessian impacts
     folderHessian = "%s/HesseImpacts_%s"  % (FolderOut, cardToRead)
     runCombineCmd("mkdir %s"  % (folderHessian))
     cmd = "combineTool.py -M Impacts"
@@ -241,14 +239,18 @@ if doHessImpacts :
     cmd += " --rMin -2 --rMax 5"
     #cmd += " -n _%s" % (namePlot)
     cmd += " -m 125 --doFits --approx hesse"
+    cmd += "  --redefineSignalPOI r_ttH --setParameters r_ttW=1,r_ttH=1,r_tH=1"
     runCombineCmd(cmd, folderHessian)
     cmd = "combineTool.py -M Impacts"
     cmd += " -d ../%s_WS.root" % cardToRead
     cmd += " %s" % blindStatement
     #cmd += " -n _%s" % (namePlot)
     cmd += "  -m 125 -o impacts.json --approx hesse --rMin -2 --rMax 5"
+    cmd += "  --redefineSignalPOI r_ttH --setParameters r_ttW=1,r_ttH=1,r_tH=1"
     runCombineCmd(cmd, folderHessian)
-    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s" % namePlot, folderHessian)
+    blindedOutputOpt = ' '
+    if blindedOutput : blindedOutputOpt =  ' --blind'
+    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s %s" % (namePlot, blindedOutputOpt), folderHessian)
 
 ##############################################################################
 ## to make separate mu / limits
@@ -281,7 +283,8 @@ if doCategoriesWS :
     cmd += " %s" % floating_by_cat
     runCombineCmd(cmd, folderCat)
 
-if doCategoriesMuAndLimits :
+if doCategoriesMu :
+    runCombineCmd("mkdir %s"  % (folderCat))
     ## test foldercat
     parameters = ""
     if options.ttW : parameters += "r_ttW=1"
@@ -304,18 +307,46 @@ if doCategoriesMuAndLimits :
         cmd += " --floatOtherPOI=1 -S 0 --cminDefaultMinimizerType Minuit --keepFailures"
         if sendToCondor :
             cmd += " %s ttH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
-        runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
-        """cmd = "combineTool.py -M AsymptoticLimits"
+            runCombineCmd(cmd, folderCat)
+        else :
+            runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
+
+if doCategoriesLimits :
+    runCombineCmd("mkdir %s"  % (folderCat))
+    parameters = ""
+    if options.ttW : parameters += "r_ttW=1"
+    if options.ttZ :
+        if options.ttW : parameters += ","
+        parameters += "r_ttZ=1"
+    if options.tH :
+        if options.ttW or options.ttZ : parameters += ","
+        parameters += "r_tH=1"
+    for rate in sigRates : parameters = parameters + ",r_"+rate+"=1"
+    print ("Will fit the parameters "+parameters)
+    for rate in sigRates + bkgs :
+        cmd = "combineTool.py -M AsymptoticLimits"
         cmd += " -o %s_Catpoi_final.root" % cardToRead
         cmd += " %s" % blindStatement
         cmd += " --setParameters %s" % parameters
         cmd += " -P r_%s" % rate
         cmd += " --floatOtherPOI=1 -S 0 --cminDefaultMinimizerType Minuit --keepFailures"
-        runCombineCmd(cmd, folderCat, saveout="%s/%s_limit_%s.log" % (folderCat, cardToRead, rate))"""
+        runCombineCmd(cmd, folderCat, saveout="%s/%s_limit_%s.log" % (folderCat, cardToRead, rate))
 
 # calculate limits mu=1 injected only for final runs
 ## This does not seem correct -- check before using it again
 if doCategoriesLimitsFromMu1 :
+    runCombineCmd("mkdir %s"  % (folderCat))
+    parameters = ""
+    if options.ttW : parameters += "r_ttW=1"
+    if options.ttZ :
+        if options.ttW : parameters += ","
+        parameters += "r_ttZ=1"
+    if options.tH :
+        if options.ttW or options.ttZ : parameters += ","
+        parameters += "r_tH=1"
+    for rate in sigRates : parameters = parameters + ",r_"+rate+"=1"
+    print ("Will fit the parameters "+parameters)
+    for rate in sigRates + bkgs :
         cmd = "combineTool.py -M AsymptoticLimits"
         cmd += " -o %s_Catpoi_final.root" % cardToRead
         cmd += " %s" % blindStatement
@@ -332,7 +363,7 @@ if preparePlotHavester or preparePlotCombine :
         if blinded : cmd += " -t -1 "
         cmd += " --saveShapes --saveWithUncertainties "
         # redefineToTTH
-        if doPostFit         :
+        if doPostFit :
             cmd += " --saveNormalization "
         else :
             cmd += " --skipBOnlyFit "
@@ -342,13 +373,13 @@ if preparePlotHavester or preparePlotCombine :
         print ("created " + FolderOut + "/fitDiagnostics_shapes_combine_%s.root" % namePlot )
 
     if preparePlotHavester  :
-        print ("[WARNING:] combineHavester does not deal well with autoMCstats option for bin by bin stat uncertainty -- it does some approximations on errors -- this is good option to run fast prefit plots on diagnosis stage")
+        print ("[WARNING:] combineHavester does not deal well with autoMCstats option for bin by bin stat uncertainty \n it does some approximations on errors and this appears in enviroments with low stats \n this is good option to run fast prefit plots on diagnosis stage though")
         # to have Totalprocs computed
         cmd = "combineTool.py -M FitDiagnostics %s_WS.root" % cardToRead
         if blinded : cmd += " -t -1 "
         if sendToLXBatch : cmd += " %s %s" % (ToSubmit, cardToRead)
         runCombineCmd(cmd, FolderOut)
-        print ("the diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if that was the case you have a crash!")
+        print ("The diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if that was the case you have a crash!")
 
         shapeDatacard    = "%s_shapes.root" % cardToRead
         if doPostFit :
@@ -369,7 +400,7 @@ if preparePlotHavester or preparePlotCombine :
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/" + shapeDatacard )
 
-    print ("the execution of this command bellow is not working --- TODO: discover why. But by now this prints on the exemple of command that you should adapt/use.")
+    print ("the execution of this command bellow is not working \n TODO: discover why. But by now this prints on the exemple of command that you should adapt/use.")
     cmd = "python test/makePlots.py "
     if preparePlotHavester  :
         cmd += " --input  %s" % FolderOut + "/" + shapeDatacard
