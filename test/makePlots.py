@@ -93,6 +93,12 @@ parser.add_option(
     help="IHEP cards do not have directories",
     default=False
     )
+parser.add_option(
+    "--era", type="int",
+    dest="era",
+    help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
+    default=2017
+    )
 (options, args) = parser.parse_args()
 
 divideByBinWidth = options.divideByBinWidth
@@ -186,11 +192,17 @@ if options.maxY == 1 :
 else : minY = options.maxY
 
 print("reading shapes from: ", shapes_input)
-fin = ROOT.TFile(shapes_input, "READ")
+fin = [ROOT.TFile(shapes_input, "READ")]
+if options.era == 0 :
+    fin = fin + [ROOT.TFile(shapes_input.replace("2018", "2017"), "READ")]
+    fin = fin + [ROOT.TFile(shapes_input.replace("2018", "2016"), "READ")]
+    print ("will sum up " + str(len(fin)) + " eras")
+    print (shapes_input.replace("2018", "2017"))
+    print (shapes_input.replace("2018", "2016"))
+
 if not options.original == "none" :
     #catcats = [category]
-    catcats = getCats(folder, fin, options.fromHavester)
-
+    catcats = getCats(folder, fin[0], options.fromHavester)
     if options.IHEP : readFrom = ""
     else : readFrom =   category + "/"
     print ("readFrom ", readFrom)
@@ -200,8 +212,8 @@ if not options.original == "none" :
     template.SetTitle(" ")
     datahist = fileorriginal.Get(readFrom + "data_obs")
 else :
-    catcats = getCats(folder, fin, options.fromHavester)
-    print("Categories:", catcats)
+    catcats = getCats(folder, fin[0], options.fromHavester)
+    print(catcats)
     nbinstotal = 0
     for catcat in catcats :
         if not options.fromHavester :
@@ -211,12 +223,12 @@ else :
                 if "prefit" in catcat : continue
             elif "postfit" in catcat : continue
             readFrom = catcat
-        hist = fin.Get(readFrom + "/" + name_total )
-        print (readFrom + "/" + name_total, hist.Integral())
+        hist = fin[0].Get(readFrom + "/" + name_total )
+        print (readFrom + "/" + name_total)
         nbinscat = GetNonZeroBins(hist)
         print (readFrom, nbinscat)
         nbinstotal += nbinscat
-        datahist = fin.Get(readFrom + "/data_obs")
+        datahist = fin[0].Get(readFrom + "/data")
     template = ROOT.TH1F("my_hist", "", nbinstotal, 0 - 0.5 , nbinstotal - 0.5)
 
 legend_y0 = 0.650
@@ -242,24 +254,36 @@ if options.unblind :
             readFrom = folder + "/" + catcat
         else :
             readFrom = catcat
-        histtotal = fin.Get(readFrom + "/" + name_total )
-        lastbin += rebin_data(template, dataTGraph1, readFrom, fin, options.fromHavester, lastbin, histtotal)
-        #print (readFrom, lastbin)
+        histtotal = fin[0].Get(readFrom + "/" + name_total )
+        lastbin += rebin_data(
+            template,
+            dataTGraph1,
+            readFrom,
+            fin,
+            options.fromHavester,
+            lastbin,
+            histtotal
+            )
     dataTGraph1.Draw()
     legend1.AddEntry(dataTGraph1, "Observed", "p")
 hist_total = template.Clone()
 lastbin = 0
 for cc, catcat in enumerate(catcats) :
     if not options.fromHavester :
-        #if options.original == "none" :
-        #    readFrom = folder + "/" + catcat
-        #else :
-        #    readFrom = folder + "/ttH_" + catcat
         readFrom = folder + "/" + catcat
     else :
         readFrom = catcat
     print (readFrom, catcat)
-    lastbin += rebin_total(hist_total, readFrom, fin, divideByBinWidth, name_total, lastbin, do_bottom, labelX)
+    lastbin += rebin_total(
+        hist_total,
+        readFrom,
+        fin,
+        divideByBinWidth,
+        name_total,
+        lastbin,
+        do_bottom,
+        labelX
+        )
 legend1.AddEntry(hist_total, "Uncertainty", "f")
 
 if do_bottom :
@@ -310,7 +334,7 @@ print ("list of processes considered and their integrals")
 
 linebin = []
 linebinW = []
-y0 = options_plot_ranges("ttH")[typeCat]["labelPosY"] # (legend_y0 - 0.01)*maxY
+y0 = options_plot_ranges("ttH")[typeCat]["position_cats"] # (legend_y0 - 0.01)*maxY
 for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
     lastbin = 0
@@ -319,22 +343,28 @@ for kk, key in  enumerate(dprocs.keys()) :
         if not cc == 0 : addlegend = False
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
-            #if options.original == "none" :
-            #    readFrom = folder + "/" + catcat
-            #else :
-            #    readFrom = folder + "/ttH_" + catcat
             readFrom = folder + "/" + catcat
         else :
             readFrom = catcat
-        info_hist = rebin_hist(hist_rebin, fin, readFrom, key, dprocs[key], divideByBinWidth, addlegend)
+        info_hist = rebin_hist(
+            hist_rebin,
+            fin,
+            readFrom,
+            key,
+            dprocs[key],
+            divideByBinWidth,
+            addlegend
+            )
         lastbin += info_hist["lastbin"]
         if kk == 0 :
             #print ("pllt category label at position: ", info_hist["labelPos"])
             print (info_hist)
             if info_hist["binEdge"] > 0 :
-                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.2)]
+                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.2)] # (legend_y0 + 0.05)*maxY
             x0 = float(lastbin - info_hist["labelPos"] -1)
-            linebinW += [ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)]
+            linebinW += [
+                ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)
+                ]
 
     if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # :
         continue
@@ -361,7 +391,7 @@ dumb = hist_total.Draw("axis,same")
 del dumb
 dumb = legend1.Draw("same")
 del dumb
-labels = addLabel_CMS_preliminary()
+labels = addLabel_CMS_preliminary(options.era)
 for label in labels :
     dumb = label.Draw("same")
     del dumb
@@ -378,6 +408,7 @@ for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
 
 #################################
 if do_bottom :
+    if len(fin) > 1 : sys.exit("The unblind version with the 3 eras summed up still need to be fixed.")
     canvas.cd()
     dumb = bottomPad.Draw()
     del dumb
@@ -389,13 +420,9 @@ if do_bottom :
     for cc, catcat in enumerate(catcats) :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
-            #if options.original == "none" :
-            #    readFrom = folder + "/" + catcat
-            #else :
-            #    readFrom = folder + "/ttH_" + catcat
         else :
             readFrom = catcat
-        histtotal = fin.Get(readFrom + "/" + name_total )
+        histtotal = fin[0].Get(readFrom + "/" + name_total )
         lastbin += do_hist_total_err(hist_total_err, labelX, name_total, readFrom, lastbin)
         print (readFrom, lastbin)
     dumb = hist_total_err.Draw("e2")
@@ -411,9 +438,8 @@ if do_bottom :
                 readFrom = folder + "/" + catcat
             else :
                 readFrom = catcat
-            histtotal = fin.Get(readFrom + "/" + name_total )
+            histtotal = fin[0].Get(readFrom + "/" + name_total )
             lastbin += err_data(dataTGraph2, hist_total, readFrom, options.fromHavester, lastbin, histtotal)
-            #print (readFrom, lastbin)
         dumb = dataTGraph2.Draw("e1P,same")
         del dumb
     line = ROOT.TF1("line", "0", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax())

@@ -104,12 +104,12 @@ def options_plot_ranges (analysis) :
         info_channel = {
             "2lss_0tau_BKG" : { "minY" : 0.,   "maxY" :  35.,  "minYerr": 0.501, "maxYerr" : 1.59, "useLogPlot" : False, "label" : '2l ss + 0#tau_{h}, BKG - region', "labelX" : "DNN bin#", "cats" : ["ee", "em", "mm"]},
             "2lss_0tau_NN" : {
-                "minY" : 1.,   "maxY" :  1000.,
+                "minY" : 1.,   "maxY" :  10000.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : True,
                 "label" : '2l ss + 0#tau_{h}, ttH - region',
                 "labelX" : "DNN bin#",
-                "labelPosY" : 50.0, # for category label
+                "position_cats": 250. ,
                 "cats" : ["ee", "em", "mm"]
                 },
             "ttWctrl"   : { "minY" : -5.,   "maxY" :  115.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
@@ -122,11 +122,12 @@ def options_plot_ranges (analysis) :
                 "labelX" : "DNN bin#", "cats" : [""]
                 },
             "2lss_1tau_NN" : {
-                "minY" : 0,  "maxY" :  25.,
+                "minY" : 0,  "maxY" :  60.,
                 "minYerr":  0.0,  "maxYerr" : 2.75,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
                 "labelX" : "DNN bin#",
+                "position_cats": 35. ,
                 "cats" : ["ttH-reg", "tH-reg", "BKG-reg"]
                 },
             "3l_0tau"   : {
@@ -144,11 +145,12 @@ def options_plot_ranges (analysis) :
                 "labelX" : "BDT", "cats" : ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10", "ch11", "ch12", "ch13", "ch11", "ch12", "ch13"]
                 },
             "3l_0tau_ttH" : {
-                "minY" : 0,    "maxY" :  30.,
+                "minY" : 0,    "maxY" :  50.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, ttH region',
                 "labelX" : "DNN bin#",
+                "position_cats": 17. ,
                 "cats" : ["bl", "bt"]
                 },
             "3l_0tau_rest" : {
@@ -157,9 +159,27 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, ttH region',
                 "labelX" : "DNN bin#",
+                "position_cats": 17. ,
                 "cats" : ['', "", '', '', '', '', '']
                 },
-            "ttZctrl"   : { "minY" : -6,    "maxY" :  229.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
+            "3l_CR" : {
+                "minY" : 0.1,    "maxY" :  50000.,
+                "minYerr": 0.501, "maxYerr" : 1.59,
+                "useLogPlot" : True,
+                "label" : '3l + 0#tau_{h}, ttH region',
+                "labelX" : "DNN bin#",
+                "position_cats": 300. ,
+                "cats" : ["eee", "eem", "emm", "mmm"]
+                },
+            "4l_CR" : {
+                "minY" : 0.0,    "maxY" :  1200.,
+                "minYerr": 0.501, "maxYerr" : 1.59,
+                "useLogPlot" : False,
+                "label" : '4l + 0#tau_{h}, ttH region',
+                "labelX" : "DNN bin#",
+                "position_cats": 300. ,
+                "cats" : [""]
+                },
             "2l_2tau"   : {
                 "minY" : 0.0,
                 "maxY" :  3.5,
@@ -200,7 +220,6 @@ def options_plot_ranges (analysis) :
                 "label" : '1l + 1#tau_{h}',
                 "labelX" : "BDT", "cats" : [""]
                 },
-            "WZctrl"    : { "minY" : 0.07,  "maxY" :  5000., "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
             "4l_0tau"   : {
                 "minY" : 0.,
                 "maxY" :  3.0,
@@ -328,18 +347,28 @@ def list_channels_draw(analysis) :
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
+        "3l_CR"   : {
+            "bkg_proc_from_data" : ["data_fakes", flips ],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            },
+        "4l_CR"   : {
+            "bkg_proc_from_data" : ["data_fakes", flips ],
+            "bkg_procs_from_MC"  : ["TTZ", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            },
         "3l_0tau_NN"   : {
             "bkg_proc_from_data" : [fakes,  flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
         "3l_0tau_ttH"   : {
-            "bkg_proc_from_data" : [fakes,  flips ],
+            "bkg_proc_from_data" : ["data_fakes",  flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
         "3l_0tau_rest"   : {
-            "bkg_proc_from_data" : [fakes ], # ,  flips
+            "bkg_proc_from_data" : ["data_fakes" ], # ,  flips
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ",  "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },

@@ -58,7 +58,13 @@ def GetNonZeroPoints(dataTGraph) :
     return nbins
 
 def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bottom, labelX) :
-    total_hist = fin.Get(folder + "/" + name_total)
+    total_hist = fin[0].Get(folder + "/" + name_total)
+    if len(fin) == 3 :
+        for eraa in [1,2] :
+            if eraa == 1 : folderRead = folder.replace("2018", "2017")
+            if eraa == 2 : folderRead = folder.replace("2018", "2016")
+            #print ("reading ", eraa, folderRead + "/" + name_total)
+            total_hist.Add(fin[eraa].Get(folderRead + "/" + name_total))
     print (folder + "/" + name_total)
     allbins = GetNonZeroBins(total_hist)
     #hist.Sumw2() ## if prefit
@@ -92,16 +98,21 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
 
 def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend) :
     print folder+"/"+name
-    hist = fin.Get(folder+"/"+name)
+    hist = fin[0].Get(folder+"/"+name)
     try  : hist.Integral()
     except :
-        #if name in ["Flips", "Conv", "flips_data", "conversions"] :
         print ("Doesn't exist " + folder+"/"+name)
         return {
         "lastbin" : 0,
         "binEdge" : 0,
         "labelPos" : 0
         }
+    if len(fin) == 3 :
+        for eraa in [1,2] :
+            if eraa == 1 : folderRead = folder.replace("2018", "2017")
+            if eraa == 2 : folderRead = folder.replace("2018", "2016")
+            try : hist.Add(fin[eraa].Get(folderRead+"/"+name))
+            except : continue
     hist_rebin.SetMarkerSize(0)
     hist_rebin.SetFillColor(itemDict["color"])
     hist_rebin.SetFillStyle(itemDict["fillStype"])
@@ -135,7 +146,13 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
 
 def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histtotal) :
     if not fromHavester :
-        dataTGraph = fin.Get(folder + "/data")
+        dataTGraph = fin[0].Get(folder + "/data")
+        if len(fin) == 3 :
+            for eraa in [1,2] :
+                print (" X: I am not sure that Add works for TGraph. This was not tested. When we test, if it works remove this comment")
+                if eraa == 1 : folderRead = folder.replace("2018", "2017")
+                if eraa == 2 : folderRead = folder.replace("2018", "2016")
+                dataTGraph.Add(fin[eraa].Get(folderRead + "/data"))
         allbins = GetNonZeroBins(histtotal)
         #dataTGraph1 = ROOT.TGraphAsymmErrors()
         for ii in xrange(0, allbins) :
@@ -153,18 +170,24 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
             dataTGraph1.SetPointEXlow( ii + lastbin,  template.GetBinWidth(ii+1)/2.)
             dataTGraph1.SetPointEXhigh(ii + lastbin,  template.GetBinWidth(ii+1)/2.)
     else :
-        dataTGraph = fin.Get(folder + "/data_obs")
+        dataTGraph = fin[0].Get(folder + "/data_obs")
+        if len(fin) == 3 :
+            for eraa in [1,2] :
+                if eraa == 1 : folderRead = folder.replace("2018", "2017")
+                if eraa == 2 : folderRead = folder.replace("2018", "2016")
+                dataTGraph.Add(fin[eraa].Get(folderRead + "/data_obs"))
         allbins = GetNonZeroBins(dataTGraph)
         #dataTGraph1 = template.Clone()
-        for ii in xrange(0, allbins) :
+        for ii in xrange(0, allbins+1) :
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
-            if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 :
-              dataTGraph1.SetBinContent(ii + lastbin, 0)
-              dataTGraph1.SetBinError(  ii + lastbin, 0)
-            else :
-              dataTGraph1.SetBinContent(ii + lastbin, dataTGraph.GetBinContent(ii)/bin_width)
-              dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)
+            ## if we would like to blind the last 2 bins
+            #if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 :
+            #  dataTGraph1.SetBinContent(ii + lastbin, 0)
+            #  dataTGraph1.SetBinError(  ii + lastbin, 0)
+            #else :
+            dataTGraph1.SetBinContent(ii + lastbin, dataTGraph.GetBinContent(ii)/bin_width)
+            dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)
     dataTGraph1.SetMarkerColor(1)
     dataTGraph1.SetMarkerStyle(20)
     dataTGraph1.SetMarkerSize(0.8)
@@ -250,11 +273,11 @@ def do_hist_total_err(hist_total_err, labelX, name_total, folder, lastbin) :
             hist_total_err.SetBinError(lastbin + bin + 1, total_hist.GetBinError(bin+1)/total_hist.GetBinContent(bin+1))
     return allbins
 
-def addLabel_CMS_preliminary() :
+def addLabel_CMS_preliminary(era) :
     x0 = 0.2
     y0 = 0.953
     ypreliminary = 0.95
-    xlumi = 0.5
+    xlumi = 0.63
     label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
     label_cms.AddText("CMS")
     label_cms.SetTextFont(50)
@@ -263,7 +286,7 @@ def addLabel_CMS_preliminary() :
     label_cms.SetTextColor(1)
     label_cms.SetFillStyle(0)
     label_cms.SetBorderSize(0)
-    label_preliminary = ROOT.TPaveText(x0 + 0.1055, ypreliminary - 0.0010, x0 + 0.2950, ypreliminary + 0.0500, "NDC")
+    label_preliminary = ROOT.TPaveText(x0 + 0.001, ypreliminary - 0.0010, x0 + 0.0015, ypreliminary + 0.0500, "NDC")
     label_preliminary.AddText("Preliminary")
     label_preliminary.SetTextFont(48)
     label_preliminary.SetTextAlign(13)
@@ -272,7 +295,11 @@ def addLabel_CMS_preliminary() :
     label_preliminary.SetFillStyle(0)
     label_preliminary.SetBorderSize(0)
     label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0050, xlumi + 0.1900, y0 + 0.0550, "NDC")
-    label_luminosity.AddText("41.53 fb^{-1} (13 TeV)")
+    if era == 2016 : lumi = "35.92"
+    if era == 2017 : lumi = "41.53"
+    if era == 2018 : lumi = "59.74"
+    if era == 0    : lumi = "137.2"
+    label_luminosity.AddText(lumi + " fb^{-1} (13 TeV)")
     label_luminosity.SetTextAlign(13)
     label_luminosity.SetTextSize(0.050)
     label_luminosity.SetTextColor(1)
