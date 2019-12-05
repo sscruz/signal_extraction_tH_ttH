@@ -111,7 +111,8 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
         for eraa in [1,2] :
             if eraa == 1 : folderRead = folder.replace("2018", "2017")
             if eraa == 2 : folderRead = folder.replace("2018", "2016")
-            hist.Add(fin[eraa].Get(folderRead+"/"+name))
+            try : hist.Add(fin[eraa].Get(folderRead+"/"+name))
+            except : continue
     hist_rebin.SetMarkerSize(0)
     hist_rebin.SetFillColor(itemDict["color"])
     hist_rebin.SetFillStyle(itemDict["fillStype"])
