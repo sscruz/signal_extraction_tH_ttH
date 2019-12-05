@@ -16,7 +16,7 @@ from ROOT import gPad
 gROOT.SetBatch(1)
 
 #####
-## python test/plot_1D_kappa_scan.py --input higgsCombinekt_scan_ttH_2lss_BDT_2017.MultiDimFit.mH125.root --label ttH_2lss_BDT_2017 --outFolder datacards/ttH_2lss_0tau_test/BDT_RunII//results/ --input2 higgsCombinekt_scan_ttH_2lss_NN_2017.MultiDimFit.mH125.root --label2 ttH_2lss_NN_2017 --outFolder2 datacards/ttH_2lss_0tau_test/DNNSubCat2_BIN_RunII/results/  --category 2lss0tau -n BDTvsNN
+## python test/plot_1D_kappa_scan.py --input higgsCombinekt_scan_ttH_2lss_BDT_2017.MultiDimFit.mH125.root --label ttH_2lss_BDT_2017 --outFolder datacards/ttH_2lss_0tau_test/BDT_RunII//results/ --input2 higgsCombinekt_scan_ttH_2lss_NN_2017.MultiDimFit.mH125.root --label2 ttH_2lss_NN_2017 --outFolder2 datacards/ttH_2lss_0tau_test/DNNSubCat2_BIN_RunII/results/  --channel 2lss0tau -n BDTvsNN
 #####
 
 
@@ -26,7 +26,7 @@ def drawlik(input, gr = TGraph(), color = 8, second = False, Folder = "") :
     tree2 = tf2.Get("limit")
     bu = "P"
     if second : bu = "P same"
-    tree2.Draw("2*deltaNLL:kappa_t>>hist(50,-3,3)","2*deltaNLL<25", bu)
+    tree2.Draw("2*deltaNLL:kappa_t>>hist(50,-3,3)","2*deltaNLL<50", bu)
     #tree2.Draw("2*deltaNLL:kappa_t>>hist(50,-3,3)","", bu)
     canv.Update();
     canv.Modified();
@@ -81,7 +81,7 @@ parser.add_option("--label6", type="string", dest="label6", help="  Set ", defau
 parser.add_option("--outFolder6", type="string", dest="outFolder6", help="the input folder of input6", default="none")
 
 parser.add_option("--outputFolder", type="string", dest="outputFolder", help="  Set ", default="multilep_3l_withTH_withMET_only_CRs_2017")
-parser.add_option("--category", type="string", dest="category", help="  category ", default="2lss_0tau")
+parser.add_option("--channel", type="string", dest="channel", help="  channel ", default="2lss_0tau")
 parser.add_option("-n", "--name", type="string", dest="name", help="  name ", default="NNvsBDT")
 
 
@@ -105,16 +105,10 @@ leg.SetShadowColor(0)
 leg.SetLineColor(0)
 leg.SetTextFont(43)
 leg.SetTextSize(18)
-leg.SetHeader(options.category)
+leg.SetHeader(options.channel)
 #leg.SetHeader("ttW BKG floating")
 #leg.SetHeader("2lss (ttW floating)")
 
-line1 = TLine(-1.5,1, 1.5, 1)
-line1.SetLineStyle(2)
-line2 = TLine(-1.5,4, 1.5, 4)
-line2.SetLineStyle(2)
-line3 = TLine(-1.5,9, 1.5, 9)
-line3.SetLineStyle(2)
 
 
 mg = TMultiGraph()
@@ -212,8 +206,11 @@ canv.Update()
 mg.GetXaxis().SetTitle("#kappa_t (no kinematics)")
 mg.GetYaxis().SetTitle("-2#Delta lnL")
 gPad.Modified()
-mg.GetYaxis().SetRangeUser(0.,30.)
-mg.GetXaxis().SetRangeUser(-1.5,1.5)
+
+mg.GetYaxis().SetRangeUser(0.,55.)
+xmin = mg.GetXaxis().GetXmin()
+xmax = mg.GetXaxis().GetXmax()
+mg.GetXaxis().SetRangeUser(xmin,xmax)
 
 #mg.Draw('ap')
 
@@ -228,15 +225,28 @@ lat.DrawLatex(0.14, 0.845, "pp #rightarrow tH+t#bar{t}H, H #rightarrow WW*/ZZ*/#
 #lat.DrawLatex(0.14, 0.755, addLabel)
 
 leg.Draw('same')
+
+line1 = TLine(xmin,1, xmax, 1)
+line1.SetLineStyle(2)
+line2 = TLine(xmin,4, xmax, 4)
+line2.SetLineStyle(2)
+line3 = TLine(xmin,9, xmax, 9)
+line3.SetLineStyle(2)
+line4 = TLine(xmin,16, xmax, 16)
+line4.SetLineStyle(2)
+line5 = TLine(xmin,25, xmax, 25)
+line5.SetLineStyle(2)
 line1.Draw('same')
 line2.Draw('same')
 line3.Draw('same')
+line4.Draw('same')
+line5.Draw('same')
 
 if entries == 1 :
     canv.SaveAs(folder+"/kappa_nllscan_" + options.label + ".pdf")
     canv.SaveAs(folder+"/kappa_nllscan_" + options.label + ".C")
 else :
-    canv.SaveAs(options.outFolder+"/kappa_nllscan_%s_%s.pdf"%(options.category,options.name))
-    canv.SaveAs(options.outFolder+"/kappa_nllscan_%s_%s.C"%(options.category,options.name))
+    canv.SaveAs(options.outFolder+"/kappa_nllscan_%s_%s.pdf"%(options.channel,options.name))
+    canv.SaveAs(options.outFolder+"/kappa_nllscan_%s_%s.C"%(options.channel,options.name))
 #canv.SaveAs("/nllscan_tH-vs_ttH.png")
 #canv.SaveAs("/nllscan_tH-vs_ttH.C")
