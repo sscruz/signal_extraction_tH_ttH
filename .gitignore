@@ -1,3 +1,4 @@
 test/kt_kv_scan/*.pyc
 plots/
 cards/*.json
+results
