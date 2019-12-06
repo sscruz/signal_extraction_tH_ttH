@@ -12,6 +12,8 @@ from ROOT import TLine
 from ROOT import TMultiGraph
 from ROOT import TGraph
 from ROOT import gPad
+from root_numpy import tree2array
+import pandas as pd
 
 gROOT.SetBatch(1)
 
@@ -52,6 +54,34 @@ def colorset(gr = TGraph(), color = 8) :
     gr.SetLineColor(color)
     gr.SetLineWidth(4)
 
+def SaveCSV(inputfile, Folder):
+    # Load dataset to .csv format file
+    variables = ['kappa_t','deltaNLL']
+    my_cols_list=['fname', 'cv', 'cf', 'cosa','ratio','rescalecv','rescalect','bestfitr','dnll']
+    data = pd.DataFrame(columns=my_cols_list)
+    try: tfile = TFile(Folder+"/"+inputfile)
+    except:
+        print(" file "+ Folder+"/"+inputfile+" doesn't exits ")
+    try: tree = tfile.Get("limit")
+    except:
+        print (" limit tree doesn;t exists in " + Folder+"/"+inputfile)
+    
+    if tree is not None:
+        try: chunk_arr = tree2array(tree=tree) # Can use  start=first entry, stop = final entry desired
+        except :
+            print(" fail to convert tree to array ") 
+        else :
+            chunk_df = pd.DataFrame(chunk_arr, columns=variables)
+            data['ratio']=chunk_df["kappa_t"]
+            data['rescalect']=chunk_df["kappa_t"]
+            data['dnll']=chunk_df["deltaNLL"]
+            data['fname']= inputfile
+            data['cv']=1.0
+            data['cf']=1.0
+            data['cosa']=1.0
+            data['rescalecv']=1.0
+            data['bestfitr']=1.0
+    data.to_csv("{}/{}.csv".format(Folder, inputfile.split(".")[0]), index=False)
 
 
 from optparse import OptionParser
@@ -245,6 +275,7 @@ line5.Draw('same')
 if entries == 1 :
     canv.SaveAs(folder+"/kappa_nllscan_" + options.label + ".pdf")
     canv.SaveAs(folder+"/kappa_nllscan_" + options.label + ".C")
+    SaveCSV(options.input, Folder = folder)
 else :
     canv.SaveAs(options.outFolder+"/kappa_nllscan_%s_%s.pdf"%(options.channel,options.name))
     canv.SaveAs(options.outFolder+"/kappa_nllscan_%s_%s.C"%(options.channel,options.name))
