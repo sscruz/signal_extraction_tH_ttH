@@ -158,7 +158,7 @@ dprocs = options_plot ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg
 label_head = ""
 
 if not options.nameLabel == "none" :
-    label_head += options.nameLabel
+    label_head += options_plot_ranges("ttH")[typeCat]["label"] + " " + options.nameLabel
 else :
     if typeCat in options_plot_ranges("ttH").keys() :
         label_head += options_plot_ranges("ttH")[typeCat]["label"]
@@ -205,7 +205,7 @@ if not options.original == "none" :
     #catcats = [category]
     catcats = getCats(folder, fin[0], options.fromHavester)
     if options.IHEP : readFrom = ""
-    else : readFrom =   category + "/"
+    else : readFrom =  "ttH_"  + category + "/"
     print ("readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
     template = fileorriginal.Get(readFrom + "ttH_htt" ) #name_total)
@@ -338,10 +338,10 @@ print ("list of processes considered and their integrals")
 
 linebin = []
 linebinW = []
-y0 = options_plot_ranges("ttH")[typeCat]["position_cats"] # (legend_y0 - 0.01)*maxY
+y0 = (legend_y0 - 0.01)*maxY
 for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
-    lastbin = 0
+    #lastbintest = 0
     addlegend = True
     for cc, catcat in enumerate(catcats) :
         if not cc == 0 : addlegend = False
@@ -356,17 +356,17 @@ for kk, key in  enumerate(dprocs.keys()) :
             key,
             dprocs[key],
             divideByBinWidth,
-            addlegend
+            addlegend,
+            lastbins[cc]
             )
-        lastbin = lastbins[cc] #+= info_hist["lastbin"]
         if kk == 0 :
-            #print ("pllt category label at position: ", info_hist["labelPos"])
-            print (info_hist)
             if info_hist["binEdge"] > 0 :
-                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.2)] # (legend_y0 + 0.05)*maxY
-            x0 = float(lastbin - info_hist["labelPos"] -1)
+                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], options_plot_ranges("ttH")[typeCat]["position_cats"]*1.2)]
+            #pos = 0
+            #if cc > 0 : pos += lastbins[cc]
+            x0 = float( lastbins[cc] + info_hist["labelPos"] -1)
             linebinW += [
-                ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)
+                ROOT.TPaveText(x0 - 0.0950, options_plot_ranges("ttH")[typeCat]["position_cats"], x0 + 0.0950, options_plot_ranges("ttH")[typeCat]["position_cats"] + 0.0600)
                 ]
 
     if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # :
@@ -426,7 +426,13 @@ if do_bottom :
             dataTGraph2 = ROOT.TGraphAsymmErrors()
         else :
             dataTGraph2 = template.Clone()
-        err_data(dataTGraph2, hist_total, dataTGraph1, options.fromHavester, histtotal)
+        err_data(
+            dataTGraph2,
+            hist_total,
+            dataTGraph1,
+            options.fromHavester,
+            hist_total
+            )
         dumb = dataTGraph2.Draw("e1P,same")
         del dumb
     line = ROOT.TF1("line", "0", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax())

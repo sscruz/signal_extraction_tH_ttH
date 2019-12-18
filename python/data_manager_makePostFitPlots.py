@@ -66,7 +66,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
             #print ("reading ", eraa, folderRead + "/" + name_total)
             total_hist.Add(fin[eraa].Get(folderRead + "/" + name_total))
     print (folder + "/" + name_total)
-    allbins = GetNonZeroBins(total_hist)
+    allbins = total_hist.GetXaxis().GetNbins() # GetNonZeroBins(total_hist)
     #hist.Sumw2() ## if prefit
     hist.SetMarkerSize(0)
     hist.SetFillColorAlpha(12, 0.40)
@@ -96,7 +96,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
     hist.GetYaxis().SetLabelSize(0.050)
     return allbins
 
-def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend) :
+def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin) :
     print folder+"/"+name
     hist = fin[0].Get(folder+"/"+name)
     try  : hist.Integral()
@@ -156,14 +156,12 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
         allbins = GetNonZeroBins(histtotal)
         lastbin = lastbin +1
         for ii in xrange(0, allbins) :
-            print("rebin_data", ii + lastbin)
             bin_width = 1.
             if divideByBinWidth :
                 bin_width = histtotal.GetXaxis().GetBinWidth(ii+1)
             xp = ROOT.Double()
             yp = ROOT.Double()
             dataTGraph.GetPoint(ii, xp, yp)
-            print("rebin_data", ii, ii + lastbin, yp)
             dataTGraph1.SetPoint(      ii + lastbin,  template.GetBinCenter(ii + lastbin + 1) , yp/bin_width)
             dataTGraph1.SetPointEYlow( ii + lastbin,  dataTGraph.GetErrorYlow(ii)/bin_width)
             dataTGraph1.SetPointEYhigh(ii + lastbin,  dataTGraph.GetErrorYhigh(ii)/bin_width)
@@ -176,8 +174,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
                 if eraa == 1 : folderRead = folder.replace("2018", "2017")
                 if eraa == 2 : folderRead = folder.replace("2018", "2016")
                 dataTGraph.Add(fin[eraa].Get(folderRead + "/data_obs"))
-        allbins = GetNonZeroBins(dataTGraph)
-        #dataTGraph1 = template.Clone()
+        allbins = GetNonZeroBins(histtotal)
         for ii in xrange(1, allbins+1) :
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
@@ -199,7 +196,6 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
     return allbins
 
 def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal) :
-    lastbin = 0
     if not fromHavester :
         allbins = GetNonZeroBins(histtotal)
         for ii in xrange(0, allbins) :
@@ -224,7 +220,7 @@ def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal) :
             dataTGraph1.SetPointEXlow(ii + lastbin,  template.GetBinWidth(ii+1)/2.)
             dataTGraph1.SetPointEXhigh(ii + lastbin, template.GetBinWidth(ii+1)/2.)
     else :
-        allbins = GetNonZeroBins(dataTGraph)
+        allbins = histtotal.GetNbinsX() #GetNonZeroBins(histtotal)
         for ii in xrange(1, allbins + 1) :
             if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 : continue
             bin_width = 1.
@@ -232,10 +228,10 @@ def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal) :
             dividend = template.GetBinContent(ii)*bin_width
             if dataTGraph.GetBinContent(ii) > 0 :
               if dividend > 0 :
-                dataTGraph1.SetBinContent(ii + lastbin, (dataTGraph.GetBinContent(ii)/dividend)-1)
-                dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/dividend) #
+                dataTGraph1.SetBinContent(ii , (dataTGraph.GetBinContent(ii)/dividend)-1)
+                dataTGraph1.SetBinError(  ii , dataTGraph.GetBinError(ii)/dividend) #
             else :
-                dataTGraph1.SetBinContent(ii + lastbin, -2.6)
+                dataTGraph1.SetBinContent(ii , -3.6)
         if not dataTGraph1.GetSumw2N() : dataTGraph1.Sumw2()
     dataTGraph1.SetMarkerColor(1)
     dataTGraph1.SetMarkerStyle(20)
