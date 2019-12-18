@@ -153,7 +153,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
                 if eraa == 2 : folderRead = folder.replace("2018", "2016")
                 dataTGraph.Add(fin[eraa].Get(folderRead + "/data"))
         allbins = GetNonZeroBins(histtotal)
-        #dataTGraph1 = ROOT.TGraphAsymmErrors()
+        lastbin = lastbin +1
         for ii in xrange(0, allbins) :
             print("rebin_data", ii + lastbin)
             bin_width = 1.
@@ -177,9 +177,9 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
                 dataTGraph.Add(fin[eraa].Get(folderRead + "/data_obs"))
         allbins = GetNonZeroBins(dataTGraph)
         #dataTGraph1 = template.Clone()
-        for ii in xrange(0, allbins+1) :
+        for ii in xrange(1, allbins+1) :
             bin_width = 1.
-            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
+            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
             ## if we would like to blind the last 2 bins
             #if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 :
             #  dataTGraph1.SetBinContent(ii + lastbin, 0)
@@ -197,11 +197,10 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
     dataTGraph1.SetMaximum(maxY)
     return allbins
 
-def err_data(dataTGraph1, template, folder, fromHavester, lastbin, histtotal) :
+def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal) :
+    lastbin = 0
     if not fromHavester :
-        dataTGraph = fin.Get(folder+"/data")
         allbins = GetNonZeroBins(histtotal)
-        #dataTGraph1 = ROOT.TGraphAsymmErrors()
         for ii in xrange(0, allbins) :
             if ii == histtotal.GetXaxis().GetNbins() -1 or ii == histtotal.GetXaxis().GetNbins()-2 : continue
             bin_width = 1.
@@ -224,9 +223,7 @@ def err_data(dataTGraph1, template, folder, fromHavester, lastbin, histtotal) :
             dataTGraph1.SetPointEXlow(ii + lastbin,  template.GetBinWidth(ii+1)/2.)
             dataTGraph1.SetPointEXhigh(ii + lastbin, template.GetBinWidth(ii+1)/2.)
     else :
-        dataTGraph = fin.Get(folder+"/data_obs")
         allbins = GetNonZeroBins(dataTGraph)
-        #dataTGraph1 = template.Clone()
         for ii in xrange(1, allbins + 1) :
             if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 : continue
             bin_width = 1.
@@ -247,12 +244,10 @@ def err_data(dataTGraph1, template, folder, fromHavester, lastbin, histtotal) :
     dataTGraph1.SetLineStyle(1)
     return allbins
 
-def do_hist_total_err(hist_total_err, labelX, name_total, folder, lastbin) :
-    total_hist = fin.Get(folder+"/"+name_total)
+def do_hist_total_err(hist_total_err, labelX, total_hist) :
     allbins = GetNonZeroBins(total_hist)
-    #hist_total_err = template.Clone()
     hist_total_err.GetYaxis().SetTitle("#frac{Data - Expectation}{Expectation}")
-    hist_total_err.GetXaxis().SetTitleOffset(1.15)
+    hist_total_err.GetXaxis().SetTitleOffset(1.25)
     hist_total_err.GetYaxis().SetTitleOffset(1.0)
     hist_total_err.GetXaxis().SetTitleSize(0.14)
     hist_total_err.GetYaxis().SetTitleSize(0.055)
@@ -269,14 +264,14 @@ def do_hist_total_err(hist_total_err, labelX, name_total, folder, lastbin) :
     for bin in xrange(0, allbins) :
         hist_total_err.SetBinContent(bin+1, 0)
         if total_hist.GetBinContent(bin+1) > 0. :
-            hist_total_err.SetBinError(lastbin + bin + 1, total_hist.GetBinError(bin+1)/total_hist.GetBinContent(bin+1))
+            hist_total_err.SetBinError(bin + 1, total_hist.GetBinError(bin+1)/total_hist.GetBinContent(bin+1))
     return allbins
 
 def addLabel_CMS_preliminary(era) :
     x0 = 0.2
     y0 = 0.953
     ypreliminary = 0.95
-    xlumi = 0.63
+    xlumi = 0.60
     label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
     label_cms.AddText("CMS")
     label_cms.SetTextFont(50)

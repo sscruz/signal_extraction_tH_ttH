@@ -142,10 +142,11 @@ else : name_total = "TotalProcs"
 
 execfile("python/data_manager_makePostFitPlots.py")
 ROOT.gStyle.SetOptStat(0)
+ROOT.gStyle.SetEndErrorSize(0)
 
 flips       = "flips_mc" #"data_flips"
 conversions = "Convs"
-fakes       = "fakes_mc" #"data_fakes"
+fakes       = "data_fakes"
 
 info_file = os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/configs/plot_options.py"
 execfile(info_file)
@@ -241,6 +242,28 @@ legend1.SetTextSize(0.040)
 print label_head
 legend1.SetHeader(label_head)
 
+hist_total = template.Clone()
+lastbin = 0
+lastbins = []
+for cc, catcat in enumerate(catcats) :
+    if not options.fromHavester :
+        readFrom = folder + "/" + catcat
+    else :
+        readFrom = catcat
+    print (readFrom, catcat)
+    lastbins += [lastbin]
+    lastbin += rebin_total(
+        hist_total,
+        readFrom,
+        fin,
+        divideByBinWidth,
+        name_total,
+        lastbin,
+        do_bottom,
+        labelX
+        )
+legend1.AddEntry(hist_total, "Uncertainty", "f")
+
 if options.unblind :
     dataTGraph1 = "NoneType"
     if not options.fromHavester :
@@ -261,30 +284,11 @@ if options.unblind :
             readFrom,
             fin,
             options.fromHavester,
-            lastbin,
+            lastbins[cc],
             histtotal
             )
     dataTGraph1.Draw()
     legend1.AddEntry(dataTGraph1, "Observed", "p")
-hist_total = template.Clone()
-lastbin = 0
-for cc, catcat in enumerate(catcats) :
-    if not options.fromHavester :
-        readFrom = folder + "/" + catcat
-    else :
-        readFrom = catcat
-    print (readFrom, catcat)
-    lastbin += rebin_total(
-        hist_total,
-        readFrom,
-        fin,
-        divideByBinWidth,
-        name_total,
-        lastbin,
-        do_bottom,
-        labelX
-        )
-legend1.AddEntry(hist_total, "Uncertainty", "f")
 
 if do_bottom :
     canvas = ROOT.TCanvas("canvas", "canvas", 600, 1500)
@@ -300,14 +304,14 @@ if do_bottom :
     topPad.SetFillColor(10)
     topPad.SetTopMargin(0.075)
     topPad.SetLeftMargin(0.20)
-    topPad.SetBottomMargin(0.00)
+    topPad.SetBottomMargin(0.022)
     topPad.SetRightMargin(0.04)
     if options.useLogPlot or options_plot_ranges("ttH")[typeCat]["useLogPlot"]:
         topPad.SetLogy()
 
     bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.05, 1.00, 0.34)
     bottomPad.SetFillColor(10)
-    bottomPad.SetTopMargin(0.0)
+    bottomPad.SetTopMargin(0.015)
     bottomPad.SetLeftMargin(0.20)
     bottomPad.SetBottomMargin(0.35)
     bottomPad.SetRightMargin(0.04)
@@ -316,7 +320,7 @@ else :
     topPad.SetFillColor(10)
     topPad.SetTopMargin(0.075)
     topPad.SetLeftMargin(0.20)
-    topPad.SetBottomMargin(0.1)
+    topPad.SetBottomMargin(0.2)
     topPad.SetRightMargin(0.04)
     if options.useLogPlot or options_plot_ranges("ttH")[typeCat]["useLogPlot"]:
         topPad.SetLogy()
@@ -343,7 +347,6 @@ for kk, key in  enumerate(dprocs.keys()) :
         if not cc == 0 : addlegend = False
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
-            readFrom = folder + "/" + catcat
         else :
             readFrom = catcat
         info_hist = rebin_hist(
@@ -355,7 +358,7 @@ for kk, key in  enumerate(dprocs.keys()) :
             divideByBinWidth,
             addlegend
             )
-        lastbin += info_hist["lastbin"]
+        lastbin = lastbins[cc] #+= info_hist["lastbin"]
         if kk == 0 :
             if info_hist["binEdge"] > 0 :
                 linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], options_plot_ranges("ttH")[typeCat]["position_cats"]*1.2)] # (legend_y0 + 0.05)*maxY
@@ -379,7 +382,6 @@ for line1 in linebin :
 
 dumb = histogramStack_mc.Draw("hist,same")
 del dumb
-## Xanda
 dumb = hist_total.Draw("e2,same")
 del dumb
 if options.unblind :
@@ -406,23 +408,15 @@ for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
 
 #################################
 if do_bottom :
-    if len(fin) > 1 : sys.exit("The unblind version with the 3 eras summed up still need to be fixed.")
+    #if len(fin) > 1 : sys.exit("The unblind version with the 3 eras summed up still need to be fixed.")
     canvas.cd()
     dumb = bottomPad.Draw()
     del dumb
     bottomPad.cd()
     bottomPad.SetLogy(0)
     print ("doing bottom pad")
-    hist_total_err = template.Clone()
-    lastbin = 0
-    for cc, catcat in enumerate(catcats) :
-        if not options.fromHavester :
-            readFrom = folder + "/" + catcat
-        else :
-            readFrom = catcat
-        histtotal = fin[0].Get(readFrom + "/" + name_total )
-        lastbin += do_hist_total_err(hist_total_err, labelX, name_total, readFrom, lastbin)
-        print (readFrom, lastbin)
+    hist_total_err = hist_total.Clone()
+    do_hist_total_err(hist_total_err, labelX, hist_total)
     dumb = hist_total_err.Draw("e2")
     del dumb
     if options.unblind :
@@ -430,14 +424,7 @@ if do_bottom :
             dataTGraph2 = ROOT.TGraphAsymmErrors()
         else :
             dataTGraph2 = template.Clone()
-        lastbin = 0
-        for cc, catcat in enumerate(catcats) :
-            if not options.fromHavester :
-                readFrom = folder + "/" + catcat
-            else :
-                readFrom = catcat
-            histtotal = fin[0].Get(readFrom + "/" + name_total )
-            lastbin += err_data(dataTGraph2, hist_total, readFrom, options.fromHavester, lastbin, histtotal)
+        err_data(dataTGraph2, hist_total, dataTGraph1, options.fromHavester, histtotal)
         dumb = dataTGraph2.Draw("e1P,same")
         del dumb
     line = ROOT.TF1("line", "0", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax())
@@ -454,8 +441,6 @@ if options.useLogPlot :
 optbin = "plain"
 if divideByBinWidth :
     optbin = "divideByBinWidth"
-#canvas.Print(options.odir+category+"_"+typeFit+"_"+optbin+"_unblind"+str(options.unblind)+"_"+oplin+".pdf")
-#canvas.Close()
 
 savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat + ".pdf"
 dumb = canvas.SaveAs(savepdf)
