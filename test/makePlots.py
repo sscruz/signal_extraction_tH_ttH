@@ -205,7 +205,7 @@ if not options.original == "none" :
     #catcats = [category]
     catcats = getCats(folder, fin[0], options.fromHavester)
     if options.IHEP : readFrom = ""
-    else : readFrom =  "ttH_"  + category + "/"
+    else : readFrom =   category + "/"
     print ("readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
     template = fileorriginal.Get(readFrom + "ttH_htt" ) #name_total)
@@ -338,7 +338,7 @@ print ("list of processes considered and their integrals")
 
 linebin = []
 linebinW = []
-y0 = (legend_y0 - 0.01)*maxY
+y0 = options_plot_ranges("ttH")[typeCat]["position_cats"] # (legend_y0 - 0.01)*maxY
 for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
     lastbin = 0
@@ -360,11 +360,13 @@ for kk, key in  enumerate(dprocs.keys()) :
             )
         lastbin = lastbins[cc] #+= info_hist["lastbin"]
         if kk == 0 :
+            #print ("pllt category label at position: ", info_hist["labelPos"])
+            print (info_hist)
             if info_hist["binEdge"] > 0 :
-                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], options_plot_ranges("ttH")[typeCat]["position_cats"]*1.2)] # (legend_y0 + 0.05)*maxY
+                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.2)] # (legend_y0 + 0.05)*maxY
             x0 = float(lastbin - info_hist["labelPos"] -1)
             linebinW += [
-                ROOT.TPaveText(x0 - 0.0950, options_plot_ranges("ttH")[typeCat]["position_cats"], x0 + 0.0950, options_plot_ranges("ttH")[typeCat]["position_cats"] + 0.0600)
+                ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)
                 ]
 
     if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # :
