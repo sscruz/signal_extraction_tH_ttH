@@ -58,7 +58,7 @@ GOF_submit = False
 preparePlotCombine  = False
 preparePlotHavester = True
 doPostFit           = False # if False do Prefit
-plainBins           = True
+plainBins           = False
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
@@ -72,5 +72,3 @@ doRatesByLikScan = False
 do_kt_scan_no_kin       = False
 do2Dlikelihoods_with_tH = False ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
 #####################################################################
-
-

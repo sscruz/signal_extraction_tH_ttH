@@ -339,7 +339,7 @@ if preparePlotHavester or preparePlotCombine :
         if doPostFit         :
             cmd += " --postfit "
             cmd += "-f fitDiagnostics.Test.root:fit_s "
-        if not plainBins : cmd += " -d %s.txt"        % cardToRead
+        if not plainBins : cmd += " -d ../%s.txt"        % cardToRead
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/" + shapeDatacard )
 
