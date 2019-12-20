@@ -94,10 +94,20 @@ parser.add_option(
     default=False
     )
 parser.add_option(
+    "--Oviedo", action="store_true", dest="Oviedo",
+    help="IHEP cards do not have directories",
+    default=False
+    )
+parser.add_option(
     "--era", type="int",
     dest="era",
     help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
     default=2017
+    )
+parser.add_option(
+    "--fakes_mc", action="store_true", dest="fakes_mc",
+    help="IHEP cards do not have directories",
+    default=False
     )
 (options, args) = parser.parse_args()
 
@@ -146,7 +156,14 @@ ROOT.gStyle.SetEndErrorSize(0)
 
 flips       = "flips_mc" #"data_flips"
 conversions = "Convs"
-fakes       = "data_fakes"
+if not options.fakes_mc :
+    fakes       = "data_fakes"
+else :
+    if options.Oviedo :
+        fakes       = "MC_fakes"
+    else :
+        fakes       = "fakes_mc"
+
 
 info_file = os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/configs/plot_options.py"
 execfile(info_file)
@@ -161,12 +178,18 @@ if not options.nameLabel == "none" :
     label_head += options_plot_ranges("ttH")[typeCat]["label"] + " " + options.nameLabel
 else :
     if typeCat in options_plot_ranges("ttH").keys() :
-        label_head += options_plot_ranges("ttH")[typeCat]["label"]
+        hh = str(options.era)
+        if options.era == 0 :
+            hh = "all eras"
+        label_head += options_plot_ranges("ttH")[typeCat]["label"] + " (" + hh + ")"
 
 if typeFit == "prefit" :
     label_head = label_head+", "+typeFit
 else :
     label_head = label_head+", #mu(ttH)=#hat{#mu}"
+
+if options. fakes_mc :
+    label_head += " (fakes from mc)"
 
 if not options.labelX == "none" :
     labelX = options.labelX
@@ -251,6 +274,8 @@ for cc, catcat in enumerate(catcats) :
     else :
         readFrom = catcat
     print (readFrom, catcat)
+    #toread = lastbin - 1
+    #if lastbin == 0 : toread = 0
     lastbins += [lastbin]
     lastbin += rebin_total(
         hist_total,
@@ -424,14 +449,18 @@ if do_bottom :
     if options.unblind :
         if not options.fromHavester :
             dataTGraph2 = ROOT.TGraphAsymmErrors()
+            readFrom = folder + "/" + catcat
         else :
             dataTGraph2 = template.Clone()
+            readFrom = catcat
         err_data(
             dataTGraph2,
             hist_total,
             dataTGraph1,
             options.fromHavester,
-            hist_total
+            hist_total,
+            readFrom,
+            fin
             )
         dumb = dataTGraph2.Draw("e1P,same")
         del dumb
@@ -450,7 +479,7 @@ optbin = "plain"
 if divideByBinWidth :
     optbin = "divideByBinWidth"
 
-savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat + ".pdf"
+savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat + "_" + str(options.era) + ".pdf"
 dumb = canvas.SaveAs(savepdf)
 del dumb
 print ("saved", savepdf)

@@ -66,7 +66,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
             #print ("reading ", eraa, folderRead + "/" + name_total)
             total_hist.Add(fin[eraa].Get(folderRead + "/" + name_total))
     print (folder + "/" + name_total)
-    allbins = total_hist.GetXaxis().GetNbins() # GetNonZeroBins(total_hist)
+    allbins = GetNonZeroBins(total_hist)# total_hist.GetXaxis().GetNbins() # GetNonZeroBins(total_hist)
     #hist.Sumw2() ## if prefit
     hist.SetMarkerSize(0)
     hist.SetFillColorAlpha(12, 0.40)
@@ -111,8 +111,24 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
         for eraa in [1,2] :
             if eraa == 1 : folderRead = folder.replace("2018", "2017")
             if eraa == 2 : folderRead = folder.replace("2018", "2016")
-            try : hist.Add(fin[eraa].Get(folderRead+"/"+name))
-            except : continue
+            try :
+                print ("era" + str(eraa))
+                hist.Add(fin[eraa].Get(folderRead+"/"+name))
+            except :
+                if name == "data_fakes" :
+                    try :
+                        hist.Add(fin[eraa].Get(folderRead+"/fakes_mc"))
+                    except :
+                        print ("did not found fakes")
+                        continue
+                if name == "fakes_mc" :
+                    try :
+                        hist.Add(fin[eraa].Get(folderRead+"/data_fakes"))
+                    except :
+                        print ("did not found fakes")
+                        continue
+                else :
+                    continue
     hist_rebin.SetMarkerSize(0)
     hist_rebin.SetFillColor(itemDict["color"])
     hist_rebin.SetFillStyle(itemDict["fillStype"])
@@ -154,7 +170,6 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
                 if eraa == 2 : folderRead = folder.replace("2018", "2016")
                 dataTGraph.Add(fin[eraa].Get(folderRead + "/data"))
         allbins = GetNonZeroBins(histtotal)
-        lastbin = lastbin +1
         for ii in xrange(0, allbins) :
             bin_width = 1.
             if divideByBinWidth :
@@ -176,6 +191,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
                 dataTGraph.Add(fin[eraa].Get(folderRead + "/data_obs"))
         allbins = GetNonZeroBins(histtotal)
         for ii in xrange(1, allbins+1) :
+
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
             ## if we would like to blind the last 2 bins
@@ -195,7 +211,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
     dataTGraph1.SetMaximum(maxY)
     return allbins
 
-def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal) :
+def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal, folder, fin) :
     if not fromHavester :
         allbins = GetNonZeroBins(histtotal)
         for ii in xrange(0, allbins) :
@@ -222,7 +238,8 @@ def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal) :
     else :
         allbins = histtotal.GetNbinsX() #GetNonZeroBins(histtotal)
         for ii in xrange(1, allbins + 1) :
-            if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 : continue
+            ## if we would like to blind the last 2 bins
+            #if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 : continue
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
             dividend = template.GetBinContent(ii)*bin_width
@@ -231,7 +248,7 @@ def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal) :
                 dataTGraph1.SetBinContent(ii , (dataTGraph.GetBinContent(ii)/dividend)-1)
                 dataTGraph1.SetBinError(  ii , dataTGraph.GetBinError(ii)/dividend) #
             else :
-                dataTGraph1.SetBinContent(ii , -3.6)
+                dataTGraph1.SetBinContent(ii , -3.7)
         if not dataTGraph1.GetSumw2N() : dataTGraph1.Sumw2()
     dataTGraph1.SetMarkerColor(1)
     dataTGraph1.SetMarkerStyle(20)
@@ -417,6 +434,95 @@ def AddSystQuad(list):
     for element in list : ell = ell + [math.pow(element, 2.)]
     quad =  math.sqrt(sum(ell))
     return quad
+
+def PrintTable(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
+
+    conversions = "Convs"
+    flips = 'data_flips'
+    fakes_data = 'data_fakes'
+
+    signals = [
+        'ttH_hzz',
+        'ttH_hww',
+        'ttH_htt',
+        'ttH_hmm',
+        'ttH_hzg'
+        ]
+
+    TTWX = [
+        'TTW',
+        'TTWW'
+        ]
+
+    tH = [
+    'tHW_htt',
+    'tHq_htt',
+    'tHW_hww',
+    'tHq_hww',
+    'tHW_hzz',
+    'tHq_hzz',
+    #
+    'VH_htt',
+    'VH_htt',
+    'VH_hww',
+    #
+    'WH_htt',
+    'WH_htt',
+    'WH_hww',
+    #
+    'ZH_htt',
+    'ZH_htt',
+    'ZH_hww',
+    #
+    'qqH_htt',
+    'qqH_htt',
+    'qqH_hww',
+    #
+    'ggH_htt',
+    'ggH_htt',
+    'ggH_hww',
+    "TTWH",
+    "TTZH",
+    "HH",
+
+    ]
+
+    EWK = [
+        'ZZ',
+        'WZ',
+        "ZZ",
+        "DY",
+        "TT"
+    ]
+
+    singleCompMC = [
+        'TTZ',
+        fakes_data,
+        conversions,
+        flips,
+        "fakes_mc",
+        "MC_fakes",
+        'Rares',
+        "flips_mc",
+        "MC_flips",
+    ]
+
+    sum_proc = []
+    err_sum_proc = []
+    listTosum = [signals, TTWX, tH, EWK, singleCompMC]
+    for label in labels :
+        label = "ttH_4l_2018"
+        filey.write("%s\n" % label)
+        filey.write("process central error \n")
+        for todo in listTosum :
+            for ss, signal in enumerate(todo) :
+                try :
+                    thissig = cmb.cp().bin([label]).cp().process([signal]).GetRate()
+                except :
+                    continue
+                thissigErr = cmb.cp().bin([label]).cp().process([signal]).GetUncertainty(*uargs)
+                print (signal, thissig, thissigErr)
+                filey.write("%s %s %s\n" % (signal, str(thissig), str(thissigErr)))
 
 def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
 

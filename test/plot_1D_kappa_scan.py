@@ -20,7 +20,7 @@ def drawlik(input, gr = TGraph(), color = 8, second = False) :
     tree2 = tf2.Get("limit")
     bu = "P"
     if second : bu = "P same"
-    tree2.Draw("2*deltaNLL:kappa_t>>hist(50,-3,3)","2*deltaNLL<20", bu)
+    tree2.Draw("2*deltaNLL:kappa_t>>hist(50,-3,3)","2*deltaNLL<50", bu)
     canv.Update();
     canv.Modified();
     gr = gROOT.FindObject("Graph").Clone()
@@ -84,7 +84,6 @@ leg.SetShadowColor(0)
 leg.SetLineColor(0)
 leg.SetTextFont(43)
 leg.SetTextSize(18)
-leg.SetHeader("no BKG floating")
 #leg.SetHeader("ttW BKG floating")
 #leg.SetHeader("2lss (ttW floating)")
 
@@ -172,7 +171,7 @@ canv.Update()
 mg.GetXaxis().SetTitle("#kappa_t (no kinematics)")
 mg.GetYaxis().SetTitle("-2#Delta lnL")
 gPad.Modified()
-mg.GetYaxis().SetRangeUser(0.,22.)
+mg.GetYaxis().SetRangeUser(0.,72.)
 
 #mg.Draw('ap')
 

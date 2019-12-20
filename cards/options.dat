@@ -16,7 +16,7 @@ sendToLXBatch   = False ## the mu's result retrieval are not working in condor -
 doWS                    = False ## To do any of the rest you must have ran with this being True once
 doRateAndSignificance   = False
 doLimits                = False
-do2Dlikelihoods         = False
+do2Dlikelihoods         = True
 
 # 1) results by category
 doCategoriesWS            = False ## To do any of the rest you must have ran with this being True once
@@ -38,6 +38,7 @@ impactsSubmit = False
 # 3) -- optional
 # fast version of the impacts -- Hessian approximation for quick checks
 doHessImpacts             = False
+doImpactsNoSubmit         = False
 
 # 4)
 # the bellow take lots of time, better to do on one run
@@ -55,9 +56,10 @@ GOF_submit = False
 # 5)
 # OR you do from Combine or from from Havester
 preparePlotCombine  = False
-preparePlotHavester = True
+preparePlotHavester = False
 doPostFit           = False # if False do Prefit only, it True it does both
-plainBins           = False # relevant only for the PlotHavester
+plainBins           = True # relevant only for the PlotHavester
+doTablePrefit       = False
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
@@ -67,8 +69,9 @@ doPostFitCombine = False # doYieldsAndPlots must be true
 doPostFitHavester = False # doYieldsAndPlots must be true
 
 doRatesByLikScan        = False
+doCategoriesMuAndLimits = False
 
 ## The bellow makes a fit on kt assuming SM kinematics all the way: useful to setups and checks
-do_kt_scan_no_kin       = True
-do2Dlikelihoods_with_tH = False ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
+do_kt_scan_no_kin       = False
+do2Dlikelihoods_with_tH = True ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
 #####################################################################
