@@ -158,12 +158,12 @@ def options_plot_ranges (analysis) :
                 "labelX" : "DNN bin#", "cats" : [""]
                 },
             "2lss_1tau" : {
-                "minY" : 0,  "maxY" :  60.,
+                "minY" : 0,  "maxY" :  20.,
                 "minYerr":  0.0,  "maxYerr" : 2.75,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
                 "labelX" : "DNN bin#",
-                "position_cats": 35. ,
+                "position_cats": 12. ,
                 "cats" : ["ttH-reg", "tH-reg", "BKG-reg"]
                 },
             "3l_0tau"   : {
@@ -181,21 +181,21 @@ def options_plot_ranges (analysis) :
                 "labelX" : "BDT", "cats" : ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10", "ch11", "ch12", "ch13", "ch11", "ch12", "ch13"]
                 },
             "3l_0tau_ttH" : {
-                "minY" : 0,    "maxY" :  90.,
+                "minY" : 0,    "maxY" :  15.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, ttH-region',
                 "labelX" : "DNN bin#",
-                "position_cats": 50. ,
+                "position_cats": 10. ,
                 "cats" : ["bl", "bt"]
                 },
             "3l_0tau_tH" : {
-                "minY" : 0,    "maxY" :  40.,
+                "minY" : 0,    "maxY" :  10.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, tHq-region',
                 "labelX" : "DNN bin#",
-                "position_cats": 23. ,
+                "position_cats": 6. ,
                 "cats" : ["bl", "bt"]
                 },
             "3l_0tau_rest" : {
@@ -205,7 +205,8 @@ def options_plot_ranges (analysis) :
                 "label" : '3l + 0#tau_{h}, BKG region',
                 "labelX" : "DNN bin#",
                 "position_cats": 17. ,
-                "cats" : ['', "", '', '', '', '', '']
+                #"cats" : ['', "", '', '', '', '', '']
+                "cats" : ['', "eem", 'emm', 'mmm']
                 },
             "3lctrl" : {
                 "minY" : 0.1,    "maxY" :  100000.,

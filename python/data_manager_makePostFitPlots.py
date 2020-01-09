@@ -463,27 +463,36 @@ def PrintTable(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
     'tHq_hzz',
     #
     'VH_htt',
-    'VH_htt',
+    'VH_hzz',
     'VH_hww',
     #
     'WH_htt',
-    'WH_htt',
+    'WH_hzz',
     'WH_hww',
     #
     'ZH_htt',
-    'ZH_htt',
+    'ZH_hzz',
     'ZH_hww',
     #
     'qqH_htt',
-    'qqH_htt',
+    'qqH_hzz',
     'qqH_hww',
     #
     'ggH_htt',
-    'ggH_htt',
+    'ggH_hzz',
     'ggH_hww',
+    #
     "TTWH",
+    'TTWH_htt',
+    'TTWH_hzz',
+    'TTWH_hww',
+    #
     "TTZH",
+    'TTZH_htt',
+    'TTZH_hzz',
+    'TTZH_hww',
     "HH",
+    "HH_tttt", "HH_zzzz", "HH_wwww", "HH_ttzz", "HH_ttww", "HH_zzww"
 
     ]
 
@@ -505,13 +514,15 @@ def PrintTable(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
         'Rares',
         "flips_mc",
         "MC_flips",
+        "data_obs",
     ]
 
     sum_proc = []
     err_sum_proc = []
     listTosum = [signals, TTWX, tH, EWK, singleCompMC]
     for label in labels :
-        label = "ttH_4l_2018"
+        #label = "ttH_4l_2018"
+        print (label)
         filey.write("%s\n" % label)
         filey.write("process central error \n")
         for todo in listTosum :

@@ -13,10 +13,10 @@ sendToLXBatch   = False ## the mu's result retrieval are not working in condor -
 # (like this, they can be also done in parallel)
 
 # 0) Combo results
-doWS                    = False ## To do any of the rest you must have ran with this being True once
+doWS                    = True ## To do any of the rest you must have ran with this being True once
 doRateAndSignificance   = False
 doLimits                = False
-do2Dlikelihoods         = True
+do2Dlikelihoods         = False
 
 # 1) results by category
 doCategoriesWS            = False ## To do any of the rest you must have ran with this being True once
@@ -56,10 +56,10 @@ GOF_submit = False
 # 5)
 # OR you do from Combine or from from Havester
 preparePlotCombine  = False
-preparePlotHavester = False
+preparePlotHavester = True
 doPostFit           = False # if False do Prefit only, it True it does both
 plainBins           = True # relevant only for the PlotHavester
-doTablePrefit       = False
+doTablePrefit       = True
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
@@ -73,5 +73,5 @@ doCategoriesMuAndLimits = False
 
 ## The bellow makes a fit on kt assuming SM kinematics all the way: useful to setups and checks
 do_kt_scan_no_kin       = False
-do2Dlikelihoods_with_tH = True ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
+do2Dlikelihoods_with_tH = False ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
 #####################################################################

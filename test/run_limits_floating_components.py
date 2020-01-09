@@ -415,13 +415,14 @@ if preparePlotHavester or preparePlotCombine :
         cmd += " %s_WS.root" % cardToRead
         if blinded : cmd += " -t -1 "
         cmd += " --saveShapes --saveWithUncertainties "
-        cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
+        #cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
         # redefineToTTH
         if doPostFit         :
             cmd += " --saveNormalization "
         else :
             cmd += " --skipBOnlyFit "
         cmd += " -n _shapes_combine_%s" % namePlot
+        #cmd += " --forceRecreateNLL"
         #if not plainBins : cmd += " -d %s.txt"        % cardToRead
         if sendToLXBatch or sendToCondor : cmd += " %s %s" % (ToSubmit, cardToRead)
         runCombineCmd(cmd, FolderOut)
@@ -436,7 +437,7 @@ if preparePlotHavester or preparePlotCombine :
         if sendToLXBatch :
             cmd += " %s %s" % (ToSubmit, cardToRead)
         cmd += " -n _%s" % cardToRead
-        cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
+        #cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
         runCombineCmd(cmd, FolderOut)
         print ("the diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if that was the case you have a crash!")
 
@@ -502,7 +503,7 @@ if doTablePrefit :
         cmb.UpdateParameters(rfr)
         print ' Parameters updated '
     colapseCat = False
-    filey = open(FolderOut + "/" + channel + "_prefit_yields_" + str(era) + ".log","w")
+    filey = open(FolderOut + "/" + cardToRead + "_prefit_yields_" + str(era) + ".log","w")
     labels = ["ttH_%s" % channel]
     if fit == "prefit" :
         PrintTable(cmb, tuple(), filey, blindedOutput, labels, type)
