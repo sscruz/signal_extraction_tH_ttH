@@ -26,14 +26,14 @@ For prefit:
 
 ```
 python test/makePlots.py --channel "4l_CR" --nameOut a_name \
---input /path/WS_3poi_shapes_2017_combo.root \
---odir /path/  --era 2017
+--input /path/WS_3poi_shapes_2018_combo.root \
+--odir /path/  --era 2018
 ```
 
-Where WS_3poi_shapes_2017_combo.root is the output of running (1) with option `preparePostFitCombine = True` OR `preparePostFitHavester = True` (if you use the second you need to add to command line `--fromHavester` into the above).
+Where WS_3poi_shapes_2018_combo.root is the output of running (1) with option `preparePostFitCombine = True` OR `preparePostFitHavester = True` (if you use the second you need to add to command line `--fromHavester` into the above).
 And `--channel` is the one that appears in the plot configs [here](https://github.com/acarvalh/signal_extraction_tH_ttH/blob/master/configs/plot_options.py#L351-L355) for the list of processes to draw and [here](https://github.com/acarvalh/signal_extraction_tH_ttH/blob/master/configs/plot_options.py#L170-L178) for the plot fine tunnings.
 
-You can plot the three eras merged using the `makePlots.py` script with the `--input` being the 2018 one, and `--era 0`. It will fetch the other input shapes, provided that the only difference in their naming convention is to replace "2018" to "2017" or "2016" in the full `/path/WS_3poi_shapes_2017_combo.root`
+You can plot the three eras merged using the `makePlots.py` script with the `--input` being the 2018 one, and `--era 0`. It will fetch the other input shapes, provided that the only difference in their naming convention is to replace "2018" to "2017" or "2016" in the full `/path/WS_3poi_shapes_2018_combo.root`
 
 By default the resulting plots are made blinded, if you want to unblind add to the command line " --unblind".
 

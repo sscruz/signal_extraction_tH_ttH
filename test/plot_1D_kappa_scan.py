@@ -29,7 +29,6 @@ def drawlik(input, gr = TGraph(), color = 8, second = False, Folder = "") :
     bu = "P"
     if second : bu = "P same"
     tree2.Draw("2*deltaNLL:kappa_t>>hist(50,-3,3)","2*deltaNLL<50", bu)
-    #tree2.Draw("2*deltaNLL:kappa_t>>hist(50,-3,3)","", bu)
     canv.Update();
     canv.Modified();
     gr = gROOT.FindObject("Graph").Clone()
@@ -136,6 +135,7 @@ leg.SetLineColor(0)
 leg.SetTextFont(43)
 leg.SetTextSize(18)
 leg.SetHeader(options.channel)
+
 #leg.SetHeader("ttW BKG floating")
 #leg.SetHeader("2lss (ttW floating)")
 
@@ -241,6 +241,7 @@ mg.GetYaxis().SetRangeUser(0.,55.)
 xmin = mg.GetXaxis().GetXmin()
 xmax = mg.GetXaxis().GetXmax()
 mg.GetXaxis().SetRangeUser(xmin,xmax)
+
 
 #mg.Draw('ap')
 

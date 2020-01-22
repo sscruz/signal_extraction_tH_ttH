@@ -3,25 +3,52 @@
 import sys, os, re, shlex
 import multiprocessing
 from subprocess import Popen, PIPE
+import ROOT
 #from pathlib2 import Path
 execfile("cards/options.dat")
 import CombineHarvester.CombineTools.ch as ch
+# ulimit -s unlimited
 
 from optparse import OptionParser
 parser = OptionParser()
-parser.add_option("--cardToRead", type="string", dest="cardToRead", help="add it without its .txt extension")
-parser.add_option("--namePlot", type="string", dest="namePlot", help="  Set ", default="test")
-parser.add_option("--cardFolder", type="string", dest="cardFolder", help="  Set ", default="multilep_3l_withTH_withMET_only_CRs_2017")
+parser.add_option(
+    "--cardToRead", type="string",
+    dest="cardToRead",
+    help="add it without its .txt extension"
+    )
+parser.add_option(
+    "--namePlot", type="string",
+    dest="namePlot",
+    help="  Set ",
+    default="test"
+    )
+parser.add_option(
+    "--cardFolder", type="string",
+    dest="cardFolder",
+    help="  Set ",
+    default="multilep_3l_withTH_withMET_only_CRs_2017"
+    )
 parser.add_option("--ttW", action="store_true", dest="ttW", help="add as POI", default=False)
 parser.add_option("--ttZ", action="store_true", dest="ttZ", help="add as POI", default=False)
 parser.add_option("--tH", action="store_true", dest="tH", help="do results also with tH floating", default=False)
+parser.add_option(
+    "--era", type="int",
+    dest="era",
+    help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
+    default=2017
+    )
+parser.add_option(
+    "--channel", type="string", dest="channel",
+    help="Name of the category as it is appear on the input file",
+    default="1l_2tau"
+    )
 (options, args) = parser.parse_args()
 
 ## type-3
 
 ToSubmit = " "
 if sendToCondor :
-    ToSubmit = " --job-mode condor --sub-opt '+MaxRuntime = 1800' --task-name"
+    ToSubmit = " --job-mode condor --sub-opt '+MaxRuntime = 18000' --task-name"
 
 if sendToLXBatch :
     ToSubmit = "  --job-mode lxbatch --sub-opts=\"-q 1nh\" --task-name " ## you need to add a task name using it
@@ -48,10 +75,14 @@ def run_cmd(command):
   stdout, stderr = p.communicate()
   return stdout
 
-cardToRead = options.cardToRead
-namePlot = options.namePlot
-cardFolder = options.cardFolder
+category      = options.channel
+cardToRead    = options.cardToRead
+namePlot      = options.namePlot
+cardFolder    = options.cardFolder
+era           = options.era
+channel       = options.channel
 blinded = True
+#runCombineCmd("mkdir %s"  % (cardFolder))
 FolderOut = cardFolder + "/results/"
 runCombineCmd("mkdir %s"  % (FolderOut))
 
@@ -71,7 +102,7 @@ WS_output = cardToRead + "_WS"
 blindStatement = " -t -1 "
 if do_kt_scan_no_kin :
     ## add break if not options.tH
-    cmd = "text2workspace.py" #"text2workspace.py" #
+    cmd = "text2workspace.py"
     cmd += " %s.txt" % cardToRead
     cmd += " %s" % floating_ttV
     cmd += "  -P HiggsAnalysis.CombinedLimit.LHCHCGModels:K5 --PO verbose  --PO BRU=0"
@@ -94,8 +125,8 @@ if do_kt_scan_no_kin :
     # python test/plot_1D_kappa_scan.py --input2 higgsCombinekt_scan_test.MultiDimFit.mH125.root --label2 "NN_v5" --outputFolder /afs/cern.ch/work/a/acarvalh/CMSSW_10_2_10/src/tth-bdt-training/treatDatacards/2lss_1tau_NN_tHcat_2019Jun17/
 
 if doWS :
-    cmd = "text2workspace.py" #"text2workspace.py"
-    cmd += " %s.txt" % cardToRead
+    cmd = "text2workspace.py"
+    cmd += " %s.txt  " % cardToRead
     cmd += " -o %s/%s_WS.root" % (FolderOut, cardToRead)
     cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
     cmd += " %s" % floating_ttV
@@ -110,13 +141,12 @@ signals = ["ttH"]
 if options.tH : signals += ["tH"]
 
 if doRateAndSignificance :
-    print ("do rate and significance to: ", signals)
     for signal in signals :
       for ss, statements in enumerate(doFor) :
         if ss == 1 : label = "data"
         if ss == 0 : label = "asimov"
         if signal == "ttH" :
-            redefine = " --redefineSignalPOI r_ttH --setParameters r_ttH=1 "
+            redefine = " --redefineSignalPOI r_ttH  "
             if options.tH  : redefine += " --freezeParameters r_tH  "
         if signal == "tH"  : redefine = " --freezeParameters r_ttH --redefineSignalPOI r_tH "
 
@@ -125,6 +155,7 @@ if doRateAndSignificance :
         #cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
         cmd += " %s" % blindStatement
         cmd += " %s" % redefine
+        cmd += " %s " % setpar
         runCombineCmd(cmd, FolderOut, saveout="%s_significance_%s_%s.log" % (cardToRead, label, signal))
 
         cmd = "combineTool.py  -M MultiDimFit"
@@ -133,6 +164,7 @@ if doRateAndSignificance :
         cmd += " %s" % blindStatement
         cmd += " %s" % redefine
         cmd += " -P r_%s" % signal
+        cmd += " %s " % setpar
         cmd += " --floatOtherPOI=1 --saveFitResult -n step1  --saveWorkspace"
         runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s.log" % (cardToRead, label, signal))
         ## --saveWorkspace to extract the stats only part of the errors and the limit woth mu=1 injected
@@ -194,20 +226,19 @@ if do2Dlikelihoods :
     for bkg in bkgs :
       ranges = "-40,40" if bkg == "tH" else "0,6"
       for typeFit in ["central", "68", "95"] :
-        cmd = "combineTool.py -M MultiDimFit -m 125 "
+        cmd = "combine -M MultiDimFit "
         cmd += " %s_WS.root" % cardToRead
         cmd += " %s" % blindStatement
-        cmd += " -n For2D_ttH_%s_%s_%s_%s" % (bkg, typeFit, label, namePlot)
+        cmd += " -n For2D_ttH_%s_%s" % (bkg, typeFit)
         cmd += " --fastScan"
         if not typeFit == "central":
             cmd += " --cl=0.%s" % typeFit
             cmd += " --algo contour2d --points=20 "
         else :
-            cmd += " --algo grid --points 80000 "
+            cmd += " --algo grid --points 8000 "
         cmd += " --redefineSignalPOIs r_ttH,r_%s" % bkg
         cmd += " --setParameterRanges r_ttH=-1,3:r_%s=%s" % (bkg,ranges)
         cmd += " --setParameters"
-
         ##TODO: set the other parameter to one
         countcoma = 0
         for rest in list(set(list(bkgs)) - set([bkg])) :
@@ -215,14 +246,12 @@ if do2Dlikelihoods :
             else : cmd += ",r_%s=1.0" % rest
             countcoma += 1
             #--setParameters kappa_t=1.0,kappa_V=1.0,r_ttH=1,r_tH=1
-        if sendToCondor :
-            cmd += "%s ttH_%s_%s_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 12000"), bkg, typeFit, label, namePlot)
         runCombineCmd(cmd, FolderOut)
-        #runCombineCmd("mv higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH120.root %s_2Dlik_ttH_%s_%s_%s_%s.root"  % (bkg, typeFit, label, namePlot,  cardToRead, bkg, typeFit, label, namePlot), FolderOut)
+        runCombineCmd("mv higgsCombineFor2D_ttH_%s_%s.MultiDimFit.mH120.root %s_2Dlik_ttH_%s_%s_%s.root"  % (bkg, typeFit, cardToRead, bkg, typeFit, label), FolderOut)
       cmd = "python test/plot2DLLScan.py "
-      cmd += " --input %s/higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH125.root" % (FolderOut, bkg, "central", label, namePlot)
-      cmd += " --input68 %s/higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH125.root" % (FolderOut, bkg, "68", label, namePlot)
-      cmd += " --input95 %s/higgsCombineFor2D_ttH_%s_%s_%s_%s.MultiDimFit.mH125.root" % (FolderOut, bkg, "95", label, namePlot)
+      cmd += " --input %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "central", label)
+      cmd += " --input68 %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "68", label)
+      cmd += " --input95 %s/%s_2Dlik_ttH_%s_%s_%s.root" % (FolderOut, cardToRead, bkg, "95", label)
       cmd += " --second %s" % bkg
       cmd += " --plotName  %s" % namePlot
       cmd += " --label  %s" % namePlot
@@ -231,26 +260,62 @@ if do2Dlikelihoods :
       print ("saved " +  "%s/nllscan_%s-vs_ttH_%s.pdf" % (FolderOut, bkg, namePlot))
 
 if doHessImpacts :
+    # hessian impacts
     folderHessian = "%s/HesseImpacts_%s"  % (FolderOut, cardToRead)
     runCombineCmd("mkdir %s"  % (folderHessian))
     cmd = "combineTool.py -M Impacts"
     cmd += " -d ../%s_WS.root" % cardToRead
     cmd += " %s" % blindStatement
     cmd += " --rMin -2 --rMax 5"
-    #cmd += " -n _%s" % (namePlot)
     cmd += " -m 125 --doFits --approx hesse"
-    cmd += "  --redefineSignalPOI r_ttH --setParameters r_ttW=1,r_ttH=1,r_tH=1"
+    cmd += " --redefineSignalPOI r_ttH --setParameters r_ttH=1,r_ttW=1,r_ttZ=1,r_tH=1"
     runCombineCmd(cmd, folderHessian)
     cmd = "combineTool.py -M Impacts"
     cmd += " -d ../%s_WS.root" % cardToRead
     cmd += " %s" % blindStatement
-    #cmd += " -n _%s" % (namePlot)
+    cmd += " --redefineSignalPOI r_ttH --setParameters r_ttH=1,r_ttW=1,r_ttZ=1,r_tH=1"
+    cmd += " --rexclude _bin"
     cmd += "  -m 125 -o impacts.json --approx hesse --rMin -2 --rMax 5"
-    cmd += "  --redefineSignalPOI r_ttH --setParameters r_ttW=1,r_ttH=1,r_tH=1"
     runCombineCmd(cmd, folderHessian)
+    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s  --cms-label %s " % (cardToRead, cardToRead), folderHessian)
+
+if doImpactsNoSubmit :
+    #run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d ../%s.root %s --redefineSignalPOI r_ttH  --parallel 8 %s --doInitialFit  --keepFailures ; cd - "  % (WS_output, setpar,blindStatement))
+    #run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d ../%s.root %s --redefineSignalPOI r_ttH  --parallel 8 %s --robustFit 1 --doFits  ; cd - "  % (WS_output, setpar, blindStatement))
+    #if blindedOutput : blindedOutputOpt =  ' --blind'
+    #run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d ../%s.root  -o impacts.json    %s ; plotImpacts.py -i impacts.json %s -o impacts_btagCorr%s_blinded%s  ; cd -" % (WS_output, redefineToTTH, str(blindedOutputOpt), str(btag_correlated), str(blinded)))
+    folderImpacts = "%s/Impacts_%s"  % (FolderOut, cardToRead)
+    runCombineCmd("mkdir %s"  % (folderImpacts))
+    cmd = "combineTool.py -M Impacts"
+    cmd += " -d ../%s_WS.root" % cardToRead
+    cmd += " %s" % blindStatement
+    cmd += " --rMin -2 --rMax 5"
+    #cmd += " -n _%s" % (namePlot)
+    cmd += " -m 125  --parallel 8 --doInitialFit  --keepFailures"
+    cmd += "  --redefineSignalPOI r_ttH "
+    cmd += setpar
+    runCombineCmd(cmd, folderImpacts)
+    cmd = "combineTool.py -M Impacts"
+    cmd += " -d ../%s_WS.root" % cardToRead
+    cmd += " %s" % blindStatement
+    cmd += " --rMin -2 --rMax 5"
+    #cmd += " -n _%s" % (namePlot)
+    cmd += " -m 125  --parallel 8 --robustFit 1 --doFits"
+    cmd += "  --redefineSignalPOI r_ttH "
+    cmd += setpar
+    runCombineCmd(cmd, folderImpacts)
+    cmd = "combineTool.py -M Impacts"
+    cmd += " -d ../%s_WS.root" % cardToRead
+    cmd += " %s" % blindStatement
+    #cmd += " -n _%s" % (namePlot)
+    cmd += "  -m 125 -o impacts.json  --rMin -2 --rMax 5"
+    cmd += "  --redefineSignalPOI r_ttH"
+    cmd += setpar
+    cmd += " --rexclude _bin" # to remove stats from impact
+    runCombineCmd(cmd, folderImpacts)
     blindedOutputOpt = ' '
     if blindedOutput : blindedOutputOpt =  ' --blind'
-    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s %s" % (namePlot, blindedOutputOpt), folderHessian)
+    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s %s  --cms-label %s" % (namePlot, blindedOutputOpt, cardToRead), folderImpacts)
 
 ##############################################################################
 ## to make separate mu / limits
@@ -304,7 +369,7 @@ if doCategoriesMu :
         cmd += " --algo singles --cl=0.68" # remember why it was --algo none
         cmd += " -P r_%s" % rate
         cmd += " -n rate_%s_%s" % (rate, namePlot)
-        cmd += " --floatOtherPOI=1 -S 0 --cminDefaultMinimizerType Minuit --keepFailures"
+        cmd += " --floatOtherPOI=1 --cminDefaultMinimizerType Minuit --keepFailures" #  -S 0
         if sendToCondor :
             cmd += " %s ttH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
             runCombineCmd(cmd, folderCat)
@@ -335,18 +400,6 @@ if doCategoriesLimits :
 # calculate limits mu=1 injected only for final runs
 ## This does not seem correct -- check before using it again
 if doCategoriesLimitsFromMu1 :
-    runCombineCmd("mkdir %s"  % (folderCat))
-    parameters = ""
-    if options.ttW : parameters += "r_ttW=1"
-    if options.ttZ :
-        if options.ttW : parameters += ","
-        parameters += "r_ttZ=1"
-    if options.tH :
-        if options.ttW or options.ttZ : parameters += ","
-        parameters += "r_tH=1"
-    for rate in sigRates : parameters = parameters + ",r_"+rate+"=1"
-    print ("Will fit the parameters "+parameters)
-    for rate in sigRates + bkgs :
         cmd = "combineTool.py -M AsymptoticLimits"
         cmd += " -o %s_Catpoi_final.root" % cardToRead
         cmd += " %s" % blindStatement
@@ -362,24 +415,31 @@ if preparePlotHavester or preparePlotCombine :
         cmd += " %s_WS.root" % cardToRead
         if blinded : cmd += " -t -1 "
         cmd += " --saveShapes --saveWithUncertainties "
+        #cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
         # redefineToTTH
-        if doPostFit :
+        if doPostFit         :
             cmd += " --saveNormalization "
         else :
             cmd += " --skipBOnlyFit "
         cmd += " -n _shapes_combine_%s" % namePlot
+        #cmd += " --forceRecreateNLL"
+        #if not plainBins : cmd += " -d %s.txt"        % cardToRead
         if sendToLXBatch or sendToCondor : cmd += " %s %s" % (ToSubmit, cardToRead)
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/fitDiagnostics_shapes_combine_%s.root" % namePlot )
 
     if preparePlotHavester  :
-        print ("[WARNING:] combineHavester does not deal well with autoMCstats option for bin by bin stat uncertainty \n it does some approximations on errors and this appears in enviroments with low stats \n this is good option to run fast prefit plots on diagnosis stage though")
+        print ("[WARNING:] combineHavester does not deal well with autoMCstats option for bin by bin stat uncertainty -- it does some approximations on errors -- this is good option to run fast prefit plots on diagnosis stage")
         # to have Totalprocs computed
         cmd = "combineTool.py -M FitDiagnostics %s_WS.root" % cardToRead
-        if blinded : cmd += " -t -1 "
-        if sendToLXBatch : cmd += " %s %s" % (ToSubmit, cardToRead)
+        if blinded :
+            cmd += " -t -1 "
+        if sendToLXBatch :
+            cmd += " %s %s" % (ToSubmit, cardToRead)
+        cmd += " -n _%s" % cardToRead
+        #cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
         runCombineCmd(cmd, FolderOut)
-        print ("The diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if that was the case you have a crash!")
+        print ("the diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if that was the case you have a crash!")
 
         shapeDatacard    = "%s_shapes.root" % cardToRead
         if doPostFit :
@@ -395,12 +455,12 @@ if preparePlotHavester or preparePlotCombine :
         cmd += " --sampling --print "
         if doPostFit         :
             cmd += " --postfit "
-            cmd += "-f fitDiagnostics.Test.root:fit_s "
-        if not plainBins : cmd += " -d %s.txt"        % cardToRead
+        cmd += "-f fitDiagnostics_%s.root:fit_s " % cardToRead
+        if not plainBins :
+            cmd += " -d ../%s.txt"     % cardToRead
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/" + shapeDatacard )
 
-    print ("the execution of this command bellow is not working \n TODO: discover why. But by now this prints on the exemple of command that you should adapt/use.")
     cmd = "python test/makePlots.py "
     if preparePlotHavester  :
         cmd += " --input  %s" % FolderOut + "/" + shapeDatacard
@@ -408,12 +468,51 @@ if preparePlotHavester or preparePlotCombine :
     if preparePlotCombine :
         cmd += " --input  %s" % FolderOut + "/fitDiagnostics_shapes_combine_" + namePlot + ".root"
     cmd += " --odir %s" % FolderOut
-    cmd += " --channel 0l_2tau" # fix convention to plain plot later
-    if doPostFit         : cmd += " --postfit "
-    if not plainBins : cmd += " -original %s.root"        % cardToRead
-    cmd += " --nameLabel %s" % namePlot
+    if doPostFit         :
+        cmd += " --postfit "
+    if not plainBins :
+        cmd += " --original %s/../%s.root"        % (FolderOut, cardToRead)
+    cmd += " --era %s" % str(era)
+    cmd += " --nameOut %s" % cardToRead
+    cmd += " --do_bottom "
+    cmd += " --channel %s" % channel
+    if not blinded         :
+        cmd += " --unblind "
     runCombineCmd(cmd, FolderOut)
     print ("created " + FolderOut + "/*" + namePlot + "*.pdf"  )
+    #python test/makePlots.py --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/IHEP_NNs/datacards_V0624.1/V0624_DNN_datacards_All/DNNSubCat2_option1/DNN_maxval/by_bin//results//fitDiagnostics_shapes_combine.root
+    #--odir /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/IHEP_NNs/datacards_V0624.1/V0624_DNN_datacards_All/DNNSubCat2_option1/DNN_maxval/by_bin//results/
+    #--channel "ch1" --maxY 20. --nameLabel "ttH_region_2017"
+
+if doTablePrefit :
+    execfile("python/data_manager_makePostFitPlots.py")
+    ROOT.gSystem.Load('libHiggsAnalysisCombinedLimit')
+    print ("Retrieving yields from workspace: %s_WS.root" % cardToRead)
+    fin = ROOT.TFile("%s/%s_WS.root" % (FolderOut, cardToRead))
+    wsp = fin.Get('w')
+    cmb = ch.CombineHarvester()
+    cmb.SetFlag("workspaces-use-clone", True)
+    ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', False)
+    print "datacardToRead parsed"
+    import os
+    print ("taking uncertainties from: fitDiagnostics_%s.root " % cardToRead)
+    mlf = ROOT.TFile("%s/fitDiagnostics_%s.root " % (FolderOut, cardToRead))
+    rfr = mlf.Get('fit_s')
+    fit = "prefit"
+    if fit == "postfit" :
+        cmb.UpdateParameters(rfr)
+        print ' Parameters updated '
+    colapseCat = False
+    filey = open(FolderOut + "/" + cardToRead + "_prefit_yields_" + str(era) + ".log","w")
+    labels = ["ttH_%s" % channel]
+    if fit == "prefit" :
+        PrintTable(cmb, tuple(), filey, blindedOutput, labels, type)
+    if fit == "postfit" :
+        PrintTable(cmb, (rfr, 500), filey, blindedOutput, labels, type)
+
+
+
+
 
 ###############################################
 #### ---- stoped the update here: to be continued

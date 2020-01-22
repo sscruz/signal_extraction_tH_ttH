@@ -35,15 +35,15 @@ dprocs = OrderedDict()
 #dprocs["ttW"]           = [[], 12.25, "ttW"]
 #dprocs["ttZ"]           = [[], 10.25, "ttZ"]
 dprocs["ttH_2lss_0tau"]    = [[], 14.25, "2lss + 0#tau_{h}" ]
-dprocs["ttH_1l_1tau"]    = [[], 12.75, "1l + 1#tau_{h}"]
-dprocs["ttH_3l_0tau"]  = [[], 11.25, "3l + 0#tau_{h}"]
-dprocs["ttH_2lss_1tau"]    = [[], 9.75, "2lss + 1#tau_{h}"]
-dprocs["ttH_1l_2tau"]  = [[], 8.25, "1l + 2#tau_{h}"]
+dprocs["ttH_3l_0tau"]    = [[], 12.75, "3l + 0#tau_{h}"]
+dprocs["ttH_2lss_1tau"]  = [[], 11.25, "2lss + 1#tau_{h}"]
+dprocs["ttH_1l_2tau"]    = [[], 9.75, "1l + 2#tau_{h}"]
+dprocs["ttH_3l_1tau"]    = [[], 8.25, "3l + 1#tau_{h}"]
 dprocs["ttH_2los_1tau"]  = [[], 6.75, "2los + 1#tau_{h}"]
-dprocs["ttH_3l_1tau"]    = [[], 5.25, "3l + 1#tau_{h}"]
-dprocs["ttH_0l_2tau"]    = [[], 3.75, "0l + 2#tau_{h}"]
-dprocs["ttH_2l_2tau"]    = [[], 2.25, "2l + 2#tau_{h}"]
-dprocs["ttH_4l_0tau"]         = [[], 0.75, "4l + 0#tau_{h}"]
+dprocs["ttH_1l_1tau"]    = [[], 5.25, "1l + 1#tau_{h}"]
+dprocs["ttH_2l_2tau"]    = [[], 3.75, "2l + 2#tau_{h}"]
+dprocs["ttH_4l_0tau"]    = [[], 2.25, "4l + 0#tau_{h}"]
+dprocs["ttH_0l_2tau"]         = [[], 0.75, "0l + 2#tau_{h}"]
 
 for key in dprocs.keys() :
     my_file_pattern =  os.path.join(input_folder, "*rate_%s*.log" % (key)) #"%s/ttH_%s_rate.txt" % (input_folder, key)
@@ -79,7 +79,10 @@ for key in dprocs.keys() :
         dprocs[key][0] = [1, 1, 1]
 print " "
 ### read combined
-my_file = "%s/../ttHmultilep_all_rate_asimov_ttH.log" % (input_folder)
+erastring = "dumbCombo"
+if options.era > 0 : erastring = str(options.era)
+if options.era == 0 : erastring = "all"
+my_file = "%s/../ttHmultilep_%s_rate_asimov_ttH.log" % (input_folder, erastring, )
 print ("reading:", my_file)
 combined = []
 print "Combined: "
@@ -99,7 +102,7 @@ with open(my_file, 'r') as in_file :
             combined = combined + [float(li)]
 print combined
 ### read combined
-my_file = "%s/../ttHmultilep_all_rate_asimov_ttH.log" % (input_folder)
+my_file = "%s/../ttHmultilep_%s_rate_asimov_ttH.log" % (input_folder, erastring )
 combined_stas_only = []
 print "Combined stat only: "
 count = 0
@@ -238,6 +241,6 @@ tex2.DrawLatex(0.5+xmin, ycomb, "#mu = %.2f ^{+%.2f}_{-%.2f}" % (combined[0], mu
 for ll in labels :
     ll.Draw()"""
 
-savefile = os.path.join(input_folder, "test_mu_ttH_%s.pdf" % ("test"))
+savefile = os.path.join(input_folder, "test_mu_ttH_%s.pdf" % (erastring))
 c.SaveAs(savefile)
 c.SaveAs(savefile)
