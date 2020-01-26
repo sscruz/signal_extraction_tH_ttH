@@ -42,8 +42,8 @@ def options_plot (analysis, channel, all_procs) :
         for hig_proc in ["TTWH", "TTZH", "qqH", "tHW", "VH", "WH", "ZH", "ggH"] :
             if hig_proc in all_procs       :
                 for decay in Hdecays : # list(set(list(Hdecays)) - set(["htt"])) :
-                    if "%s_%s" % (hig_proc, decay) == "tHW_hww" :
-                        dprocs["tHW_hww"]       = {"color" : 4, "fillStype" : 1001, "label" : "other Higgs proc"         , "make border" : False}
+                    if "%s_%s" % (hig_proc, decay) == "tHW_htt" :
+                        dprocs["tHW_htt"]       = {"color" : 4, "fillStype" : 1001, "label" : "other H proc."         , "make border" : False}
                     else :
                         dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
                     #dprocs["%s_htt" % hig_proc]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
@@ -113,39 +113,39 @@ def options_plot_ranges (analysis) :
                 "cats" : ["ee", "em", "mm"]
                 },
             "2lss_0tau_rest" : {
-                "minY" : 1.,   "maxY" :  200.,
+                "minY" : 1.,   "maxY" :  70.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '2l ss + 0#tau_{h}, ttH - region',
                 "labelX" : "DNN bin#",
-                "position_cats": 120. ,
+                "position_cats": 45. ,
                 "cats" : ["ee", "em", "mm"]
                 },
             "2lss_0tau_ttW" : {
-                "minY" : 1.,   "maxY" :  50.,
+                "minY" : 1.,   "maxY" :  20.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '2l ss + 0#tau_{h}, ttW - region',
                 "labelX" : "DNN bin#",
-                "position_cats": 30. ,
+                "position_cats": 12. ,
                 "cats" : ["ee", "em", "mm"]
                 },
             "2lss_0tau_ttH" : {
-                "minY" : 1.,   "maxY" :  50.,
+                "minY" : 1.,   "maxY" :  25.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '2l ss + 0#tau_{h}, ttH - region',
                 "labelX" : "DNN bin#",
-                "position_cats": 30. ,
+                "position_cats": 12. ,
                 "cats" : ["ee", "em", "mm"]
                 },
             "2lss_0tau_tH" : {
-                "minY" : 1.,   "maxY" :  100.,
+                "minY" : 1.,   "maxY" :  50.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '2l ss + 0#tau_{h}, tHq - region',
                 "labelX" : "DNN bin#",
-                "position_cats": 50. ,
+                "position_cats": 30. ,
                 "cats" : ["ee", "em", "mm"]
                 },
             "ttWctrl"   : { "minY" : -5.,   "maxY" :  115.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
@@ -158,13 +158,13 @@ def options_plot_ranges (analysis) :
                 "labelX" : "DNN bin#", "cats" : [""]
                 },
             "2lss_1tau" : {
-                "minY" : 0,  "maxY" :  20.,
+                "minY" : 0,  "maxY" :  18.0,
                 "minYerr":  0.0,  "maxYerr" : 2.75,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
                 "labelX" : "DNN bin#",
-                "position_cats": 12. ,
-                "cats" : ["ttH-reg", "tH-reg", "BKG-reg"]
+                "position_cats": 10.5 ,
+                "cats" : ["BKG-reg", "tH-reg", "ttH-reg"]
                 },
             "3l_0tau"   : {
                 "minY" : -6,    "maxY" :  229.,
@@ -181,32 +181,32 @@ def options_plot_ranges (analysis) :
                 "labelX" : "BDT", "cats" : ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10", "ch11", "ch12", "ch13", "ch11", "ch12", "ch13"]
                 },
             "3l_0tau_ttH" : {
-                "minY" : 0,    "maxY" :  15.,
+                "minY" : 0,    "maxY" :  40.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, ttH-region',
                 "labelX" : "DNN bin#",
-                "position_cats": 10. ,
+                "position_cats": 20. ,
                 "cats" : ["bl", "bt"]
                 },
             "3l_0tau_tH" : {
-                "minY" : 0,    "maxY" :  10.,
+                "minY" : 0,    "maxY" :  15.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, tHq-region',
                 "labelX" : "DNN bin#",
-                "position_cats": 6. ,
+                "position_cats": 10. ,
                 "cats" : ["bl", "bt"]
                 },
             "3l_0tau_rest" : {
-                "minY" : 0,    "maxY" :  30.,
+                "minY" : 0,    "maxY" :  28.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}, BKG region',
                 "labelX" : "DNN bin#",
-                "position_cats": 17. ,
-                #"cats" : ['', "", '', '', '', '', '']
-                "cats" : ['', "eem", 'emm', 'mmm']
+                "position_cats": 8. ,
+                "cats" : ['', "", '', '', '', '', '']
+                #"cats" : ['', 'emm bl', "eem bl",  'mmm bl', 'emm bt', "eem bt",  'mmm bt']
                 },
             "3lctrl" : {
                 "minY" : 0.1,    "maxY" :  100000.,
@@ -228,21 +228,21 @@ def options_plot_ranges (analysis) :
                 },
             "2l_2tau"   : {
                 "minY" : 0.0,
-                "maxY" :  8.,
+                "maxY" :  5.5,
                 "minYerr":  0.0,
                 "maxYerr" : 2.75,
                 "useLogPlot" : False,
                 "label" : '2l + 2#tau_{h}',
                 "position_cats": 300. ,
-                "labelX" : "BDT",
+                "labelX" : "BDT bin#",
                 "cats" : [""]
                 },
             "3l_1tau"   : {
-                "minY" : 0.,  "maxY" :  9.0,
+                "minY" : 0.,  "maxY" :  3.5,
                 "minYerr":  0.0,  "maxYerr" : 5.35,
                 "useLogPlot" : False,
                 "label" : '3l + 1#tau_{h}',
-                "labelX" : "BDT",
+                "labelX" : "BDT bin#",
                 "position_cats": 300. ,
                 "cats" : [""]
                 },
@@ -287,7 +287,7 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '4l + 0#tau_{h}',
                 "position_cats": 300. ,
-                "labelX" : "BDT", "cats" : [""]
+                "labelX" : "BDT bin#", "cats" : [""]
                 },
             "2lss_0tau" : {
                 "minY" : -0.35, "maxY" :  13.9,

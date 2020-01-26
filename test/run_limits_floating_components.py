@@ -96,7 +96,7 @@ if options.ttW : floating_ttV += " --PO 'map=.*/TTW.*:r_ttW[1,0,6]' --PO 'map=.*
 if options.ttZ : floating_ttV += " --PO 'map=.*/TTZ.*:r_ttZ[1,0,6]' "
 
 float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'"
-if options.tH : float_sig_rates += "--PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
+if options.tH : float_sig_rates += " --PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
 
 WS_output = cardToRead + "_WS"
 blindStatement = " -t -1 "
@@ -224,7 +224,7 @@ if do2Dlikelihoods :
         bkgs += ["tH"]
     ## ttH x (ttZ , ttW)
     for bkg in bkgs :
-      ranges = "-40,40" if bkg == "tH" else "0,6"
+      ranges = "-3,3" if bkg == "tH" else "-1,2"
       for typeFit in ["central", "68", "95"] :
         cmd = "combine -M MultiDimFit "
         cmd += " %s_WS.root" % cardToRead
@@ -233,11 +233,11 @@ if do2Dlikelihoods :
         cmd += " --fastScan"
         if not typeFit == "central":
             cmd += " --cl=0.%s" % typeFit
-            cmd += " --algo contour2d --points=20 "
+            cmd += " --algo contour2d --points=10 "
         else :
-            cmd += " --algo grid --points 8000 "
+            cmd += " --algo grid --points 800 "
         cmd += " --redefineSignalPOIs r_ttH,r_%s" % bkg
-        cmd += " --setParameterRanges r_ttH=-1,3:r_%s=%s" % (bkg,ranges)
+        cmd += " --setParameterRanges r_ttH=-1,2:r_%s=%s" % (bkg,ranges)
         cmd += " --setParameters"
         ##TODO: set the other parameter to one
         countcoma = 0
@@ -323,7 +323,7 @@ if doImpactsNoSubmit :
 sigRates = [
     "ttH_2lss_0tau",
     "ttH_3l_0tau",
-    "ttH_4l_0tau",
+    "ttH_4l",
     "ttH_2lss_1tau",
     "ttH_3l_1tau",
     "ttH_2l_2tau",
@@ -362,6 +362,12 @@ if doCategoriesMu :
     for rate in sigRates : parameters = parameters + ",r_"+rate+"=1"
     print ("Will fit the parameters "+parameters)
     for rate in sigRates + bkgs :
+        if rate in ["ttH_2lss_0tau",
+        "ttH_3l_0tau",
+        "ttH_4l",
+        "ttH_2lss_1tau",
+        "ttH_3l_1tau",
+        "ttH_2l_2tau",] : continue
         cmd = "combineTool.py -M MultiDimFit"
         cmd += " %s_Catpoi_final.root" % cardToRead
         cmd += " %s" % blindStatement
@@ -605,7 +611,7 @@ if (cardToRead == cardToRead and doGOFCombo) or (doGOF2017) :
             run_cmd("cd "+os.getcwd()+"/"+mom_result+" ;  $CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plotGof.py --statistic saturated --mass 120.0 gof.json -o GoF_saturated_"+WS_output+'_btagCorr'+str(btag_correlated)+'_blinded'+str(blinded)+" ; cd -")
     else : # do all toys in series
         run_cmd("cd "+enterHere+' ;  combineTool.py -M GoodnessOfFit --algo=saturated  %s  %s.root ; cd -' % (redefineToTTH, WS_output))
-        run_cmd("cd "+enterHere+' ; combineTool.py -M GoodnessOfFit --algo=saturated  %s  -t 1000 -s 12345  %s.root --saveToys --toysFreq ; cd -' % (redefineToTTH, WS_output))
+        run_cmd("cd "+enterHere+' ; combineTool.py -M GoodnessOfFit --algo=saturated  -t 1000 -s 12345  --saveToys --toysFreq %s   %s.root ; cd -' % (redefineToTTH, WS_output)) -- here
         run_cmd("cd "+enterHere+' ; combineTool.py -M CollectGoodnessOfFit --input higgsCombineTest.GoodnessOfFit.mH120.root higgsCombineTest.GoodnessOfFit.mH120.12345.root -o gof.json ; cd -')
         run_cmd("cd "+enterHere+" ;  $CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plotGof.py --statistic saturated --mass 120.0 gof.json -o GoF_saturated_"+WS_output+'_btagCorr'+str(btag_correlated)+'_blinded'+str(blinded)+" ; cd -")
 

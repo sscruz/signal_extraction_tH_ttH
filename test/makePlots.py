@@ -178,10 +178,10 @@ if not options.nameLabel == "none" :
     label_head += options_plot_ranges("ttH")[typeCat]["label"] + " " + options.nameLabel
 else :
     if typeCat in options_plot_ranges("ttH").keys() :
-        hh = str(options.era)
+        hh = " (" + str(options.era) + ")"
         if options.era == 0 :
-            hh = "all eras"
-        label_head += options_plot_ranges("ttH")[typeCat]["label"] + " (" + hh + ")"
+            hh = " "
+        label_head += options_plot_ranges("ttH")[typeCat]["label"] +  hh
 
 if typeFit == "prefit" :
     label_head = label_head+", "+typeFit
@@ -213,7 +213,7 @@ else : minY = options.minY
 maxY = 1
 if options.maxY == 1 :
     if typeCat in options_plot_ranges("ttH").keys() : maxY = options_plot_ranges("ttH")[typeCat]["maxY"]
-else : minY = options.maxY
+else : maxY = options.maxY
 
 print("reading shapes from: ", shapes_input)
 fin = [ROOT.TFile(shapes_input, "READ")]
@@ -254,6 +254,11 @@ else :
         nbinstotal += nbinscat
         datahist = fin[0].Get(readFrom + "/data")
     template = ROOT.TH1F("my_hist", "", nbinstotal, 0 - 0.5 , nbinstotal - 0.5)
+
+position_cats = options_plot_ranges("ttH")[typeCat]["position_cats"]
+if options.era == 0 and not options_plot_ranges("ttH")[typeCat]["useLogPlot"] :
+    maxY = maxY*3
+    position_cats = position_cats*3
 
 legend_y0 = 0.650
 legend1 = ROOT.TLegend(0.2400, legend_y0, 0.9450, 0.9150)
@@ -324,6 +329,8 @@ canvas.SetBorderSize(2)
 dumb = canvas.Draw()
 del dumb
 
+
+
 if do_bottom :
     topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.34, 1.00, 0.995)
     topPad.SetFillColor(10)
@@ -361,6 +368,7 @@ del dumb
 histogramStack_mc = ROOT.THStack()
 print ("list of processes considered and their integrals")
 
+
 linebin = []
 linebinW = []
 y0 = (legend_y0 - 0.01)*maxY
@@ -386,12 +394,14 @@ for kk, key in  enumerate(dprocs.keys()) :
             )
         if kk == 0 :
             if info_hist["binEdge"] > 0 :
-                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], options_plot_ranges("ttH")[typeCat]["position_cats"]*1.2)]
+                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], position_cats*1.2)]
             #pos = 0
             #if cc > 0 : pos += lastbins[cc]
+            sumEdge = 0.1
+            if cc == 0 : sumEdge = 0.5 #1.1
             x0 = float( lastbins[cc] + info_hist["labelPos"] -1)
             linebinW += [
-                ROOT.TPaveText(x0 - 0.0950, options_plot_ranges("ttH")[typeCat]["position_cats"], x0 + 0.0950, options_plot_ranges("ttH")[typeCat]["position_cats"] + 0.0600)
+                ROOT.TPaveText(x0 + sumEdge, position_cats, x0 + sumEdge + 0.190, position_cats + 0.0600)
                 ]
 
     if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # :
@@ -481,5 +491,7 @@ if divideByBinWidth :
 
 savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat + "_" + str(options.era) + ".pdf"
 dumb = canvas.SaveAs(savepdf)
+del dumb
+dumb = canvas.SaveAs(savepdf.replace(".pdf", ".root"))
 del dumb
 print ("saved", savepdf)
