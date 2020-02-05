@@ -116,7 +116,7 @@ def options_plot_ranges (analysis) :
                 "minY" : 1.,   "maxY" :  70.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
-                "label" : '2l ss + 0#tau_{h}, ttH - region',
+                "label" : '2l ss + 0#tau_{h}, BKG - region',
                 "labelX" : "DNN bin#",
                 "position_cats": 45. ,
                 "cats" : ["ee", "em", "mm"]
@@ -222,7 +222,7 @@ def options_plot_ranges (analysis) :
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : True,
                 "label" : '4l + 0#tau_{h} CR',
-                "labelX" : "DNN bin#",
+                "labelX" : "bin#",
                 "position_cats": 300. ,
                 "cats" : [""]
                 },

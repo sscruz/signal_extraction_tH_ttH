@@ -42,7 +42,7 @@ def getNLLFromRootFile(rfilename):
     return data
 
 
-def runNLLScan(card, outfolder, kV, setratio=None, verbose=False, toysFile=None, blind=True):
+def runNLLScan(card, outfolder, kV, rate, setratio=None, verbose=False, toysFile=None, blind=True):
     cv, ct, cosa, tag = parseName(card, printout=False)
     printout = "%-40s CV=%5.2f, Ct=%5.2f" % (os.path.basename(card), cv, ct)
 
@@ -53,30 +53,26 @@ def runNLLScan(card, outfolder, kV, setratio=None, verbose=False, toysFile=None,
     if blind :
         combinecmd_toys = "combine -M GenerateOnly  -t -1"
         combinecmd_toys += " -m 125 --verbose 0 -n _nll_scan_r1_%stoys" % (filetag)
-        combinecmd_toys += " --setParameters kappa_t=%.2f,kappa_V=%.2f,r=1,r_others=1" % (ratio*kV, kV) # kappa_tau=1.0,
+        combinecmd_toys += " --setParameters kappa_t=%.2f,kappa_V=%.2f" % (ratio*kV, kV) # kappa_tau=1.0,
         combinecmd_toys += " --freezeParameters r,r_others,kappa_t,kappa_V,"
         combinecmd_toys += "kappa_mu,kappa_b,kappa_c,"
-        combinecmd_toys += "kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam" # kappa_tau,
         #combinecmd_toys += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
         combinecmd_toys += " --saveToys "
         comboutput = runCombineCommand(combinecmd_toys, card, verbose=verbose, outfolder=outfolder)
         elapsed = parseOutput(comboutput)
 
     combinecmd = "combine -M MultiDimFit"
-    combinecmd += " --algo fixed --fixedPointPOIs r=0,r_others=1"
+    combinecmd += " --algo fixed --fixedPointPOIs r=%s" % rate
     combinecmd += " --rMin=0 --rMax=20 --X-rtd ADDNLL_RECURSIVE=0"
     combinecmd += " --cminDefaultMinimizerStrategy 0" # default is 1
     combinecmd += " --cminDefaultMinimizerTolerance 0.01" # default is 0.1
     combinecmd += " --cminPreScan" # default is off
     #combinecmd += " --X-rtd MINIMIZER_analytic" # trying out for aa toys
     #print(combinecmd)
-
-
-    combinecmd += " -m 125 --verbose 0 -n _nll_scan_r1_%s" % (filetag)
-    combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f,r=1,r_others=1" % (ratio*kV, kV) # kappa_tau=1.0,
-    combinecmd += " --freezeParameters r,r_others,kappa_t,kappa_V,"
-    combinecmd += "kappa_mu,kappa_b,kappa_c,"
-    combinecmd += "kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam" # kappa_tau,
+    combinecmd += " -m 125 --verbose 0 -n _nll_scan_r%s_%s" % (rate, filetag)
+    combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f" % (ratio*kV, kV) # kappa_tau=1.0,
+    combinecmd += " --freezeParameters kappa_t,kappa_V,"
+    combinecmd += "kappa_mu,kappa_b,kappa_c" # kappa_tau, ,kappa_g, kappa_gam, r,
     #combinecmd += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
     combinecmd += " --redefineSignalPOIs r"
 
@@ -87,30 +83,41 @@ def runNLLScan(card, outfolder, kV, setratio=None, verbose=False, toysFile=None,
 
     comboutput = runCombineCommand(combinecmd, card, verbose=verbose, outfolder=outfolder)
     elapsed = parseOutput(comboutput)
+    #bestfitr_r1 = 1
+    #dnll_r1 = 1
     try:
-        data = getNLLFromRootFile(outfolder + "/higgsCombine_nll_scan_r1_%s.MultiDimFit.mH125.root" % filetag)
+        data = getNLLFromRootFile(outfolder + "/higgsCombine_nll_scan_r%s_%s.MultiDimFit.mH125.root" % (rate, filetag))
         printout += "r=%5.2f, dNLL=%+7.3f " % (data[0][0], data[1][1])
+        #bestfitr_r1 = data[0][0]
+        #dnll_r1 = data[1][1]
     except AssertionError, IndexError:
         return np.nan, np.nan
+        #bestfitr_r1 = np.nan
+        #dnll_r1 = np.nan
 
     printout += "  \033[92mDone\033[0m in %.2f min" % elapsed
     print printout
 
     return (data[0][0], data[1][1])
+    #return (bestfitr_r1, dnll_r1 - dnll_r0)
 
 def main(args, options):
     #cards, runtag = processInputs(args, options)
     cards = glob.glob(options.cards + "/ws*.root")
     runtag = options.tag
+    rate = str(options.rate)
 
     if options.toysFile:
         runtag += "_toys"
     if options.blind :
         runtag += "_blinded"
-    csvfname = options.outputFolder + '/nll_scan%s.csv' % runtag
-    pool = multiprocessing.Pool(processes=options.jobs)
+
 
     futures = []
+
+    pool = multiprocessing.Pool(processes=options.jobs)
+
+    csvfname = options.outputFolder + '/nll_scan_r%s_%s.csv' % (str(rate), runtag)
     for card in cards:
         cv, ct, cosa, tag = parseName(card, printout=True)
         if not cosa == 1.0 and not options.cosa:
@@ -122,7 +129,7 @@ def main(args, options):
         ratio = round(ct/cv, 3)
         future = pool.apply_async(runNLLScan, (card,
                                                options.outputFolder,
-                                               options.kV,
+                                               options.kV, rate,
                                                ratio,
                                                options.printCommand,
                                                options.toysFile,
@@ -133,7 +140,7 @@ def main(args, options):
             for added_val in ADD_RATIO_VALS.get(ratio):
                 future = pool.apply_async(runNLLScan, (card,
                                                        options.outputFolder,
-                                                       options.kV,
+                                                       options.kV, rate,
                                                        added_val,
                                                        options.printCommand,
                                                        options.toysFile,
@@ -161,7 +168,7 @@ def main(args, options):
 
         csvfile.write('\n')
 
-    print "...wrote results to %s" % csvfname
+        print "...wrote results to %s" % csvfname
 
     return 0
 
@@ -195,6 +202,8 @@ if __name__ == '__main__':
     parser.add_option("--addValues", dest="addValues", action='store_true',
                       help="Add three steps between each point for interpolation")
     parser.add_option("-o","--outputFolder", dest="outputFolder", type="string", default="",
+                      help="where to save the outputs of combine run")
+    parser.add_option("-r","--rate", dest="rate", type="string", default="0",
                       help="where to save the outputs of combine run")
     parser.add_option("--kV", dest="kV", type="float", default=1.0,
                       help="KappaV to consider")

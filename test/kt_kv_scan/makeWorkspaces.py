@@ -12,10 +12,11 @@ def makeWorkspace(card, outname, options, outputFolder, verbose=False):
     cmd = "text2workspace.py"
     cmd += " %s" % options
     cmd += " -o %s" % outname
+    cmd += " --PO BRU=0" 
     cmd += " %s" % card
     #print (cmd)
 
-    if verbose: 
+    if verbose:
         print 40*'-'
         print cmd
         print 40*'-'
@@ -94,4 +95,3 @@ if __name__ == '__main__':
         print "%s (%d/%d)" % (printout, n, len(futures))
 
     print " \033[1m \033[92mAll Done\033[0m in %.2f min" % ((time.time()-starttime)/60.)
-

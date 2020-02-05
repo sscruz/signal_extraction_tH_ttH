@@ -21,14 +21,14 @@ from mpl_toolkits.mplot3d import axes3d
 import sys, os, re, shlex
 import multiprocessing
 from subprocess import Popen, PIPE
- 
+
 ## FIXME: This should dump the limits for each card as it is running,
 ##        not all together at the end.
 
 def runCombineCommand(combinecmd, card, verbose=False, outfolder=".", queue=None, submitName=None):
     print ("----------------------------------------------")
     print (combinecmd)
-    if verbose: 
+    if verbose:
         print 40*'-'
         print "%s %s" % (combinecmd, card)
         print 40*'-'
@@ -41,7 +41,8 @@ def runCombineCommand(combinecmd, card, verbose=False, outfolder=".", queue=None
     return comboutput
 
 def process(inputfile, xaxis):
-    df = pd.read_csv(inputfile, sep=",", index_col=None) 
+    print ("inputfile", inputfile)
+    df = pd.read_csv(inputfile, sep=",", index_col=None)
 
     # Drop failed fit results
     df.dropna(subset=['dnll'], inplace=True)
@@ -64,38 +65,47 @@ def process(inputfile, xaxis):
     return df
 
 allPoints = pd.DataFrame()
-init = -29
+init = 5
 for kVint in range(init, 29) :
     kV = float(kVint)/10
-    if kV == 0.2 : continue
-    #runCombineCommand(
-    #    "python test/kt_kv_scan/runNLLScan.py  -c /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt//tHq_pdas_3l_ws/ -j 8 --outputFolder /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/tHq_pdas_3l_ws_2/ -t kV_%s --kV %s" % (str(kV).replace(".","p"), str(kV)),
-    #    "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH"
-    #)
-    filename = "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/tHq_pdas_3l_ws_2//nll_scankV_%s.csv" % str(kV).replace(".","p")
-    if kVint == init : 
-        allPoints = process(filename, "rescalect") 
+    #if kV == 0.2 : continue
+    runCombineCommand(
+        "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL_tH/results/ -j 8 --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL_tH/results -t kV_%s --kV %s -r 0" % (str(kV).replace(".","p"), str(kV)),
+        "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/signal_extraction_tH_ttH"
+    )
+    runCombineCommand(
+        "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL_tH/results/ -j 8 --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL_tH/results -t _kV_%s --kV %s -r 1" % (str(kV).replace(".","p"), str(kV)),
+        "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/signal_extraction_tH_ttH"
+    )
+    # nll_scan_r0__kv_1p0.csv
+    filename = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL_tH/results/nll_scan_r1_kV_%s.csv" % str(kV).replace(".","p")
+    if kVint == init :
+        allPoints = process(filename, "rescalect")
     else :
         allPoints = allPoints.append(process(filename, "rescalect"), ignore_index=True) #
-#print allPoints
+allPoints.dropna(inplace=True)
+allPoints.drop(allPoints.loc[ (allPoints['cf']==-1) &  (allPoints['cv']==1) ].index, inplace=True)
+print allPoints
 
+"""
 outfile = "plots/teste_2D_kappa_nopoints"
-x1 = np.linspace(-5, 5, len(allPoints["rescalect"].unique()))
-y1 = np.linspace(-3, 3, len(allPoints["rescalecv"].unique()))
+x1 = np.linspace(-2, 2, len(allPoints["rescalect"].unique()))
+y1 = np.linspace(-2, 2, len(allPoints["rescalecv"].unique()))
 x2, y2 = np.meshgrid(x1, y1)
 z2 = griddata((allPoints["rescalect"], allPoints["rescalecv"]), allPoints['dnll'], (x2, y2), method='cubic')
 
 fig, ax = plt.subplots(figsize=(6, 6))
-levels = [-1.0, 2.0 ] #np.arange(4.0, 9.0 ) 
+levels = [-1.0, 2.0 ] #np.arange(4.0, 9.0 )
 CS = ax.contour(x2, y2, z2-2.0, levels, colors='k',)
 ax.clabel(CS, inline=False, fontsize=10, )
-#ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
+ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
 
-ax.set_xlim(-5, 5)
-ax.set_ylim(-3, 3)
+ax.set_xlim(-2, 2)
+ax.set_ylim(-2, -0.5)
 
 ax.set_xlabel("kt" , fontsize=24, labelpad=20)
 ax.set_ylabel("kv", fontsize=24, labelpad=20)
 
-plt.savefig("%s.pdf"%outfile, bbox_inches='tight')
-plt.savefig("%s.png"%outfile, bbox_inches='tight', dpi=300)
+plt.savefig("%s_neg.pdf"%outfile, bbox_inches='tight')
+plt.savefig("%s_neg.png"%outfile, bbox_inches='tight', dpi=300)
+#"""

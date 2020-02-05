@@ -1,6 +1,6 @@
 #####################################################################
 ## How to do?
-blinded         = True
+blinded         = False
 blindedOutput   = False ## do not draw the rate on the impacts plot
 sendToCondor    = False ## Impacts / GOF / likelihood scans for combo need it
 sendToLXBatch   = False ## the mu's result retrieval are not working in condor -- but they work with lxbatch
@@ -13,16 +13,21 @@ sendToLXBatch   = False ## the mu's result retrieval are not working in condor -
 # (like this, they can be also done in parallel)
 
 # 0) Combo results
-doWS                    = True ## To do any of the rest you must have ran with this being True once
+doWS                    = False ## To do any of the rest you must have ran with this being True once
 doRateAndSignificance   = False
 doLimits                = False
 do2Dlikelihoods         = False
+do2DlikelihoodsttV      = False
 
 # 1) results by category
 doCategoriesWS            = False ## To do any of the rest you must have ran with this being True once
 doCategoriesLimitsFromMu1 = False
 doCategoriesMu            = False
 doCategoriesLimits        = False
+doCategoriesSig           = False
+
+doCategoriesWS_tH         = False
+doCategoriesMu_tH         = False
 
 # 2)
 # for combo is almost mandatory send impacts calculation to grid, -- update instructions
@@ -56,10 +61,10 @@ GOF_submit = False
 # 5)
 # OR you do from Combine or from from Havester
 preparePlotCombine  = False
-preparePlotHavester = True
+preparePlotHavester = False
 doPostFit           = False # if False do Prefit only, it True it does both
 plainBins           = True # relevant only for the PlotHavester
-doTablePrefit       = True
+doTablePrefit       = False
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
@@ -72,6 +77,6 @@ doRatesByLikScan        = False
 doCategoriesMuAndLimits = False
 
 ## The bellow makes a fit on kt assuming SM kinematics all the way: useful to setups and checks
-do_kt_scan_no_kin       = False
+do_kt_scan_no_kin       = True
 do2Dlikelihoods_with_tH = False ## Warning: it assumes SM kinematics for tH for all couplings, only for plots setup
 #####################################################################

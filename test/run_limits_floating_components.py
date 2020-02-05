@@ -142,6 +142,7 @@ if options.tH : signals += ["tH"]
 
 if doRateAndSignificance :
     for signal in signals :
+      if signal == "tH" : continue
       for ss, statements in enumerate(doFor) :
         if ss == 1 : label = "data"
         if ss == 0 : label = "asimov"
@@ -156,7 +157,7 @@ if doRateAndSignificance :
         cmd += " %s" % blindStatement
         cmd += " %s" % redefine
         cmd += " %s " % setpar
-        runCombineCmd(cmd, FolderOut, saveout="%s_significance_%s_%s.log" % (cardToRead, label, signal))
+        #runCombineCmd(cmd, FolderOut, saveout="%s_significance_%s_%s.log" % (cardToRead, label, signal))
 
         cmd = "combineTool.py  -M MultiDimFit"
         cmd += " %s_WS.root" % cardToRead
@@ -165,19 +166,30 @@ if doRateAndSignificance :
         cmd += " %s" % redefine
         cmd += " -P r_%s" % signal
         cmd += " %s " % setpar
-        cmd += " --floatOtherPOI=1 --saveFitResult -n step1  --saveWorkspace"
-        runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s.log" % (cardToRead, label, signal))
+        cmd += " --floatOtherPOI=1 --saveFitResult -n step1%s  --saveWorkspace" % cardToRead
+        #runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s.log" % (cardToRead, label, signal))
         ## --saveWorkspace to extract the stats only part of the errors and the limit woth mu=1 injected
         ### Some example of this concept here: https://cms-hcomb.gitbooks.io/combine/content/part3/commonstatsmethods.html#useful-options-for-likelihood-scans
         # --freezeParameters (instead of -S 0) also work on the above
 
-        if ss == 1 :
+        cmd = "combineTool.py  -M MultiDimFit"
+        cmd += " %s_WS.root" % cardToRead
+        cmd += " --algo singles --cl=0.68"
+        cmd += " %s" % blindStatement
+        cmd += " %s" % redefine
+        cmd += " -P r_%s" % signal
+        cmd += " %s -S 0" % setpar
+        cmd += " --floatOtherPOI=1 --saveFitResult -n step1statsonly  --saveWorkspace"
+        runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s_stats_only_scratch.log" % (cardToRead, label, signal))
+
+        if 0 < 1 : # ss == 1 :
             ## Rate: stats only
             cmd = "combine -M MultiDimFit "
-            cmd += " -d  higgsCombinestep1.MultiDimFit.mH120.root"
+            cmd += " -d  higgsCombinestep1%s.MultiDimFit.mH120.root" % cardToRead
             cmd += " -w w --snapshotName \"MultiDimFit\" "
-            cmd += " -n teststep2 %s_WS" % cardToRead
+            cmd += " -n teststep2_%s" % cardToRead
             cmd += " -P r_%s" % signal
+            cmd += " %s" % blindStatement
             cmd += " -S 0 --algo singles"
             runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_stats_only.log" % (cardToRead, signal))
 
@@ -224,7 +236,8 @@ if do2Dlikelihoods :
         bkgs += ["tH"]
     ## ttH x (ttZ , ttW)
     for bkg in bkgs :
-      ranges = "-3,3" if bkg == "tH" else "-1,2"
+      if not bkg == "tH" : continue
+      ranges = "-10,10" if bkg == "tH" else "-2,3"
       for typeFit in ["central", "68", "95"] :
         cmd = "combine -M MultiDimFit "
         cmd += " %s_WS.root" % cardToRead
@@ -235,9 +248,9 @@ if do2Dlikelihoods :
             cmd += " --cl=0.%s" % typeFit
             cmd += " --algo contour2d --points=10 "
         else :
-            cmd += " --algo grid --points 800 "
+            cmd += " --algo grid --points 1800 "
         cmd += " --redefineSignalPOIs r_ttH,r_%s" % bkg
-        cmd += " --setParameterRanges r_ttH=-1,2:r_%s=%s" % (bkg,ranges)
+        cmd += " --setParameterRanges r_ttH=-2,3:r_%s=%s" % (bkg,ranges)
         cmd += " --setParameters"
         ##TODO: set the other parameter to one
         countcoma = 0
@@ -258,6 +271,52 @@ if do2Dlikelihoods :
       cmd += " --outputFolder  %s" % FolderOut
       runCombineCmd(cmd)
       print ("saved " +  "%s/nllscan_%s-vs_ttH_%s.pdf" % (FolderOut, bkg, namePlot))
+      # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_tH_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_tH_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_tH_95_asimov.root --second tH  --plotName 68only  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
+      # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttZ_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttZ_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttZ_95_asimov.root --second ttZ  --plotName 68only  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
+      # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttW_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttW_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttW_95_asimov.root --second ttW  --plotName 68only  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
+      # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttW_ttZ_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttW_ttZ_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttW_ttZ_95_asimov.root --second ttW  --plotName 68onlyttV  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
+
+if do2DlikelihoodsttV :
+    for ss, statements in enumerate(doFor) :
+      if ss == 1 : label = "data"
+      if ss == 0 : label = "asimov"
+      ## (ttZ X ttW)
+      for typeFit in ["central", "68", "95"] :
+        cmd = "combine -M MultiDimFit "
+        cmd += " %s_WS.root" % cardToRead
+        cmd += " %s" % blindStatement
+        cmd += " -n For2D_ttZ_ttW_%s" % ( typeFit)
+        cmd += " --fastScan"
+        if not typeFit == "central":
+            cmd += " --cl=0.%s" % typeFit
+            cmd += " --algo contour2d --points=10 "
+        else :
+            cmd += " --algo grid --points 800 "
+        cmd += " --redefineSignalPOIs r_ttZ,r_ttW"
+        cmd += " --setParameterRanges r_ttZ=-2,3:r_ttW=-2,3"
+        cmd += " --setParameters"
+        ##TODO: set the other parameter to one
+        countcoma = 0
+        cmd += " r_ttH=1.0,r_tH=1.0"
+        #for rest in list(set(list(bkgs))) :
+        #    if countcoma == 0 : cmd += " r_%s=1.0" % rest
+        #    else : cmd += ",r_%s=1.0" % rest
+        #    countcoma += 1
+        #    #--setParameters kappa_t=1.0,kappa_V=1.0,r_ttH=1,r_tH=1
+        runCombineCmd(cmd, FolderOut)
+        runCombineCmd("mv higgsCombineFor2D_ttZ_ttW_%s.MultiDimFit.mH120.root %s_2Dlik_ttZ_ttW_%s_%s.root"  % (typeFit, cardToRead, typeFit, label), FolderOut)
+      cmd = "python test/plot2DLLScan.py "
+      cmd += " --input %s/%s_2Dlik_ttZ_ttW_%s_%s.root" % (FolderOut, cardToRead, "central", label)
+      cmd += " --input68 %s/%s_2Dlik_ttZ_ttW_%s_%s.root" % (FolderOut, cardToRead,  "68", label)
+      cmd += " --input95 %s/%s_2Dlik_ttZ_ttW_%s_%s.root" % (FolderOut, cardToRead, "95", label)
+      cmd += " --second ttW"
+      cmd += " --first ttZ"
+      cmd += " --plotName  %s" % namePlot
+      cmd += " --label  %s" % namePlot
+      cmd += " --outputFolder  %s" % FolderOut
+      runCombineCmd(cmd)
+      print ("saved " +  "%s/nllscan_%s-vs_ttZ_ttW.pdf" % (FolderOut,  namePlot))
+
 
 if doHessImpacts :
     # hessian impacts
@@ -346,7 +405,8 @@ if doCategoriesWS :
     cmd += " %s" % floating_ttV
     cmd += " %s" % float_sig_rates
     cmd += " %s" % floating_by_cat
-    runCombineCmd(cmd, folderCat)
+    print (cmd)
+    #runCombineCmd(cmd, folderCat)
 
 if doCategoriesMu :
     runCombineCmd("mkdir %s"  % (folderCat))
@@ -362,12 +422,14 @@ if doCategoriesMu :
     for rate in sigRates : parameters = parameters + ",r_"+rate+"=1"
     print ("Will fit the parameters "+parameters)
     for rate in sigRates + bkgs :
-        if rate in ["ttH_2lss_0tau",
-        "ttH_3l_0tau",
-        "ttH_4l",
-        "ttH_2lss_1tau",
-        "ttH_3l_1tau",
-        "ttH_2l_2tau",] : continue
+        #if rate in [
+        #"ttH_2lss_0tau",
+        #"ttH_3l_0tau",
+        #"ttH_4l",
+        #"ttH_2lss_1tau",
+        #"ttH_3l_1tau",
+        #"ttH_2l_2tau",
+        #] : continue
         cmd = "combineTool.py -M MultiDimFit"
         cmd += " %s_Catpoi_final.root" % cardToRead
         cmd += " %s" % blindStatement
@@ -376,11 +438,109 @@ if doCategoriesMu :
         cmd += " -P r_%s" % rate
         cmd += " -n rate_%s_%s" % (rate, namePlot)
         cmd += " --floatOtherPOI=1 --cminDefaultMinimizerType Minuit --keepFailures" #  -S 0
+        #if sendToCondor :
+        #    cmd += " %s ttH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
+        #    runCombineCmd(cmd, folderCat)
+        #else :
+        #    runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
+        print (cmd)
+
+if doCategoriesSig :
+    runCombineCmd("mkdir %s"  % (folderCat))
+    ## test foldercat
+    parameters = ""
+    if options.ttW : parameters += "r_ttW=1"
+    if options.ttZ :
+        if options.ttW : parameters += ","
+        parameters += "r_ttZ=1"
+    if options.tH :
+        if options.ttW or options.ttZ : parameters += ","
+        parameters += "r_tH=1"
+    for rate in sigRates : parameters = parameters + ",r_"+rate+"=1"
+    print ("Will fit the parameters "+parameters)
+    for rate in sigRates + bkgs :
+        #if rate in [
+        #"ttH_2lss_0tau",
+        #"ttH_3l_0tau",
+        #"ttH_4l",
+        #"ttH_2lss_1tau",
+        #"ttH_3l_1tau",
+        #"ttH_2l_2tau",
+        #] : continue
+        cmd = "combineTool.py -M MultiDimFit"
+        cmd += " %s_Catpoi_final.root" % cardToRead
+        cmd += " %s" % blindStatement
+        cmd += " --setParameters %s" % parameters
+        cmd += " -M Significance --signif " # remember why it was --algo none
+        cmd += " --redefineSignalPOI r_%s" % rate
+        cmd += " -n rate_%s_%s" % (rate, namePlot)
+        cmd += " --floatOtherPOI=1 --cminDefaultMinimizerType Minuit --keepFailures" #  -S 0
         if sendToCondor :
             cmd += " %s ttH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
             runCombineCmd(cmd, folderCat)
         else :
-            runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
+            runCombineCmd(cmd, folderCat, saveout="%s_sig_%s_%s.log" % (cardToRead, rate, namePlot))
+        #print (cmd)
+
+#cmd = "combineTool.py -M Significance --signif"
+#cmd += " %s_WS.root" % cardToRead
+#cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
+#cmd += " %s" % blindStatement
+#cmd += " %s" % redefine
+#cmd += " %s " % setpar
+
+if doCategoriesWS_tH :
+    runCombineCmd("mkdir %s"  % (folderCat))
+    floating_by_cat = ""
+    for sigRate in sigRates :
+        floating_by_cat += " --PO 'map=.*%s.*/tH.*:r_%s[1,-100,100]'" % (sigRate.replace("ttH", "tH"), sigRate.replace("ttH", "tH"))
+    cmd = "text2workspace.py "
+    cmd += " %s/../%s.txt" % (FolderOut, cardToRead)
+    cmd += " -o %s_Catpoi_final_tH.root" % cardToRead
+    cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
+    cmd += " %s" % floating_ttV
+    cmd += " %s" % float_sig_rates
+    cmd += " %s" % floating_by_cat
+    runCombineCmd(cmd, folderCat)
+
+if doCategoriesMu_tH :
+    runCombineCmd("mkdir %s"  % (folderCat))
+    ## test foldercat
+    parameters = ""
+    if options.ttW : parameters += "r_ttW=1"
+    if options.ttZ :
+        if options.ttW : parameters += ","
+        parameters += "r_ttZ=1"
+    parameters += "r_ttH=1"
+    #if options.tH :
+    #    if options.ttW or options.ttZ : parameters += ","
+    #    parameters += "r_tH=1"
+    for rate in sigRates : parameters = parameters + ",r_"+rate.replace("ttH", "tH")+"=1"
+    print ("Will fit the parameters "+parameters)
+    for rate in sigRates :
+        #if rate in [
+        #"ttH_2lss_0tau",
+        #"ttH_3l_0tau",
+        #"ttH_4l",
+        #"ttH_2lss_1tau",
+        #"ttH_3l_1tau",
+        #"ttH_2l_2tau",
+        #] : continue
+        cmd = "combineTool.py -M MultiDimFit"
+        cmd += " %s_Catpoi_final_tH.root" % cardToRead
+        cmd += " %s" % blindStatement
+        cmd += " --setParameters %s" % parameters
+        cmd += " --algo singles --cl=0.68" # remember why it was --algo none
+        cmd += " -P r_%s" % rate.replace("ttH", "tH")
+        cmd += " -n rate_%s_%s" % (rate.replace("ttH", "tH"), namePlot)
+        cmd += " --floatOtherPOI=1 --cminDefaultMinimizerType Minuit --keepFailures" #  -S 0
+        cmd += " --freezeParameters r_ttH "
+        if sendToCondor :
+            cmd += " %s tH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
+            runCombineCmd(cmd, folderCat)
+        else :
+            runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate.replace("ttH", "tH"), namePlot))
+        # python test/makeMuPlot.py --input_folder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/categories_combo_ttHmultilep_2018/ --era 2018 --is_tH
 
 if doCategoriesLimits :
     runCombineCmd("mkdir %s"  % (folderCat))

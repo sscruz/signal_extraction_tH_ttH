@@ -28,6 +28,7 @@ def parseName(card, printout=False):
     # Turn the tag into floats:
     toparse = card.split("/")[len(card.split("/"))-1]
     if printout : print ("parsing ", toparse)
+    # ws_combo_ttHmultilep_kt_m3_kv_1_K7.root
     #tag = re.match(r'.*\_([\dpm]+\_[\dpm]+).*\.card\_K7\.(txt|root)', os.path.basename(card))
     tag = re.match(r'.*kt\_([\dpm]+\_kv\_[\dpm]+)\_K7\.(txt|root)', os.path.basename(card))
     #tag = re.match(r'.*kt\_([\dpm]+\_kv\_[\dpm]+)\.(txt|root)', os.path.basename(card))

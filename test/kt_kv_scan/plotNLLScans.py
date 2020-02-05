@@ -23,17 +23,20 @@ from plotLimit import setUpMPL
 
 ## type 1
 
-def process(inputfile, xaxis, added=None):
+def process(inputfile, filename_r0, xaxis, added=None):
     df = pd.read_csv(inputfile, sep=",", index_col=None)
+    df_r0 = pd.read_csv(filename_r0, sep=",", index_col=None)
 
     # Drop failed fit results
     df.dropna(subset=['dnll'], inplace=True)
+    df_r0.dropna(subset=['dnll'], inplace=True)
 
-    # Calculate relative NLL
-    if not 'dnll'in df.columns:
-        df['dnll'] = 2*(df.nllr1 - df.nllr0)
-    else:
-        df['dnll'] = -2*df.dnll
+    ## Calculate relative NLL
+    #if not 'dnll'in df.columns:
+    #    df['dnll'] = 2*(df.nllr1 - df.nllr0)
+    #else:
+    #    df['dnll'] = -2*df.dnll
+    df['dnll'] = 2*(df.dnll - df_r0.dnll)
 
     # Add in ratio column if it's not there
     if not 'ratio' in df.columns:
@@ -52,9 +55,11 @@ def process(inputfile, xaxis, added=None):
     # Add interpolating points?
     if added:
         df = addInterpolatingPoints(df, added, npoints=3)
+    df.dropna(inplace=True)
 
     # Shift dnll up by lowest value
     dnllmin = np.min(df.dnll)
+    print(df.dnll)
     idxmin = df.dnll.idxmin()
     assert(df.loc[idxmin].dnll == dnllmin), "inconsistent minimum?"
     print '... shifting dnll values by %5.3f (at %4.2f) for %s' % (np.abs(dnllmin), df.loc[idxmin][xaxis], inputfile)
@@ -122,10 +127,12 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
         print ("reading: ", filename )
         if 'inputdir' in cfg:
             filename = os.path.join(cfg['inputdir'], entry['csv_file'])
+            filename_r0 = os.path.join(cfg['inputdir'], entry['csv_file_r0'])
         #entry['df'] = process(filename)
-        xaxis = cfg["xaxis"]
+        #print cfg
+        xaxis =  cfg["xaxis"]
         x_axis_label = cfg['x_axis_label']
-        entry['df'] = process(filename, xaxis, added=entry.get('csv_file_interp'))
+        entry['df'] = process(filename, filename_r0, xaxis, added=entry.get('csv_file_interp'))
 
     fig, ax = plt.subplots(1)
 
@@ -144,7 +151,7 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
             ax.plot(x2, spline, ls=entry['line_style'], lw=entry['line_width'], color=entry['color'],zorder=0)
         ax.scatter(df.loc[df[xaxis]<=cfg['xmax']].loc[df[xaxis]>=-cfg['xmax']][xaxis],
                    df.loc[df[xaxis]<=cfg['xmax']].loc[df[xaxis]>=-cfg['xmax']].dnll,
-                marker=entry['marker_style'], s=30, c=entry['color'], lw=entry['line_width'])
+                marker="o", s=70, c=entry['color'], lw=entry['line_width']) # entry['marker_style']
 
     # Configure axes
     ax.get_xaxis().set_tick_params(which='both', direction='in')
@@ -156,6 +163,7 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
         ax.get_xaxis().set_major_locator(mpl.ticker.MultipleLocator(1.0))
         ax.get_xaxis().set_minor_locator(mpl.ticker.MultipleLocator(0.10))
         ax.set_xlim(-cfg['xmax'], cfg['xmax'])
+    ax.set_ylim(0., 30)
 
     ax.axhline(1.0, lw=0.5, ls='--', color='gray')
     ax.axhline(4.0, lw=0.5, ls='--', color='gray')

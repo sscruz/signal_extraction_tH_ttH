@@ -13,6 +13,7 @@ gROOT.SetBatch(1)
 
 from optparse import OptionParser
 parser = OptionParser()
+parser.add_option("--first", type="string", dest="first", help="from grid in multidim fit", default="ttH")
 parser.add_option("--second", type="string", dest="second", help="from grid in multidim fit", default="none")
 parser.add_option("--label", type="string", dest="label", help="from grid in multidim fit", default="none")
 parser.add_option("--plotName", type="string", dest="plotName", help="from grid in multidim fit", default="none")
@@ -24,17 +25,18 @@ parser.add_option("--input95", type="string", dest="input95", help="from grid in
 
 to_do  = options.second
 folder = options.outputFolder
+to_do_first  = options.first
 
 def BestFit(tree):
-    n = tree.Draw( "r_ttH:r_"+to_do, "quantileExpected == -1", "")
+    n = tree.Draw( "r_" + to_do_first + ":r_"+to_do, "quantileExpected == -1", "")
     gr = gROOT.FindObject("Graph").Clone()
     bestFit = (gr.GetX()[0], gr.GetY()[0])
-    print "BestFit from tree68: (%s, r_ttH)"%to_do, bestFit
+    print "BestFit from tree68: (%s, r_%s)" % (to_do, to_do_first), bestFit
     return bestFit
 
 def contourPlot(tree, pmin, pmax, bestFit=(10.1, 1.5)):
-    n = tree.Draw("r_ttH:r_"+to_do, "%f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1" % (pmin,pmax), "")
-    print "Drawing for r_ttH:%s, %f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1 yielded %d points" % (to_do,pmin, pmax, n)
+    n = tree.Draw("r_" + to_do_first + ":r_"+to_do, "%f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1" % (pmin,pmax), "")
+    print "Drawing for r_%s:%s, %f <= quantileExpected && quantileExpected <= %f && quantileExpected != 1 yielded %d points" % (to_do_first, to_do,pmin, pmax, n)
     gr = gROOT.FindObject("Graph").Clone()
 
     xi = gr.GetX()
@@ -68,8 +70,8 @@ tf = TFile.Open(options.input, "READ")
 tree = tf.Get("limit")
 
 #to_do = sys.argv[2]
-if to_do == "ttW" or to_do == "ttZ" : limitssecond = "-5,5"
-else : limitssecond = "-40,40"
+if to_do == "ttW" or to_do == "ttZ" : limitssecond = "-2,3"
+else : limitssecond = "-10,10"
 
 addLabel = options.label
 
@@ -130,7 +132,7 @@ canv.SetBottomMargin(0.10)
 canv.SetLeftMargin(0.08)
 canv.SetRightMargin(0.12)
 
-tree.Draw("2*deltaNLL:r_ttH:r_"+to_do+">>hist(50,"+limitssecond+",50,-5,5)","2*deltaNLL<10","prof")
+tree.Draw("2*deltaNLL:r_" + to_do_first + ":r_"+to_do+">>hist(50,"+limitssecond+",50,-2,3)","2*deltaNLL<10","prof")
 
 hist = gDirectory.Get("hist")
 hist.SetMarkerColor(0)
@@ -142,14 +144,14 @@ hist.GetXaxis().SetTitleOffset(0.8)
 hist.GetYaxis().SetTitleOffset(0.7)
 hist.GetZaxis().SetTitleOffset(0.5)
 hist.GetXaxis().SetTitle("#mu_{"+to_do.replace("r_","")+"}")
-hist.GetYaxis().SetTitle("#mu_{t#bar{t}H}")
+hist.GetYaxis().SetTitle("#mu_{t#bar{t}Z}")
 hist.GetZaxis().SetTitleFont(43)
 hist.GetZaxis().SetTitleSize(28)
 hist.GetZaxis().SetTitle("-2#Delta lnL")
 
 print "GetCorrelationFactor: %.3f" % hist.GetCorrelationFactor()
 
-tree.Draw("r_ttH:r_"+to_do,"quantileExpected == -1","P same")
+tree.Draw("r_" + to_do_first + ":r_"+to_do,"quantileExpected == -1","P same")
 best_fit = gROOT.FindObject("Graph").Clone()
 best_fit.SetMarkerSize(2)
 best_fit.SetMarkerColor(0)
@@ -198,9 +200,8 @@ if doContours :
 leg.Draw()
 
 if folder == "" :
-    saveout = "nllscan_%s-vs_ttH_%s.pdf" % (folder, to_do, options.plotName)
+    saveout = "nllscan_%s-vs_%s_%s.pdf" % (folder, to_do, to_do_first, options.plotName)
 else :
-    saveout = "%s/nllscan_%s-vs_ttH_%s.pdf" % (folder, to_do, options.plotName)
+    saveout = "%s/nllscan_%s-vs_%s_%s.pdf" % (folder, to_do, to_do_first, options.plotName)
 print "SaveAs %s" % (saveout)
 canv.SaveAs(saveout)
-
