@@ -80,8 +80,8 @@ def options_plot (analysis, channel, all_procs) :
         # change the order of the stack if channel is dominated by fakes
         if channel in [ "1l_2tau", "2l_2tau"] :
             ## remove "fakes_data" from first entry and add as last
-            del dprocs[fakes]
-            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Mis."        , "make border" : True}
+            del dprocs["data_fakes"]
+            dprocs["data_fakes"]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Mis."        , "make border" : True}
         if channel in ["0l_2tau", "1l_1tau", "2los_1tau"] :
             #del dprocs["DY"]
             dprocs["DY"]                                  = {"color" : 221, "fillStype" : 1001, "label" : "DY"         , "make border" : True}
@@ -218,7 +218,7 @@ def options_plot_ranges (analysis) :
                 "cats" : ["eee" , "eem", "emm", "mmm"]
                 },
             "4lctrl" : {
-                "minY" : 0.1,    "maxY" :  50000.,
+                "minY" : 0.1,    "maxY" :  100000.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : True,
                 "label" : '4l + 0#tau_{h} CR',
@@ -247,12 +247,12 @@ def options_plot_ranges (analysis) :
                 "cats" : [""]
                 },
             "1l_2tau"   : {
-                "minY" : 0.1,  "maxY" :  5000.,
+                "minY" : 0.1,  "maxY" :  25.,
                 "minYerr": 0.59,  "maxYerr" : 1.87,
-                "useLogPlot" : True,
+                "useLogPlot" : False,
                 "label" : '1l + 2#tau_{h}',
                 "position_cats": 300. ,
-                "labelX" : "BDT", "cats" : [""]
+                "labelX" : "mTauTauVis (GeV)", "cats" : [""]
                 },
             "2los_1tau" : {
                 "minY" : 0.07,  "maxY" :  5000.,
@@ -458,7 +458,7 @@ def list_channels_draw(analysis) :
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
         "1l_2tau"   : {
-            "bkg_proc_from_data" : [fakes       ],
+            "bkg_proc_from_data" : [ "data_fakes"      ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "VH", "HH", "TTWH", "TTZH"]
             },
