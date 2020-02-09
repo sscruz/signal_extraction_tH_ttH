@@ -162,14 +162,35 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
 
 def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histtotal) :
     if not fromHavester :
+
         dataTGraph = fin[0].Get(folder + "/data")
+        print("adding", folder + "/data")
+        allbins = GetNonZeroBins(histtotal)
         if len(fin) == 3 :
             for eraa in [1,2] :
-                print (" X: I am not sure that Add works for TGraph. This was not tested. When we test, if it works remove this comment")
                 if eraa == 1 : folderRead = folder.replace("2018", "2017")
                 if eraa == 2 : folderRead = folder.replace("2018", "2016")
-                dataTGraph.Add(fin[eraa].Get(folderRead + "/data"))
-        allbins = GetNonZeroBins(histtotal)
+                dataTGraph2 = fin[eraa].Get(folderRead + "/data")
+                print("adding", folderRead + "/data", lastbin)
+                #dataTGraph.Merge(dataTGraph2)
+                #"""
+                for ii in xrange(0, allbins) :
+                    xp = ROOT.Double()
+                    yp = ROOT.Double()
+                    dataTGraph.GetPoint(ii, xp, yp)
+                    xp2 = ROOT.Double()
+                    yp2 = ROOT.Double()
+                    dataTGraph2.GetPoint(ii, xp2, yp2)
+                    print(folderRead, "sum data", ii, xp, yp, yp2, yp + yp2)
+                    #dataTGraph.Add(fin[eraa].Get(folderRead + "/data"))
+                    dataTGraph.SetPoint(      ii ,  template.GetBinCenter(ii + 1) , (yp + yp2))
+                    dataTGraph.SetPointEYlow( ii ,  math.sqrt(dataTGraph.GetErrorYlow(ii)*dataTGraph.GetErrorYlow(ii) + dataTGraph2.GetErrorYlow(ii)*dataTGraph2.GetErrorYlow(ii)))
+                    dataTGraph.SetPointEYhigh(ii ,  math.sqrt(dataTGraph.GetErrorYhigh(ii)*dataTGraph.GetErrorYhigh(ii) + dataTGraph2.GetErrorYhigh(ii)*dataTGraph2.GetErrorYhigh(ii)))
+                    dataTGraph.SetPointEXlow( ii ,  template.GetBinWidth(ii+1)/2.)
+                    dataTGraph.SetPointEXhigh(ii ,  template.GetBinWidth(ii+1)/2.)
+                #"""
+                del dataTGraph2
+        #del dataTGraph
         for ii in xrange(0, allbins) :
             bin_width = 1.
             if divideByBinWidth :
@@ -182,8 +203,10 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
             dataTGraph1.SetPointEYhigh(ii + lastbin,  dataTGraph.GetErrorYhigh(ii)/bin_width)
             dataTGraph1.SetPointEXlow( ii + lastbin,  template.GetBinWidth(ii+1)/2.)
             dataTGraph1.SetPointEXhigh(ii + lastbin,  template.GetBinWidth(ii+1)/2.)
+        del dataTGraph
     else :
         dataTGraph = fin[0].Get(folder + "/data_obs")
+        print("adding", folder + "/data_obs")
         if len(fin) == 3 :
             for eraa in [1,2] :
                 if eraa == 1 : folderRead = folder.replace("2018", "2017")
@@ -191,7 +214,6 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
                 dataTGraph.Add(fin[eraa].Get(folderRead + "/data_obs"))
         allbins = GetNonZeroBins(histtotal)
         for ii in xrange(1, allbins+1) :
-
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
             ## if we would like to blind the last 2 bins
@@ -201,6 +223,8 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
             #else :
             dataTGraph1.SetBinContent(ii + lastbin, dataTGraph.GetBinContent(ii)/bin_width)
             dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)
+        #del dataTGraph
+        dataTGraph.Reset()
     dataTGraph1.SetMarkerColor(1)
     dataTGraph1.SetMarkerStyle(20)
     dataTGraph1.SetMarkerSize(0.8)
@@ -212,10 +236,13 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
     return allbins
 
 def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal, folder, fin) :
+    print(" do unblided bottom pad")
     if not fromHavester :
         allbins = GetNonZeroBins(histtotal)
+        print("allbins", allbins)
         for ii in xrange(0, allbins) :
-            if ii == histtotal.GetXaxis().GetNbins() -1 or ii == histtotal.GetXaxis().GetNbins()-2 : continue
+            #if ii == histtotal.GetXaxis().GetNbins() -1 or ii == histtotal.GetXaxis().GetNbins()-2 :
+            #    continue
             bin_width = 1.
             if divideByBinWidth :
                 bin_width = histtotal.GetXaxis().GetBinWidth(ii+1)
@@ -235,6 +262,7 @@ def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal, folder,
             dataTGraph1.SetPointEYhigh(ii + lastbin, dataTGraph.GetErrorYhigh(ii)/dividend)
             dataTGraph1.SetPointEXlow(ii + lastbin,  template.GetBinWidth(ii+1)/2.)
             dataTGraph1.SetPointEXhigh(ii + lastbin, template.GetBinWidth(ii+1)/2.)
+            #print ("err", ii + lastbin, template.GetBinCenter(ii + lastbin + 1), dataTGraph.GetErrorYlow(ii)/dividend, dataTGraph.GetErrorYhigh(ii)/dividend)
     else :
         allbins = histtotal.GetNbinsX() #GetNonZeroBins(histtotal)
         for ii in xrange(1, allbins + 1) :
@@ -258,11 +286,11 @@ def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal, folder,
     dataTGraph1.SetLineStyle(1)
     return allbins
 
-def do_hist_total_err(hist_total_err, labelX, total_hist) :
+def do_hist_total_err(hist_total_err, labelX, total_hist, minBottom, maxBottom, era) :
     allbins = GetNonZeroBins(total_hist)
     hist_total_err.GetYaxis().SetTitle("#frac{Data - Expectation}{Expectation}")
     hist_total_err.GetXaxis().SetTitleOffset(1.25)
-    hist_total_err.GetYaxis().SetTitleOffset(1.0)
+    hist_total_err.GetYaxis().SetTitleOffset(1.2)
     hist_total_err.GetXaxis().SetTitleSize(0.14)
     hist_total_err.GetYaxis().SetTitleSize(0.055)
     hist_total_err.GetYaxis().SetLabelSize(0.105)
@@ -273,8 +301,11 @@ def do_hist_total_err(hist_total_err, labelX, total_hist) :
     hist_total_err.SetMarkerSize(0)
     hist_total_err.SetFillColorAlpha(12, 0.40)
     hist_total_err.SetLineWidth(0)
-    hist_total_err.SetMinimum(-3.6)
-    hist_total_err.SetMaximum(3.6)
+    if era == 0 :
+        minBottom = minBottom/2
+        maxBottom = maxBottom/2
+    hist_total_err.SetMinimum(minBottom)
+    hist_total_err.SetMaximum(maxBottom)
     for bin in xrange(0, allbins) :
         hist_total_err.SetBinContent(bin+1, 0)
         if total_hist.GetBinContent(bin+1) > 0. :
