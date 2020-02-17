@@ -15,16 +15,16 @@ def options_plot (analysis, channel, all_procs) :
         #fakes       = "fakes_data"
         #flips       = "flips_data"
         # if label == "none" it means that this process is to be merged with the anterior key
-        if "data_fakes" in all_procs       : dprocs["data_fakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
-        if "fakes_mc" in all_procs       : dprocs["fakes_mc"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
-        if "flips_mc" in all_procs       : dprocs["flips_mc"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
-        if "data_flips" in all_procs       : dprocs["data_flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
+        if "data_fakes" in all_procs       : dprocs["data_fakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Fakes"  , "make border" : True}
+        if "fakes_mc" in all_procs       : dprocs["fakes_mc"]       = {"color" :  12, "fillStype" : 3345, "label" : "Fakes"  , "make border" : True}
+        if "flips_mc" in all_procs       : dprocs["flips_mc"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
+        if "data_flips" in all_procs       : dprocs["data_flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
         if conversions in all_procs : dprocs[conversions] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
-        if "Fakes" in all_procs       : dprocs["Fakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
-        if "Flips" in all_procs       : dprocs["Flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
+        if "Fakes" in all_procs       : dprocs["Fakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Fakes"  , "make border" : True}
+        if "Flips" in all_procs       : dprocs["Flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
         if "Conv" in all_procs : dprocs["Conv"] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
-        if "mcFakes" in all_procs       : dprocs["mcFakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
-        if "mcFlips" in all_procs       : dprocs["mcFlips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
+        if "mcFakes" in all_procs       : dprocs["mcFakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Fakes"  , "make border" : True}
+        if "mcFlips" in all_procs       : dprocs["mcFlips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
         if "Convs" in all_procs : dprocs["Convs"] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
         if "TT" in all_procs     : dprocs["TT"]           = {"color" : 114, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
         if "Rares" in all_procs     : dprocs["Rares"]     = {"color" : 851, "fillStype" : 1001, "label" : "Rares"       , "make border" : True}
@@ -43,7 +43,7 @@ def options_plot (analysis, channel, all_procs) :
             if hig_proc in all_procs       :
                 for decay in Hdecays : # list(set(list(Hdecays)) - set(["htt"])) :
                     if "%s_%s" % (hig_proc, decay) == "tHW_htt" :
-                        dprocs["tHW_htt"]       = {"color" : 4, "fillStype" : 1001, "label" : "other H proc."         , "make border" : False}
+                        dprocs["tHW_htt"]       = {"color" : 4, "fillStype" : 1001, "label" : "VH + ggH + qqH"        , "make border" : False}
                     else :
                         dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
                     #dprocs["%s_htt" % hig_proc]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
@@ -81,12 +81,12 @@ def options_plot (analysis, channel, all_procs) :
         if channel in [ "1l_2tau", "2l_2tau"] :
             ## remove "fakes_data" from first entry and add as last
             del dprocs["data_fakes"]
-            dprocs["data_fakes"]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Mis."        , "make border" : True}
+            dprocs["data_fakes"]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
         if channel in ["0l_2tau", "1l_1tau", "2los_1tau"] :
             #del dprocs["DY"]
             dprocs["DY"]                                  = {"color" : 221, "fillStype" : 1001, "label" : "DY"         , "make border" : True}
             del dprocs[fakes]
-            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Mis."        , "make border" : True}
+            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
             del dprocs["TT"]
             dprocs["TT"]                                  = {"color" : 17, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
     else : sys.exit("analysis " + analysis + " not implemented")
@@ -224,7 +224,7 @@ def options_plot_ranges (analysis) :
                 "minY" : 0.1,    "maxY" :  100000.,
                 "minYerr": -2.001, "maxYerr" : 1.99,
                 "useLogPlot" : True,
-                "label" : '3l + 0#tau_{h} CR',
+                "label" : '3l-CR',
                 "labelX" : "bin#",
                 "position_cats": 600. ,
                 "list_cats" : ["ttH_cr_3l_2018_eee_cr", "ttH_cr_3l_2018_eem_cr", "ttH_cr_3l_2018_emm_cr", "ttH_cr_3l_2018_mmm_cr"],
@@ -273,13 +273,13 @@ def options_plot_ranges (analysis) :
                 "cats" : [""]
                 },
             "1l_2tau"   : {
-                "minY" : 0.1,  "maxY" :  75.,
-                "minYerr": -1.,  "maxYerr" : 2.97,
+                "minY" : 0.1,  "maxY" :  95.,
+                "minYerr": -1.,  "maxYerr" : 1.87,
                 "useLogPlot" : False,
                 "label" : '1l + 2#tau_{h}',
                 "position_cats": 300. ,
                 "list_cats" : ["ttH_1l_2tau"],
-                "labelX" : "BDT", "cats" : [""]
+                "labelX" : "m_{#tau_{h}#tau_{h}} (GeV)", "cats" : [""]
                 },
             "2los_1tau" : {
                 "minY" : 0.07,  "maxY" :  5000.,

@@ -57,7 +57,7 @@ def GetNonZeroPoints(dataTGraph) :
         if yp > 0 : nbins += 1
     return nbins
 
-def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bottom, labelX) :
+def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bottom, labelX, catbins) :
     total_hist = fin[0].Get(folder + "/" + name_total)
     if len(fin) == 3 :
         for eraa in [1,2] :
@@ -66,7 +66,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
             #print ("reading ", eraa, folderRead + "/" + name_total)
             total_hist.Add(fin[eraa].Get(folderRead + "/" + name_total))
     print (folder + "/" + name_total)
-    allbins = GetNonZeroBins(total_hist)# total_hist.GetXaxis().GetNbins() # GetNonZeroBins(total_hist)
+    allbins = catbins #total_hist.GetNbinsX() #GetNonZeroBins(total_hist)# total_hist.GetXaxis().GetNbins() # GetNonZeroBins(total_hist)
     #hist.Sumw2() ## if prefit
     hist.SetMarkerSize(0)
     hist.SetFillColorAlpha(12, 0.40)
@@ -75,6 +75,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
     hist.SetMaximum(maxY)
     #hist.Sumw2() ## if prefit
     for ii in xrange(1, allbins + 1) :
+        print ("total ocntent", total_hist.GetBinContent(ii), total_hist.GetBinError(ii))
         bin_width = 1.
         if divideByBinWidth : bin_width = total_hist.GetXaxis().GetBinWidth(ii)
         hist.SetBinContent(ii + lastbin, total_hist.GetBinContent(ii)/bin_width)
@@ -96,7 +97,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
     hist.GetYaxis().SetLabelSize(0.050)
     return allbins
 
-def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin) :
+def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin, catbin) :
     print folder+"/"+name
     hist = fin[0].Get(folder+"/"+name)
     try  : hist.Integral()
@@ -132,7 +133,7 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
     hist_rebin.SetMarkerSize(0)
     hist_rebin.SetFillColor(itemDict["color"])
     hist_rebin.SetFillStyle(itemDict["fillStype"])
-    allbins = GetNonZeroBins(hist)
+    allbins = catbin #hist.GetNbinsX() #GetNonZeroBins(hist)
     if "none" not in itemDict["label"] and addlegend : legend1.AddEntry(hist_rebin, itemDict["label"], "f")
     if itemDict["make border"] == True :  hist_rebin.SetLineColor(1)
     else : hist_rebin.SetLineColor(itemDict["color"])
@@ -160,12 +161,12 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
         "labelPos" : float(allbins/2)
         }
 
-def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histtotal) :
+def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histtotal, catbin) :
     if not fromHavester :
 
         dataTGraph = fin[0].Get(folder + "/data")
         print("adding", folder + "/data")
-        allbins = GetNonZeroBins(histtotal)
+        allbins = catbin #histtotal.GetNbinsX() #GetNonZeroBins(histtotal)
         if len(fin) == 3 :
             for eraa in [1,2] :
                 if eraa == 1 : folderRead = folder.replace("2018", "2017")
@@ -212,7 +213,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
                 if eraa == 1 : folderRead = folder.replace("2018", "2017")
                 if eraa == 2 : folderRead = folder.replace("2018", "2016")
                 dataTGraph.Add(fin[eraa].Get(folderRead + "/data_obs"))
-        allbins = GetNonZeroBins(histtotal)
+        allbins = histtotal.GetNbinsX() #GetNonZeroBins(histtotal)
         for ii in xrange(1, allbins+1) :
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
@@ -238,7 +239,7 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
 def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal, folder, fin) :
     print(" do unblided bottom pad")
     if not fromHavester :
-        allbins = GetNonZeroBins(histtotal)
+        allbins = histtotal.GetXaxis().GetNbins() #GetNonZeroBins(histtotal)
         print("allbins", allbins)
         for ii in xrange(0, allbins) :
             #if ii == histtotal.GetXaxis().GetNbins() -1 or ii == histtotal.GetXaxis().GetNbins()-2 :
@@ -287,7 +288,7 @@ def err_data(dataTGraph1, template, dataTGraph, fromHavester, histtotal, folder,
     return allbins
 
 def do_hist_total_err(hist_total_err, labelX, total_hist, minBottom, maxBottom, era) :
-    allbins = GetNonZeroBins(total_hist)
+    allbins = total_hist.GetNbinsX() #GetNonZeroBins(total_hist)
     hist_total_err.GetYaxis().SetTitle("#frac{Data - Expectation}{Expectation}")
     hist_total_err.GetXaxis().SetTitleOffset(1.25)
     hist_total_err.GetYaxis().SetTitleOffset(1.2)
@@ -302,8 +303,8 @@ def do_hist_total_err(hist_total_err, labelX, total_hist, minBottom, maxBottom, 
     hist_total_err.SetFillColorAlpha(12, 0.40)
     hist_total_err.SetLineWidth(0)
     if era == 0 :
-        minBottom = minBottom/2
-        maxBottom = maxBottom/2
+        minBottom = minBottom*3/2
+        maxBottom = maxBottom
     hist_total_err.SetMinimum(minBottom)
     hist_total_err.SetMaximum(maxBottom)
     for bin in xrange(0, allbins) :
@@ -316,31 +317,32 @@ def addLabel_CMS_preliminary(era) :
     x0 = 0.2
     y0 = 0.953
     ypreliminary = 0.95
-    xlumi = 0.60
+    xlumi = 0.68
     label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
     label_cms.AddText("CMS")
-    label_cms.SetTextFont(50)
+    label_cms.SetTextFont(61)
     label_cms.SetTextAlign(13)
     label_cms.SetTextSize(0.0575)
     label_cms.SetTextColor(1)
     label_cms.SetFillStyle(0)
     label_cms.SetBorderSize(0)
-    label_preliminary = ROOT.TPaveText(x0 + 0.001, ypreliminary - 0.0010, x0 + 0.0015, ypreliminary + 0.0500, "NDC")
+    label_preliminary = ROOT.TPaveText(x0 + 0.12, y0 - 0.01, x0 + 0.0980 + 0.12, y0 + 0.0600 - 0.01, "NDC")
     label_preliminary.AddText("Preliminary")
-    label_preliminary.SetTextFont(48)
+    label_preliminary.SetTextFont(50)
     label_preliminary.SetTextAlign(13)
     label_preliminary.SetTextSize(0.045)
     label_preliminary.SetTextColor(1)
     label_preliminary.SetFillStyle(0)
     label_preliminary.SetBorderSize(0)
-    label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0050, xlumi + 0.1900, y0 + 0.0550, "NDC")
+    label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0035, xlumi + 0.0900, y0 + 0.040, "NDC")
     if era == 2016 : lumi = "35.92"
     if era == 2017 : lumi = "41.53"
     if era == 2018 : lumi = "59.74"
     if era == 0    : lumi = "137.2"
     label_luminosity.AddText(lumi + " fb^{-1} (13 TeV)")
+    label_luminosity.SetTextFont(42)
     label_luminosity.SetTextAlign(13)
-    label_luminosity.SetTextSize(0.050)
+    label_luminosity.SetTextSize(0.04)
     label_luminosity.SetTextColor(1)
     label_luminosity.SetFillStyle(0)
     label_luminosity.SetBorderSize(0)

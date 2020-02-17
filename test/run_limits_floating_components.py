@@ -42,8 +42,10 @@ parser.add_option(
     help="Name of the category as it is appear on the input file",
     default="1l_2tau"
     )
-(options, args) = parser.parse_args()
+parser.add_option("--CR", action="store_true", dest="CR", help="add as POI", default=False)
 
+(options, args) = parser.parse_args()
+CR = options.CR
 ## type-3
 
 ToSubmit = " "
@@ -95,8 +97,11 @@ floating_ttV = " "
 if options.ttW : floating_ttV += " --PO 'map=.*/TTW.*:r_ttW[1,0,6]' --PO 'map=.*/TTWW.*:r_ttW[1,0,6]'"
 if options.ttZ : floating_ttV += " --PO 'map=.*/TTZ.*:r_ttZ[1,0,6]' "
 
-float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'"
-if options.tH : float_sig_rates += " --PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
+float_sig_rates = ""
+if not CR : 
+    float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'"
+if options.tH : 
+    float_sig_rates += " --PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
 
 WS_output = cardToRead + "_WS"
 blindStatement = " -t -1 "
@@ -107,6 +112,7 @@ if do_kt_scan_no_kin :
     cmd += " %s" % floating_ttV
     cmd += "  -P HiggsAnalysis.CombinedLimit.LHCHCGModels:K5 --PO verbose  --PO BRU=0"
     cmd += " -o %s/%s_kappas.root" % (FolderOut, cardToRead)
+    cmd += " ulimit -s unlimited"
     runCombineCmd(cmd, cardFolder)
     print ("done %s/%s_kappas.root" % (FolderOut, cardToRead))
 
@@ -131,6 +137,7 @@ if doWS :
     cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
     cmd += " %s" % floating_ttV
     cmd += " %s" % float_sig_rates
+    cmd += " ulimit -s unlimited"
     runCombineCmd(cmd, cardFolder)
     print ("done %s/%s_WS.root" % (FolderOut, cardToRead))
 
@@ -579,7 +586,7 @@ if preparePlotHavester or preparePlotCombine :
     if preparePlotCombine :
         cmd = "combineTool.py -M FitDiagnostics "
         cmd += " %s_WS.root" % cardToRead
-        if blinded : cmd += " -t -1 "
+        #if blinded : cmd += " -t -1 "
         cmd += " --saveShapes --saveWithUncertainties "
         #cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
         # redefineToTTH
@@ -587,19 +594,19 @@ if preparePlotHavester or preparePlotCombine :
             cmd += " --saveNormalization "
         else :
             cmd += " --skipBOnlyFit "
-        cmd += " -n _shapes_combine_%s" % namePlot
+        cmd += " -n _shapes_combine_%s" % cardToRead
         #cmd += " --forceRecreateNLL"
         #if not plainBins : cmd += " -d %s.txt"        % cardToRead
         if sendToLXBatch or sendToCondor : cmd += " %s %s" % (ToSubmit, cardToRead)
         runCombineCmd(cmd, FolderOut)
-        print ("created " + FolderOut + "/fitDiagnostics_shapes_combine_%s.root" % namePlot )
+        print ("created " + FolderOut + "/fitDiagnostics_shapes_combine_%s.root" % cardToRead)
 
     if preparePlotHavester  :
         print ("[WARNING:] combineHavester does not deal well with autoMCstats option for bin by bin stat uncertainty -- it does some approximations on errors -- this is good option to run fast prefit plots on diagnosis stage")
         # to have Totalprocs computed
         cmd = "combineTool.py -M FitDiagnostics %s_WS.root" % cardToRead
-        if blinded :
-            cmd += " -t -1 "
+        #if blinded :
+        #    cmd += " -t -1 "
         if sendToLXBatch :
             cmd += " %s %s" % (ToSubmit, cardToRead)
         cmd += " -n _%s" % cardToRead
@@ -632,7 +639,7 @@ if preparePlotHavester or preparePlotCombine :
         cmd += " --input  %s" % FolderOut + "/" + shapeDatacard
         cmd += " --fromHavester"
     if preparePlotCombine :
-        cmd += " --input  %s" % FolderOut + "/fitDiagnostics_shapes_combine_" + namePlot + ".root"
+        cmd += " --input  %s" % FolderOut + "/fitDiagnostics_shapes_combine_" + cardToRead + ".root"
     cmd += " --odir %s" % FolderOut
     if doPostFit         :
         cmd += " --postfit "

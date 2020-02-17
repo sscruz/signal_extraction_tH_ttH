@@ -119,13 +119,13 @@ if options.typeCat == "none" :
     typeCat          = category
 else :
     typeCat          = options.typeCat
-print ("category", category)
+print ("category", category, typeCat)
 do_bottom = options.do_bottom
 shapes_input = options.input
 
 binToRead = options.binToRead
 if binToRead == "none" :
-    binToRead = category
+    binToRead = "ttH_" +  category
 print ("binToRead", binToRead)
 
 binToReadOriginal = options.binToReadOriginal
@@ -158,7 +158,7 @@ else :
         typeFit = "prefit"
 print ("folder", folder)
 
-if not options.fromHavester : name_total = "total" # "total_background" #
+if not options.fromHavester : name_total = "total" # "total_background" # "total_covar" # 
 #elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
 
@@ -169,7 +169,7 @@ flips       = "data_flips" # "flips_mc" #
 conversions = "Convs"
 fakes       = "data_fakes" # "fakes_mc" #
 
-info_file = os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/configs/plot_options.py"
+info_file = "/home/acaan/CMSSW_10_2_13/" + "/src/signal_extraction_tH_ttH/configs/plot_options.py" # os.environ["CMSSW_BASE"] +
 execfile(info_file)
 print ("list of signals/bkgs by channel taken from: " +  info_file)
 procs  = list_channels_draw("ttH")[category] #: OrderedDict()
@@ -177,6 +177,7 @@ print procs
 dprocs = options_plot ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg_procs_from_MC'] + procs["signal"])
 
 label_head = options_plot_ranges("ttH")[typeCat]["label"]
+print (options_plot_ranges("ttH")[typeCat])
 list_cats = options_plot_ranges("ttH")[typeCat]["list_cats"]
 
 if not options.nameLabel == "none" :
@@ -188,7 +189,7 @@ if not options.nameLabel == "none" :
 if typeFit == "prefit" :
     label_head = label_head+", "+typeFit
 else :
-    label_head = label_head+", #mu(ttH)=#hat{#mu}"
+    label_head = label_head+", #mu(t#bar{t}H)=#hat{#mu}"
 
 if not options.labelX == "none" :
     labelX = options.labelX
@@ -240,9 +241,10 @@ if not options.original == "none" :
         readFrom =  "ttH_" + category + "/"
     print ("original readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
-    template = fileorriginal.Get(readFrom +  "ttH_htt"  ) #name_total) "x_ZZ" "ttH_htt" "x_TTZ"
+    template = fileorriginal.Get(readFrom +  "ttH_htt"   ) #name_total)  "x_TTZ" "ttH_htt" "x_TTZ"
     template.GetYaxis().SetTitle(labelY)
     template.SetTitle(" ")
+    nbinscatlist = [template.GetNbinsX()]
     datahist = fileorriginal.Get(readFrom + "data_obs")
 else :
     #if not binToRead == "none" :
@@ -264,8 +266,10 @@ else :
                 catcats = list_cats
             else :
                 catcats = [ cat.replace("2018", str(era)) for cat in list_cats]
+    #catcats = [binToRead]
     print("Drawing: ", catcats)
     nbinstotal = 0
+    nbinscatlist = []
     for catcat in catcats :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
@@ -273,18 +277,19 @@ else :
             if options.doPostFit :
                 if "prefit" in catcat : continue
             elif "postfit" in catcat : continue
-            readFrom = catcat
+            readFrom = folder #catcat
         hist = fin[0].Get(readFrom + "/" + name_total )
-        print (readFrom + "/" + name_total)
-        nbinscat = GetNonZeroBins(hist)
+        print ("reading shapes", readFrom + "/" + name_total)
+        nbinscat = GetNonZeroBins(hist) # hist.GetNbinsX()  #
+        nbinscatlist += [nbinscat]
         print (readFrom, nbinscat)
         nbinstotal += nbinscat
         datahist = fin[0].Get(readFrom + "/data")
     template = ROOT.TH1F("my_hist", "", nbinstotal, 0 - 0.5 , nbinstotal - 0.5)
     template.GetYaxis().SetTitle(labelY)
 
-legend_y0 = 0.650
-legend1 = ROOT.TLegend(0.2400, legend_y0, 0.9450, 0.9150)
+legend_y0 = 0.645
+legend1 = ROOT.TLegend(0.2400, legend_y0, 0.9450, 0.910)
 legend1.SetNColumns(3)
 legend1.SetFillStyle(0)
 legend1.SetBorderSize(0)
@@ -292,6 +297,8 @@ legend1.SetFillColor(10)
 legend1.SetTextSize(0.040)
 print label_head
 legend1.SetHeader(label_head)
+header = legend1.GetListOfPrimitives().First()
+header.SetTextSize(.05)
 
 if options.unblind :
     dataTGraph1 = "NoneType"
@@ -305,7 +312,7 @@ if options.unblind :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
         else :
-            readFrom = catcat
+            readFrom = folder #catcat
         print( " histtotal ", readFrom + "/" + name_total )
         histtotal = fin[0].Get(readFrom + "/" + name_total )
         lastbin += rebin_data(
@@ -315,10 +322,11 @@ if options.unblind :
             fin,
             options.fromHavester,
             lastbin,
-            histtotal
+            histtotal,
+            nbinscatlist[cc]
             )
     dataTGraph1.Draw()
-    legend1.AddEntry(dataTGraph1, "Observed", "p")
+    legend1.AddEntry(dataTGraph1, "Data", "p")
 hist_total = template.Clone()
 
 lastbin = 0
@@ -326,8 +334,8 @@ for cc, catcat in enumerate(catcats) :
     if not options.fromHavester :
         readFrom = folder + "/" + catcat
     else :
-        readFrom = catcat
-    print (readFrom, catcat)
+        readFrom = folder #catcat
+    print ("read the hist with total uncertainties", readFrom, catcat)
     lastbin += rebin_total(
         hist_total,
         readFrom,
@@ -336,9 +344,9 @@ for cc, catcat in enumerate(catcats) :
         name_total,
         lastbin,
         do_bottom,
-        labelX
+        labelX,
+        nbinscatlist[cc]
         )
-legend1.AddEntry(hist_total, "Uncertainty", "f")
 
 if do_bottom :
     canvas = ROOT.TCanvas("canvas", "canvas", 600, 1500)
@@ -407,7 +415,8 @@ for kk, key in  enumerate(dprocs.keys()) :
             dprocs[key],
             divideByBinWidth,
             addlegend,
-            lastbin
+            lastbin,
+            nbinscatlist[cc]
             )
         # hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin
         lastbin += info_hist["lastbin"]
@@ -445,10 +454,16 @@ dumb = hist_total.Draw("axis,same")
 del dumb
 dumb = legend1.Draw("same")
 del dumb
-labels = addLabel_CMS_preliminary(options.era)
-for label in labels :
-    dumb = label.Draw("same")
-    del dumb
+
+#labels = addLabel_CMS_preliminary(options.era)
+#for ll, label in enumerate(labels) :
+#    print ("printing label", ll)
+#    if ll == 0 :
+#        dumb = label.Draw("same")
+#        del dumb
+#    else : 
+#        dumb = label.Draw()
+#        del dumb
 
 for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
     linebinW[cc].AddText(cat)
@@ -459,6 +474,8 @@ for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
     linebinW[cc].SetFillStyle(0)
     linebinW[cc].SetBorderSize(0)
     linebinW[cc].Draw("same")
+
+legend1.AddEntry(hist_total, "Uncertainty", "f")
 
 #################################
 if do_bottom :
