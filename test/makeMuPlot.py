@@ -31,6 +31,13 @@ parser.add_option(
     help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
     default=2017
     )
+parser.add_option(
+    "--draw_stats_only",
+    action="store_true",
+    dest="draw_stats_only",
+    help="self-explaining",
+    default=False
+    )
 # combined
 # combined stats only
 # era
@@ -40,6 +47,7 @@ input_folder = options.input_folder
 
 era = options.era
 is_tH = options.is_tH
+draw_stats_only = options.draw_stats_only
 
 process = "ttH"
 if options.is_tH :
@@ -51,13 +59,22 @@ dprocs = OrderedDict()
 dprocs["%s_2lss_0tau" % process]    = [[], 14.25, "2lss + 0#tau_{h}" ]
 dprocs["%s_3l_0tau" % process]    = [[], 12.75, "3l + 0#tau_{h}"]
 dprocs["%s_2lss_1tau" % process]  = [[], 11.25, "2lss + 1#tau_{h}"]
-dprocs["%s_1l_2tau" % process]    = [[], 9.75, "1l + 2#tau_{h}"]
-dprocs["%s_2los_1tau" % process]    = [[], 8.25, "2los + 1#tau_{h}"]
-dprocs["%s_3l_1tau" % process]  = [[], 6.75, "3l + 1#tau_{h}"]
-dprocs["%s_2l_2tau" % process]    = [[], 5.25, "2l + 2#tau_{h}"]
-dprocs["%s_4l" % process]    = [[], 3.75, "4l + 0#tau_{h}"]
-dprocs["%s_0l_2tau" % process]    = [[], 2.25,  "0l + 2#tau_{h}"]
-dprocs["%s_1l_1tau" % process]         = [[], 0.75, "1l + 1#tau_{h}"]
+if not options.is_tH :
+    dprocs["%s_1l_2tau" % process]    = [[], 9.75, "1l + 2#tau_{h}"]
+    dprocs["%s_2los_1tau" % process]    = [[], 8.25, "2los + 1#tau_{h}"]
+    dprocs["%s_3l_1tau" % process]  = [[], 6.75, "3l + 1#tau_{h}"]
+    dprocs["%s_2l_2tau" % process]    = [[], 5.25, "2l + 2#tau_{h}"]
+    dprocs["%s_4l" % process]    = [[], 3.75, "4l + 0#tau_{h}"]
+    dprocs["%s_0l_2tau" % process]    = [[], 2.25,  "0l + 2#tau_{h}"]
+    dprocs["%s_1l_1tau" % process]         = [[], 0.75, "1l + 1#tau_{h}"]
+
+ymax = 18.0 # 12.
+ymin = 0.
+ylinemax = 14. # 10.0
+if options.is_tH :
+    ymin = 10.25
+    ymax = 16. # 12.
+    ylinemax = 15. # 10.0
 
 for key in dprocs.keys() :
     my_file_pattern =  os.path.join(input_folder, "*rate_%s*.log" % (key)) #"%s/ttH_%s_rate.txt" % (input_folder, key)
@@ -96,7 +113,7 @@ print " "
 erastring = "dumbCombo"
 if options.era > 0 : erastring = str(options.era)
 if options.era == 0 : erastring = "all"
-my_file = "%s/../combo_ttHmultilep_%s_rate_asimov_%s.log" % (input_folder, erastring, process)
+my_file = "%s/../combo_ttHmultilep_rate_asimov_%s.log" % (input_folder, process)
 print ("reading:", my_file)
 combined = []
 print "Combined: "
@@ -116,53 +133,65 @@ with open(my_file, 'r') as in_file :
             combined = combined + [float(li)]
 print combined
 ### read combined
-my_file = "%s/../combo_ttHmultilep_%s_rate_%s_stats_only.log" % (input_folder, erastring, process )
-combined_stas_only = []
-print "Combined stat only: "
-count = 0
-with open(my_file, 'r') as in_file :
-  for line in in_file :
-    if "r_ttH :" in line or "r_tH :" in line:
-        for li in line.split() :
-            try: float(li)
-            except ValueError:
-                for li2 in li.split("/") :
-                    try: float(li2)
-                    except ValueError: continue
-                    #print float(li2)
-                    count += 1
-                    add = 0
-                    if count == 1 : add = 0.01
-                    if count == 2 : add = -0.01
-                    combined_stas_only = combined_stas_only + [float(li2) + add]
-                continue
-            print li
-            combined_stas_only = combined_stas_only + [float(li)]
-print combined_stas_only
+if draw_stats_only :
+    my_file = "%s/../combo_ttHmultilep_%s_rate_asimov_%s.log" % (input_folder, erastring, process)
+    #my_file = "%s/../combo_ttHmultilep_%s_rate_%s_stats_only.log" % (input_folder, erastring, process )
+    combined_stas_only = []
+    print "Combined stat only: "
+    count = 0
+    with open(my_file, 'r') as in_file :
+      for line in in_file :
+        if "r_ttH :" in line or "r_tH :" in line:
+            for li in line.split() :
+                try: float(li)
+                except ValueError:
+                    for li2 in li.split("/") :
+                        try: float(li2)
+                        except ValueError: continue
+                        #print float(li2)
+                        count += 1
+                        add = 0
+                        if count == 1 : add = 0.01
+                        if count == 2 : add = -0.01
+                        combined_stas_only = combined_stas_only + [float(li2) + add]
+                    continue
+                print li
+                combined_stas_only = combined_stas_only + [float(li)]
+    print ("combined_stas_only", combined_stas_only)
 
 ########################
 y_comb = 7.5
-mu_comb_p1s_stat = combined_stas_only[2]
-mu_comb_m1s_stat = abs(combined_stas_only[1])
-mu_comb_p1s = combined[2]
+y_header = 1.5
+if is_tH :
+    y_header = 1
+    y_comb = (ymax - ymin)/2
+
 mu_comb_m1s = abs(combined[1])
-gr_mu_comb_stat = TGraphAsymmErrors()
-gr_mu_comb_stat.SetPoint(0,combined_stas_only[0],y_comb)
-gr_mu_comb_stat.SetPointError(0,abs(combined_stas_only[1]),combined_stas_only[2],y_comb,y_comb)
-gr_mu_comb_stat.SetLineWidth(2)
-gr_mu_comb_stat.SetMarkerSize(0)
-gr_mu_comb_stat.SetFillColor(8) #ROOT.kGreen+2)
+mu_comb_p1s = combined[2]
+
+if draw_stats_only :
+    mu_comb_p1s_stat = combined_stas_only[2]
+    mu_comb_m1s_stat = abs(combined_stas_only[1])
+    gr_mu_comb_stat = TGraphAsymmErrors()
+    gr_mu_comb_stat.SetPoint(0, combined_stas_only[0], ymin + (ymax - ymin)/2 - y_header)
+    gr_mu_comb_stat.SetPointError(0, abs(combined_stas_only[1]), combined_stas_only[2], y_comb, y_comb)
+    gr_mu_comb_stat.SetLineWidth(2)
+    gr_mu_comb_stat.SetMarkerSize(0)
+    gr_mu_comb_stat.SetFillColor(8) #ROOT.kGreen+2)
 
 gr_mu_comb_syst = TGraphAsymmErrors()
-gr_mu_comb_syst.SetPoint(0,combined[0],y_comb)
-gr_mu_comb_syst.SetPointError(0,abs(combined[1]),combined[2],y_comb,y_comb)
+gr_mu_comb_syst.SetPoint(0, combined[0], ymin + (ymax - ymin)/2 - y_header)
+gr_mu_comb_syst.SetPointError(0, abs(combined[1]), combined[2], y_comb, y_comb)
 gr_mu_comb_syst.SetLineWidth(2)
 gr_mu_comb_syst.SetMarkerSize(0)
-gr_mu_comb_syst.SetFillColor(5) #ROOT.kGreen)
+if not draw_stats_only :
+    gr_mu_comb_syst.SetFillColor(8) #ROOT.kGreen)
+else :
+    gr_mu_comb_syst.SetFillColor(5) #ROOT.kYellow)
 
 gr_mu_comb = TGraphAsymmErrors()
 gr_mu_comb.SetPoint(0,combined[0],y_comb)
-gr_mu_comb.SetPointError(0,0,0,y_comb,y_comb)
+gr_mu_comb.SetPointError(0,ymin,ymin,y_comb,y_comb)
 gr_mu_comb.SetLineWidth(3)
 gr_mu_comb.SetLineColor(1)
 gr_mu_comb.SetMarkerSize(1)
@@ -171,7 +200,9 @@ gr_mu_comb.SetMarkerColor(1)
 mg = TMultiGraph()
 mg.Add(gr_mu_comb, "PL")
 mg.Add(gr_mu_comb_syst, "E2")
-mg.Add(gr_mu_comb_stat, "E2")
+if draw_stats_only :
+    mg.Add(gr_mu_comb_stat, "E2")
+
 for kk, key in enumerate(dprocs.keys()) :
     print (key, abs(dprocs[key][0][2]), dprocs[key][0][1])
     gr_mu = TGraphAsymmErrors()
@@ -202,12 +233,9 @@ if is_tH :
     xmax = 60. #100.0
     xsumComb = -30. #-50.0
     xcomb = 10
-ymax = 17. # 12.
-ylinemax = 14. # 10.0
-
 
 mg.GetXaxis().SetLimits(xmin, xmax)
-mg.GetYaxis().SetRangeUser(0, ymax)
+mg.GetYaxis().SetRangeUser(ymin, ymax)
 mg.GetYaxis().SetLabelSize(0)
 mg.GetYaxis().SetTickSize(0)
 if is_tH :
@@ -222,7 +250,7 @@ mg.GetYaxis().SetTickLength(0.)
 mg.GetYaxis().SetTickSize(0.)
 mg.Draw("A")
 
-link = TLine(combined[0], 0, combined[0], ylinemax)
+link = TLine(combined[0], ymin, combined[0], ylinemax)
 link.SetLineWidth(2)
 link.SetLineColor(1)
 link.Draw()
@@ -234,34 +262,43 @@ if era == 2017 : luminosity = 41.53
 if era == 2018 : luminosity = 59.74
 if era == 0    : luminosity = 137.2
 tex = TLatex()
-tex.SetTextSize(0.035)
+tex.SetTextSize(0.045)
 tex.SetTextFont(61)
 tex.DrawLatexNDC(0.26, 0.91, "CMS")
-tex.SetTextFont(42)
-tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (luminosity))
 tex.SetTextSize(0.035)
+tex.SetTextFont(42)
+tex.DrawLatexNDC(0.66, 0.91, "%.1f fb^{-1} (13 TeV)" % (luminosity))
+tex.SetTextSize(0.042)
 tex.SetTextFont(52)
 tex.DrawLatexNDC(0.36,0.91,"Preliminary")
 
 tex2 = TLatex()
 tex2.SetTextSize(0.035)
 tex3 = TLatex()
-tex3.SetTextSize(0.02)
-xtext = 1.65 # 2.45
+tex3.SetTextSize(0.018)
+xtext = 1.75
+ysumtext = + 0.3
+ycomb = 16.5 # 11.
 if is_tH :
-    xtext = 30 #50
+    xtext = 35
+    ysumtext = -0.01
+    ycomb = 15.5 # 11.
 for kk, key in enumerate(dprocs.keys()) :
-    tex2.DrawLatex(-xtext+xmin, dprocs[key][1]+0.3, dprocs[key][2])
-    tex3.DrawLatex(-xtext+xmin-0.4, dprocs[key][1]-0.35, "#bf{#mu_{%s} = %.2f ^{+%.2f}_{-%.2f}}" % (process, dprocs[key][0][0], dprocs[key][0][1], abs(dprocs[key][0][2])))
+    tex2.DrawLatex(-xtext+xmin, dprocs[key][1] + ysumtext, dprocs[key][2])
+    #tex3.DrawLatex(-xtext+xmin-0.4, dprocs[key][1]-0.35, "#bf{#mu_{%s} = %.2f ^{+%.2f}_{%.2f}}" % (process, dprocs[key][0][0], abs(dprocs[key][0][2]), dprocs[key][0][1]))
+    tex3.DrawLatex(-xtext+xmin-0.50, dprocs[key][1]-0.38, "#bf{#mu_{%s} = %.2f +%.2f %.2f}" % (process, dprocs[key][0][0], abs(dprocs[key][0][2]), dprocs[key][0][1]))
 
-mu_comb_m1s_syst = sqrt(mu_comb_m1s*mu_comb_m1s-mu_comb_m1s_stat*mu_comb_m1s_stat)
-mu_comb_p1s_syst = sqrt(mu_comb_p1s*mu_comb_p1s-mu_comb_p1s_stat*mu_comb_p1s_stat)
+if draw_stats_only :
+    mu_comb_m1s_syst = sqrt(mu_comb_m1s*mu_comb_m1s-mu_comb_m1s_stat*mu_comb_m1s_stat)
+    mu_comb_p1s_syst = sqrt(mu_comb_p1s*mu_comb_p1s-mu_comb_p1s_stat*mu_comb_p1s_stat)
 
-ycomb = 15.5 # 11.
+
 tex2.DrawLatex(xsumComb+xmin, ycomb, "Combined")
 tex2.SetTextSize(0.04)
-tex2.DrawLatex(xcomb+xmin, ycomb, "#mu = %.2f ^{+%.2f}_{-%.2f}  #bf{#left[ {}^{+%.2f}_{-%.2f}(stat.) {}^{+%.2f}_{-%.2f}(syst.)#right]}" % (combined[0], mu_comb_p1s, mu_comb_m1s, mu_comb_p1s_stat, mu_comb_m1s_stat, mu_comb_p1s_syst, mu_comb_m1s_syst))
-#tex2.DrawLatex(xcomb+xmin, ycomb, "#mu = %.2f ^{+%.2f}_{-%.2f}" % (combined[0], mu_comb_p1s, mu_comb_m1s))
+if draw_stats_only :
+    tex2.DrawLatex(xcomb+xmin, ycomb, "#mu = %.2f ^{+%.2f}_{-%.2f}  #bf{#left[ {}^{+%.2f}_{-%.2f}(stat.) {}^{+%.2f}_{-%.2f}(syst.)#right]}" % (combined[0], mu_comb_p1s, mu_comb_m1s, mu_comb_p1s_stat, mu_comb_m1s_stat, mu_comb_p1s_syst, mu_comb_m1s_syst))
+else :
+    tex2.DrawLatex(xcomb+xmin, ycomb, "#mu_{%s} = %.2f ^{+%.2f}_{-%.2f}" % (process, combined[0], mu_comb_p1s, mu_comb_m1s))
 
 
 """labels = addLabel_CMS_preliminary()
