@@ -23,9 +23,11 @@ from plotLimit import setUpMPL
 
 ## type 1
 
-def process(inputfile, filename_r0, xaxis, added=None):
+def process(inputfile, filename_r0, xaxis, shiftBy, added=None):
     df = pd.read_csv(inputfile, sep=",", index_col=None)
     df_r0 = pd.read_csv(filename_r0, sep=",", index_col=None)
+    print df#["cv",  "ct", "dnll"]
+    print df_r0#["cv",  "ct", "dnll"]
 
     # Drop failed fit results
     df.dropna(subset=['dnll'], inplace=True)
@@ -50,7 +52,7 @@ def process(inputfile, filename_r0, xaxis, added=None):
     df.drop_duplicates(subset='ratio', inplace=True)
     df.sort_values(by="rescalect", inplace=True) # Xanda FIXME
     df.index = range(1,len(df)+1)
-    print df#["rescalecv",  "rescalect", "dnll"]
+    print df #["cv",  "ct", "dnll"]
 
     # Add interpolating points?
     if added:
@@ -58,10 +60,13 @@ def process(inputfile, filename_r0, xaxis, added=None):
     df.dropna(inplace=True)
 
     # Shift dnll up by lowest value
-    dnllmin = np.min(df.dnll)
-    print(df.dnll)
     idxmin = df.dnll.idxmin()
-    assert(df.loc[idxmin].dnll == dnllmin), "inconsistent minimum?"
+    if shiftBy == 0 :
+        dnllmin = np.min(df.dnll)
+        assert(df.loc[idxmin].dnll == dnllmin), "inconsistent minimum?"
+    else :
+        dnllmin = shiftBy
+    print(df.dnll)
     print '... shifting dnll values by %5.3f (at %4.2f) for %s' % (np.abs(dnllmin), df.loc[idxmin][xaxis], inputfile)
     df['dnll'] = df.dnll + np.abs(dnllmin)
 
@@ -121,9 +126,12 @@ def addInterpolatingPoints(dframe, filename, npoints=3):
     return dframe
 
 
-def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
+def plotNLLScans(cfg, do2D, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
     for entry in cfg['entries']:
         filename = entry['csv_file']
+        shiftBy = 0.
+        if do2D :
+            shiftBy = entry['SM']
         print ("reading: ", filename )
         if 'inputdir' in cfg:
             filename = os.path.join(cfg['inputdir'], entry['csv_file'])
@@ -132,12 +140,12 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
         #print cfg
         xaxis =  cfg["xaxis"]
         x_axis_label = cfg['x_axis_label']
-        entry['df'] = process(filename, filename_r0, xaxis, added=entry.get('csv_file_interp'))
+        entry['df'] = process(filename, filename_r0, xaxis, shiftBy, added=entry.get('csv_file_interp'))
 
     fig, ax = plt.subplots(1)
 
     x = sorted(list(set(cfg['entries'][0]['df'][xaxis].values.tolist())))
-    x2 = np.linspace(-6, 6, 100) # Evaluate spline at more points
+    x2 = np.linspace(-2, 2, 100) # Evaluate spline at more points
 
     for entry in cfg['entries']:
         df = entry['df']
@@ -151,7 +159,7 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
             ax.plot(x2, spline, ls=entry['line_style'], lw=entry['line_width'], color=entry['color'],zorder=0)
         ax.scatter(df.loc[df[xaxis]<=cfg['xmax']].loc[df[xaxis]>=-cfg['xmax']][xaxis],
                    df.loc[df[xaxis]<=cfg['xmax']].loc[df[xaxis]>=-cfg['xmax']].dnll,
-                marker="o", s=70, c=entry['color'], lw=entry['line_width']) # entry['marker_style']
+                marker="o", s=10, edgecolors=entry['color'],  c=entry['color'], lw=entry['line_width']) # entry['marker_style']
 
     # Configure axes
     ax.get_xaxis().set_tick_params(which='both', direction='in')
@@ -165,16 +173,29 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
         ax.set_xlim(-cfg['xmax'], cfg['xmax'])
     ax.set_ylim(0., 30)
 
-    ax.axhline(1.0, lw=0.5, ls='--', color='gray')
-    ax.axhline(4.0, lw=0.5, ls='--', color='gray')
-    ax.axhline(9.0, lw=0.5, ls='--', color='gray')
-    ax.axhline(16.0, lw=0.5, ls='--', color='gray')
-    ax.axhline(25.0, lw=0.5, ls='--', color='gray')
-    plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 1.0-0.2, "1$\\sigma$", fontsize=14, color='gray')
-    plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 4.0-0.2, "2$\\sigma$", fontsize=14, color='gray')
-    plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 9.0-0.2, "3$\\sigma$", fontsize=14, color='gray')
-    plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 16.0-0.2, "4$\\sigma$", fontsize=14, color='gray')
-    plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 25.0-0.2, "5$\\sigma$", fontsize=14, color='gray')
+
+    if do2D :
+        ax.axhline(2.3, lw=0.5, ls='--', color='gray')
+        ax.axhline(5.99, lw=0.5, ls='--', color='gray')
+        #ax.axhline(9.0, lw=0.5, ls='--', color='gray')
+        #ax.axhline(16.0, lw=0.5, ls='--', color='gray')
+        #ax.axhline(25.0, lw=0.5, ls='--', color='gray')
+        plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 2.3-0.2, "1$\\sigma$", fontsize=14, color='gray')
+        plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 5.99-0.2, "2$\\sigma$", fontsize=14, color='gray')
+        #plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 9.0-0.2, "3$\\sigma$", fontsize=14, color='gray')
+        #plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 16.0-0.2, "4$\\sigma$", fontsize=14, color='gray')
+        #plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 9.21-0.2, "5$\\sigma$", fontsize=14, color='gray')
+    else :
+        ax.axhline(1.0, lw=0.5, ls='--', color='gray')
+        ax.axhline(4.0, lw=0.5, ls='--', color='gray')
+        ax.axhline(9.0, lw=0.5, ls='--', color='gray')
+        ax.axhline(16.0, lw=0.5, ls='--', color='gray')
+        ax.axhline(25.0, lw=0.5, ls='--', color='gray')
+        plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 1.0-0.2, "1$\\sigma$", fontsize=14, color='gray')
+        plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 4.0-0.2, "2$\\sigma$", fontsize=14, color='gray')
+        plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 9.0-0.2, "3$\\sigma$", fontsize=14, color='gray')
+        plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 16.0-0.2, "4$\\sigma$", fontsize=14, color='gray')
+        plt.text(cfg['xmax'] + 0.02*cfg['xmax'], 25.0-0.2, "5$\\sigma$", fontsize=14, color='gray')
 
     ## Draw 95% C.L. line:
     # ax.axhline(3.84, lw=0.5, ls='-.', color='gray')
@@ -210,10 +231,11 @@ def plotNLLScans(cfg, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
     for entry in cfg['entries']:
         legentries.append(mpl.lines.Line2D([], [],
                           color=entry['color'], linestyle=entry['line_style'],
-                          label=entry['label'], marker=entry['marker_style'], markersize=14, markerfacecolor=entry['color'], c=entry['color'], linewidth=2))
+                          label=entry['label'], marker=entry['marker_style'], markersize=7,
+                          markerfacecolor=entry['color'], c=entry['color'], linewidth=2))
 
     # Legend
-    legend = plt.legend(handles=legentries, fontsize=18, loc='upper right',
+    legend = plt.legend(handles=legentries, fontsize=20, loc='upper right',
                         frameon=True, framealpha=cfg["text_bg_alpha"])
     legend.get_frame().set_facecolor('white')
     legend.get_frame().set_linewidth(0)
@@ -263,7 +285,11 @@ if __name__ == '__main__':
                       default=None, help="Minor ticks on y axis")
     parser.add_option("--smoothing", dest="smoothing", type='float',
                       default=None, help="Smoothing for splines")
+    parser.add_option("--do2D", dest="do2D",
+                      action="store_true", default=False)
+    # -86.536405
     (options, args) = parser.parse_args()
+    do2D = options.do2D
 
     try:
         os.system('mkdir -p %s' % options.outdir)
@@ -288,6 +314,6 @@ if __name__ == '__main__':
             if getattr(options, attr, None) is not None:
                 plotConfig[attr] = str(getattr(options, attr, plotConfig[attr]))
 
-        plotNLLScans(plotConfig, outdir=options.outdir, tag=options.tag, nosplines=options.nosplines)
+        plotNLLScans(plotConfig, do2D, outdir=options.outdir, tag=options.tag, nosplines=options.nosplines)
 
     sys.exit(0)
