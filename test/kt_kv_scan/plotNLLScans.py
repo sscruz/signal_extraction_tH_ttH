@@ -19,26 +19,40 @@ import matplotlib as mpl
 
 from process_limits import scale_limits
 from plotLimit import readConfig
-from plotLimit import setUpMPL
+#from plotLimit import setUpMPL
 
 ## type 1
 
 def process(inputfile, filename_r0, xaxis, shiftBy, added=None):
     df = pd.read_csv(inputfile, sep=",", index_col=None)
-    df_r0 = pd.read_csv(filename_r0, sep=",", index_col=None)
-    print df#["cv",  "ct", "dnll"]
-    print df_r0#["cv",  "ct", "dnll"]
+    #print df#["cv",  "ct", "dnll"]
+    if not 'none' in filename_r0 :
+        df_r0 = pd.read_csv(filename_r0, sep=",", index_col=None)
+        #print df_r0#["cv",  "ct", "dnll"]
 
     # Drop failed fit results
     df.dropna(subset=['dnll'], inplace=True)
-    df_r0.dropna(subset=['dnll'], inplace=True)
+    if not 'none' in filename_r0 :
+        df_r0.dropna(subset=['dnll'], inplace=True)
+
+    # drop one suspicious point
+    """if "kV_1p" in inputfile :
+        df = df[~((df.cv == 1.0) & (abs(df.cf) == 0.75))]
+    if "kV_0p" in inputfile :
+        df = df[~((df.cv == 1.5) & (abs(df.cf) == 2.0))]"""
+    #else:
+    #    df = df[~((abs(df.ratio) == 0.833))]
+    #df = df[~((df.ratio > 1.0) & (abs(df.dnll)  < 2*shiftBy))]
 
     ## Calculate relative NLL
     #if not 'dnll'in df.columns:
     #    df['dnll'] = 2*(df.nllr1 - df.nllr0)
     #else:
     #    df['dnll'] = -2*df.dnll
-    df['dnll'] = 2*(df.dnll - df_r0.dnll)
+    if not 'none' in filename_r0 :
+        df['dnll'] = 2*(df.dnll - df_r0.dnll)
+    else :
+        df['dnll'] = -2*(df.dnll)
 
     # Add in ratio column if it's not there
     if not 'ratio' in df.columns:
@@ -52,7 +66,6 @@ def process(inputfile, filename_r0, xaxis, shiftBy, added=None):
     df.drop_duplicates(subset='ratio', inplace=True)
     df.sort_values(by="rescalect", inplace=True) # Xanda FIXME
     df.index = range(1,len(df)+1)
-    print df #["cv",  "ct", "dnll"]
 
     # Add interpolating points?
     if added:
@@ -69,6 +82,7 @@ def process(inputfile, filename_r0, xaxis, shiftBy, added=None):
     print(df.dnll)
     print '... shifting dnll values by %5.3f (at %4.2f) for %s' % (np.abs(dnllmin), df.loc[idxmin][xaxis], inputfile)
     df['dnll'] = df.dnll + np.abs(dnllmin)
+    print df #["cv",  "ct", "dnll"]
 
     return df
 
@@ -222,7 +236,7 @@ def plotNLLScans(cfg, do2D, outdir='plots/', tag='', nosplines=False, smoothing=
     print_text(0.03, 1.02, cfg["header_left"], 28, addbackground=False)
     print_text(0.65, 1.02, cfg["header_right"], addbackground=False)
     print_text(0.06, 0.92, cfg["tag1"], bgalpha=cfg["text_bg_alpha"])
-    print_text(0.06, 0.86, cfg["tag2"], bgalpha=cfg["text_bg_alpha"])
+    print_text(0.06, 0.84, cfg["tag2"], bgalpha=cfg["text_bg_alpha"])
     print_text(0.06, 0.78, cfg["tag3"], bgalpha=cfg["text_bg_alpha"])
 
     # Cosmetics
@@ -231,7 +245,7 @@ def plotNLLScans(cfg, do2D, outdir='plots/', tag='', nosplines=False, smoothing=
     for entry in cfg['entries']:
         legentries.append(mpl.lines.Line2D([], [],
                           color=entry['color'], linestyle=entry['line_style'],
-                          label=entry['label'], marker=entry['marker_style'], markersize=7,
+                           marker=entry['marker_style'], markersize=7, label=entry['label'],
                           markerfacecolor=entry['color'], c=entry['color'], linewidth=2))
 
     # Legend
@@ -296,7 +310,7 @@ if __name__ == '__main__':
     except ValueError:
         pass
 
-    setUpMPL()
+    #setUpMPL()
     for ifile in args:
         print ("ifile =", ifile)
         if not os.path.exists(ifile):

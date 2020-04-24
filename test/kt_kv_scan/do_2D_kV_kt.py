@@ -96,32 +96,216 @@ def process(inputfile, inputfile2, xaxis, shiftBy):
 
 allPoints = pd.DataFrame()
 init = 50
-shiftBy = 86.536 # hardcode the SM minimum to shift all kVs accordingly
-for kVint in range(init, 155, 5) :
+points = [
+30,
+#--
+35,
+40,
+45,
+46,
+48,
+50,
+#--
+52,
+54,
+55,
+56,
+58,
+60,
+#--
+62,
+64,
+65,
+66,
+68,
+70,
+#--
+72,
+74,
+75,
+76,
+78,
+80,
+#--
+82,
+84,
+#85,
+86,
+88,
+90,
+#--
+92,
+#94,
+#95,
+96,
+98,
+100,
+--
+102,
+#104,
+#105,
+106,
+108,
+110,
+#--
+112,
+114,
+#115,
+116,
+118,
+120,
+#--
+#122,
+#124,
+#125,
+126,
+128,
+130,
+#--
+132,
+134,
+#135,
+136,
+138,
+140,
+#--
+142,
+#144,
+#145,
+146,
+147,
+148,
+150,
+
+]
+
+"""
+30,
+--
+35,
+40,
+45,
+46,
+48,
+50,
+--
+52,
+54,
+55,
+56,
+58,
+60,
+--
+62,
+64,
+65,
+66,
+68,
+70,
+--
+72,
+74,
+75,
+76,
+78,
+80,
+--
+82,
+84,
+85,
+86,
+88,
+90,
+--
+92,
+94,
+95,
+96,
+98,
+#100,
+--
+102,
+104,
+105,
+106,
+108,
+110,
+--
+112,
+114,
+115,
+116,
+118,
+120,
+--
+122,
+124,
+125,
+126,
+128,
+130,
+--
+132,
+134,
+135,
+136,
+138,
+140,
+--
+142,
+144,
+145,
+146,
+147,
+148,
+150,
+--
+155
+
+
+
+"""
+
+shiftBy = 31.096 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
+for kVint in points : #range(init, 155, 5) :
     kV = float(kVint)/100
     print ("doing kV = " + str(kV))
-    if 0 > 1 :
+    if 0 > 0 :
         runCombineCommand(
-            "python test/kt_kv_scan/runNLLScan.py  -c /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/ -t kV_%s --kV %s -r 0 -j 8  --outputFolder /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/" % (str(kV).replace(".","p"), str(kV)),
-            "/afs/cern.ch/work/a/acarvalh/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
+            "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/ -t kV_%s --kV %s -r 0 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
+            "/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
         )
         runCombineCommand(
-            "python test/kt_kv_scan/runNLLScan.py  -c /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/ -t _kV_%s --kV %s -r 1 -j 8  --outputFolder /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/" % (str(kV).replace(".","p"), str(kV)),
-            "/afs/cern.ch/work/a/acarvalh/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
+            "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/ -t kV_%s --kV %s -r 1 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
+            "/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
         )
+        #runCombineCommand(
+        #    "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/ -t _kV_%s --kV %s -r 2 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_16March20_Ov_lep_TLL_tau_kt_scan/results_oneGo/" % (str(kV).replace(".","p"), str(kV)),
+        #    "/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
+        #)
     elif 1 > 0 :
-        filename = "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/nll_scan_r1__kV_%s.csv" % str(kV).replace(".","p")
-        filename2 = "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/nll_scan_r0_kV_%s.csv" % str(kV).replace(".","p")
+        filename = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/nll_scan_r1_kV_%s.csv" % str(kV).replace(".","p")
+        filename2 = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/nll_scan_r0_kV_%s.csv" % str(kV).replace(".","p")
         if kVint == init :
             allPoints = process(filename, filename2, "rescalect", shiftBy)
         else :
             allPoints = allPoints.append(process(filename, filename2, "rescalect", shiftBy), ignore_index=True) #
 allPoints.dropna(inplace=True)
+# drop one suspicious point
+#if "kV_1p" in filename and not "kV_1p0" in filename :
+#allPoints.drop(pd.Index(allPoints[(allPoints.cv == 1.0) & (abs(allPoints.cf) == 0.75) & (abs(allPoints.rescalecv) > 0.0) & ~(abs(allPoints.rescalecv) > 1.0)].index) , inplace=True ) #
+#if "kV_0p" in filename and not ("kV_0p7" in filename or "kV_0p7" in filename) :
+#allPoints.drop(pd.Index(allPoints[(allPoints.cv == 1.5) & (abs(allPoints.cf) == 2.0) & (abs(allPoints.rescalecv) < 0.0) & ~((abs(allPoints.rescalecv) == 0.7) | (abs(allPoints.rescalecv) == 0.75))].index) , inplace=True) #
+#if  "kV_0p7" in filename or "kV_0p8" in filename:
+#allPoints.drop(pd.Index(allPoints[(allPoints.cv == 1.5) & (abs(allPoints.cf) == 1.25) & ((abs(allPoints.rescalecv) == 0.7) | (abs(allPoints.rescalecv) == 0.8))].index) , inplace=True) #
+#allPoints = allPoints[~((allPoints.cv == 1.5) & (abs(allPoints.cf) == 1.25))]
+#allPoints.drop(pd.Index(allPoints[(allPoints.cv == 0.5) & (abs(allPoints.cf) == 1.25) & ((abs(allPoints.rescalecv) == 0.3))].index) , inplace=True) #
+
 #allPoints.drop(allPoints.loc[ (allPoints['cf']==-1) &  (allPoints['cv']==1) ].index, inplace=True)
 print allPoints
 
 if 1 > 0  :
-    outfile = "plots/teste_2D_kappa_Nopoints"
+    outfile = "plots/teste_2D_kappa_points_mar2020"
     x1 = np.linspace(-2, 2, len(allPoints["rescalect"].unique()))
     y1 = np.linspace(-2, 2, len(allPoints["rescalecv"].unique()))
     x2, y2 = np.meshgrid(x1, y1, sparse=False)
@@ -140,10 +324,10 @@ if 1 > 0  :
     CS = ax.contour(x2, y2, z2, levels, colors='k', linestyles=['solid', 'dashed'] )
     #CS = ax.contour(x_dense, y_dense, z_dense_smooth_griddata, levels, colors='k',)
     #ax.clabel(CS, inline=False, fontsize=10, )
-    #ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
+    ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
 
     x_low, x_high = -1.5, 1.5
-    y_low, y_high = 0.5, 1.5
+    y_low, y_high = 0.35, 1.6
     ax.set_xlim(x_low, x_high)
     ax.set_ylim(y_low, y_high)
 
@@ -153,7 +337,7 @@ if 1 > 0  :
 
     line_up, = plt.plot(x1, ls='-', color='k',label="68% C.l.")
     line_down, = ax.plot(x1, ls='--', color='k',label="95% C.l.")
-    legend = plt.legend(handles=[line_up, line_down], loc='lower left', title="Expected", frameon=True, framealpha=1.0, fontsize=12)
+    legend = plt.legend(handles=[line_up, line_down], loc='upper left', title="Expected", frameon=True, framealpha=1.0, fontsize=12)
     legend.get_frame().set_facecolor('white')
     legend.get_frame().set_linewidth(0)
 

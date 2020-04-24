@@ -158,7 +158,7 @@ else :
         typeFit = "prefit"
 print ("folder", folder)
 
-if not options.fromHavester : name_total = "total" # "total_background" # "total_covar" # 
+if not options.fromHavester : name_total = "total" # "total_background" # "total_covar" #
 #elif not options.doPostFit : name_total = "TotalBkg"
 else : name_total = "TotalProcs"
 
@@ -187,7 +187,7 @@ if not options.nameLabel == "none" :
 #        label_head += options_plot_ranges("ttH")[typeCat]["label"]
 
 if typeFit == "prefit" :
-    label_head = label_head+", "+typeFit
+    label_head = label_head+", \n"+typeFit
 else :
     label_head = label_head+", #mu(t#bar{t}H)=#hat{#mu}"
 
@@ -214,8 +214,11 @@ else : minY = options.minY
 
 maxY = 1
 if options.maxY == 1 :
-    if typeCat in options_plot_ranges("ttH").keys() : maxY = options_plot_ranges("ttH")[typeCat]["maxY"]
-else : minY = options.maxY
+    if typeCat in options_plot_ranges("ttH").keys() :
+        maxY = options_plot_ranges("ttH")[typeCat]["maxY"]
+else : maxY = options.maxY
+if options.era == 0 :
+    maxY = 2 * maxY
 
 print("reading shapes from: ", shapes_input)
 fin = [ROOT.TFile(shapes_input, "READ")]
@@ -241,7 +244,11 @@ if not options.original == "none" :
         readFrom =  "ttH_" + category + "/"
     print ("original readFrom ", readFrom)
     fileorriginal = ROOT.TFile(fileOrig, "READ")
-    template = fileorriginal.Get(readFrom +  "ttH_htt"   ) #name_total)  "x_TTZ" "ttH_htt" "x_TTZ"
+    if options.IHEP :
+        histRead = "x_TTZ"
+    else :
+        histRead = "ttH_htt" #"ttH_htt"
+    template = fileorriginal.Get(readFrom + histRead ) #name_total) "x_TTZ"  "ttH_htt"    "ttH_htt"
     template.GetYaxis().SetTitle(labelY)
     template.SetTitle(" ")
     nbinscatlist = [template.GetNbinsX()]
@@ -266,7 +273,7 @@ else :
                 catcats = list_cats
             else :
                 catcats = [ cat.replace("2018", str(era)) for cat in list_cats]
-    #catcats = [binToRead]
+    catcats = [binToRead]
     print("Drawing: ", catcats)
     nbinstotal = 0
     nbinscatlist = []
@@ -274,19 +281,23 @@ else :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
         else :
-            if options.doPostFit :
-                if "prefit" in catcat : continue
-            elif "postfit" in catcat : continue
-            readFrom = folder #catcat
+
+            readFrom = catcat # folder #
+            readFrom += "_prefit"
+            #if options.doPostFit :
+            #    readFrom += "_prefit"
+            #else :
+            #    readFrom += "_postfit"
         hist = fin[0].Get(readFrom + "/" + name_total )
         print ("reading shapes", readFrom + "/" + name_total)
-        nbinscat = GetNonZeroBins(hist) # hist.GetNbinsX()  #
+        nbinscat =  GetNonZeroBins(hist) # hist.GetNbinsX()  # Combine add zero bins
         nbinscatlist += [nbinscat]
         print (readFrom, nbinscat)
         nbinstotal += nbinscat
         datahist = fin[0].Get(readFrom + "/data")
     template = ROOT.TH1F("my_hist", "", nbinstotal, 0 - 0.5 , nbinstotal - 0.5)
     template.GetYaxis().SetTitle(labelY)
+    print (nbinscatlist)
 
 legend_y0 = 0.645
 legend1 = ROOT.TLegend(0.2400, legend_y0, 0.9450, 0.910)
@@ -299,6 +310,8 @@ print label_head
 legend1.SetHeader(label_head)
 header = legend1.GetListOfPrimitives().First()
 header.SetTextSize(.05)
+header.SetTextColor(1)
+header.SetTextFont(62)
 
 if options.unblind :
     dataTGraph1 = "NoneType"
@@ -312,7 +325,9 @@ if options.unblind :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
         else :
-            readFrom = folder #catcat
+            #readFrom = folder #catcat
+            readFrom = catcat # folder #
+            readFrom += "_prefit"
         print( " histtotal ", readFrom + "/" + name_total )
         histtotal = fin[0].Get(readFrom + "/" + name_total )
         lastbin += rebin_data(
@@ -334,7 +349,9 @@ for cc, catcat in enumerate(catcats) :
     if not options.fromHavester :
         readFrom = folder + "/" + catcat
     else :
-        readFrom = folder #catcat
+        #readFrom = folder #catcat
+        readFrom = catcat # folder #
+        readFrom += "_prefit"
     print ("read the hist with total uncertainties", readFrom, catcat)
     lastbin += rebin_total(
         hist_total,
@@ -396,17 +413,24 @@ print ("list of processes considered and their integrals")
 
 linebin = []
 linebinW = []
+poslinebinW_X = []
+pos_linebinW_Y = []
 y0 = options_plot_ranges("ttH")[typeCat]["position_cats"] # (legend_y0 - 0.01)*maxY
+if options.era == 0 :
+    y0 = 2 * y0
 for kk, key in  enumerate(dprocs.keys()) :
     hist_rebin = template.Clone()
     lastbin = 0
     addlegend = True
+    print("Stacking ", key)
     for cc, catcat in enumerate(catcats) :
         if not cc == 0 : addlegend = False
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
         else :
-            readFrom = catcat
+            #readFrom = catcat
+            readFrom = catcat # folder #
+            readFrom += "_prefit"
         info_hist = rebin_hist(
             hist_rebin,
             fin,
@@ -423,14 +447,23 @@ for kk, key in  enumerate(dprocs.keys()) :
         if kk == 0 :
             #print ("pllt category label at position: ", info_hist["labelPos"])
             print (info_hist)
+            print ("info_hist[binEdge]", info_hist["binEdge"])
             if info_hist["binEdge"] > 0 :
                 linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.2)] # (legend_y0 + 0.05)*maxY
             x0 = float(lastbin - info_hist["labelPos"] -1)
-            linebinW += [
-                ROOT.TPaveText(x0 - 0.0950, y0, x0 + 0.0950, y0 + 0.0600)
-                ]
+            #linebinW += [
+            #    ROOT.TLatex()
+            #    ]
+            sum_inX = 0.1950
+            if cc > 2 :
+                if cc == 3 :
+                    sum_inX = 0.65
+                else :
+                    sum_inX = 0.35
+            poslinebinW_X += [x0 - sum_inX]
+            pos_linebinW_Y += [y0]
 
-    if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # :
+    if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # : (info_hist["labelPos"] == 0 and not options.original == "none" )
         continue
     print (key,  0 if hist_rebin == 0 else hist_rebin.Integral() )
     #if "tHq" in key :
@@ -455,25 +488,35 @@ del dumb
 dumb = legend1.Draw("same")
 del dumb
 
-#labels = addLabel_CMS_preliminary(options.era)
-#for ll, label in enumerate(labels) :
-#    print ("printing label", ll)
-#    if ll == 0 :
-#        dumb = label.Draw("same")
-#        del dumb
-#    else : 
-#        dumb = label.Draw()
-#        del dumb
+labels = addLabel_CMS_preliminary(options.era)
+for ll, label in enumerate(labels) :
+    print ("printing label", ll)
+    if ll == 0 :
+        dumb = label.Draw("same")
+        del dumb
+    else :
+        dumb = label.Draw()
+        del dumb
 
 for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
-    linebinW[cc].AddText(cat)
-    linebinW[cc].SetTextFont(50)
-    #label_cat.SetTextAlign(13)
-    linebinW[cc].SetTextSize(0.05)
-    linebinW[cc].SetTextColor(1)
-    linebinW[cc].SetFillStyle(0)
-    linebinW[cc].SetBorderSize(0)
-    linebinW[cc].Draw("same")
+    print ("Draw label cat", cat, cc)
+    sumBottom = 0
+    for ccf, cf in enumerate(cat) :
+        linebinW = ROOT.TLatex()
+        linebinW.DrawLatex(poslinebinW_X[cc], pos_linebinW_Y[cc] + sumBottom, cf)
+        linebinW.SetTextFont(50)
+        linebinW.SetTextAlign(12)
+        linebinW.SetTextSize(0.05)
+        linebinW.SetTextColor(1)
+        #if ccf == 0 and len(cat) > 2:
+        #    sumBottom += -0.75
+        #else :
+        sumBottom += -2.6
+        #linebinW[cc].SetFillStyle(0)
+        #linebinW[cc].SetBorderSize(0)
+        #if cc > 2 :
+        #    linebinW[cc].SetTextAngle(-90.);
+        #linebinW[cc].Draw("same")
 
 legend1.AddEntry(hist_total, "Uncertainty", "f")
 

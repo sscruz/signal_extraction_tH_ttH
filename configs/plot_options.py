@@ -6,8 +6,9 @@ def sigmatHW(KT, KV):
 
 def options_plot (analysis, channel, all_procs) :
     dprocs = OrderedDict()
-    Hdecays_long = ["hww", "hzz", "htt", "hzg", "hmm"] #
-    Hdecays      = ["hww", "htt" , "hzz"] # , "htt"
+    Hdecays_long = [ "hww", "hzz", "htt",] #  "hzg", "hmm"
+    Hdecays      = ["hww", "htt" , "hzz"]
+    other_H_proc = 0
     ## the order of the entries will be the order of the drawing, that is why this is almost manual
     # TODO: write it on a smarther way
     if analysis == "ttH" :
@@ -19,13 +20,13 @@ def options_plot (analysis, channel, all_procs) :
         if "fakes_mc" in all_procs       : dprocs["fakes_mc"]       = {"color" :  12, "fillStype" : 3345, "label" : "Fakes"  , "make border" : True}
         if "flips_mc" in all_procs       : dprocs["flips_mc"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
         if "data_flips" in all_procs       : dprocs["data_flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
-        if conversions in all_procs : dprocs[conversions] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
+        if conversions in all_procs : dprocs[conversions] = {"color" :   5, "fillStype" : 1001, "label" : "Conversions"       , "make border" :  True}
         if "Fakes" in all_procs       : dprocs["Fakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Fakes"  , "make border" : True}
         if "Flips" in all_procs       : dprocs["Flips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
-        if "Conv" in all_procs : dprocs["Conv"] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
+        if "Conv" in all_procs : dprocs["Conv"] = {"color" :   5, "fillStype" : 1001, "label" : "Conversions"       , "make border" :  True}
         if "mcFakes" in all_procs       : dprocs["mcFakes"]       = {"color" :  12, "fillStype" : 3345, "label" : "Fakes"  , "make border" : True}
         if "mcFlips" in all_procs       : dprocs["mcFlips"]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
-        if "Convs" in all_procs : dprocs["Convs"] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
+        if "Convs" in all_procs : dprocs["Convs"] = {"color" :   5, "fillStype" : 1001, "label" : "Conversions"       , "make border" :  True}
         if "TT" in all_procs     : dprocs["TT"]           = {"color" : 114, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
         if "Rares" in all_procs     : dprocs["Rares"]     = {"color" : 851, "fillStype" : 1001, "label" : "Rares"       , "make border" : True}
         if "EWK" in all_procs       : dprocs["EWK"]       = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
@@ -33,17 +34,22 @@ def options_plot (analysis, channel, all_procs) :
         if "WZ" in all_procs        : dprocs["WZ"]        = {"color" : 6, "fillStype" : 1001, "label" : "WZ"          , "make border" : True}
         if "TTWW" in all_procs :
             dprocs["TTW"]                                 = {"color" : 823, "fillStype" : 1001, "label" : "none"        , "make border" : False}
-            dprocs["TTWW"]                                = {"color" : 823, "fillStype" : 1001, "label" : "ttW + ttWW"  , "make border" : True}
+            dprocs["TTWW"]                                = {"color" : 823, "fillStype" : 1001, "label" : "ttW(W)"  , "make border" : True}
         elif "TTW" in all_procs :
-            dprocs["TTW"]                                 = {"color" : 823, "fillStype" : 1001, "label" : "ttW"        , "make border" : True}
+            dprocs["TTW"]                                 = {"color" : 823, "fillStype" : 1001, "label" : "ttW(W)"        , "make border" : True}
         if "TTZ" in all_procs       : dprocs["TTZ"]       = {"color" : 822, "fillStype" : 1001, "label" : "ttZ"         , "make border" : True}
         ### signals
         if "HH" in all_procs         : dprocs["HH"]         = {"color" : 4, "fillStype" : 1001, "label" : "none"           , "make border" : False}
-        for hig_proc in ["TTWH", "TTZH", "qqH", "tHW", "VH", "WH", "ZH", "ggH"] :
+        for hig_proc in ["TTWH", "TTZH", "qqH", "VH", "WH", "ZH", "ggH"] :
             if hig_proc in all_procs       :
                 for decay in Hdecays : # list(set(list(Hdecays)) - set(["htt"])) :
-                    if "%s_%s" % (hig_proc, decay) == "tHW_htt" :
-                        dprocs["tHW_htt"]       = {"color" : 4, "fillStype" : 1001, "label" : "VH + ggH + qqH"        , "make border" : False}
+                    #if not "%s_%s" % (hig_proc, decay) in all_procs :
+                    #    continue
+                    #if other_H_proc == 0 :
+                    #    dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "Other H processes"       , "make border" : False}
+                    #    other_H_proc = 1
+                    if "%s_%s" % (hig_proc, decay) == "ggH_htt" : # tHW_hww
+                        dprocs["ggH_htt"]       = {"color" : 4, "fillStype" : 1001, "label" : "VH + ggH + qqH"      , "make border" : False} # "Other H processes" "tHW + VH + ggH + qqH + HH + ttVH"
                     else :
                         dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
                     #dprocs["%s_htt" % hig_proc]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
@@ -67,17 +73,23 @@ def options_plot (analysis, channel, all_procs) :
                 dprocs["ggH_%s" % decay]               = {"color" :   2, "fillStype" : 3005, "label" : "none"         , "make border" : False} # ["VH_%s" % decay]
             dprocs["ggH_htt"]                           = {"color" :   2, "fillStype" : 3005, "label" : "ggH"         , "make border" : True}
             #dprocs["ggH"]                           = {"color" :   2, "fillStype" : 3005, "label" : "ggH"         , "make border" : True}"""
-        if "ttH" in all_procs :
-            for decay in list(set(list(Hdecays_long)) - set(["hww"])) :
-                dprocs["ttH_%s" % decay]                 = {"color" :   2, "fillStype" : 1001, "label" : "none"        , "make border" : False}
-            dprocs["ttH_hww"]                                 = {"color" :   2, "fillStype" : 1001, "label" : "ttH"         , "make border" : True}
-            #dprocs["ttH"]                                 = {"color" :   2, "fillStype" : 1001, "label" : "ttH"         , "make border" : True}
+        if "tHW" in all_procs :
+            #for decay in list(set(list(Hdecays)) - set(["htt"])) :
+            #    dprocs["tHW_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
+            #dprocs["tHW_htt"]                             = {"color" : 208, "fillStype" : 1001, "label" : "tH"           , "make border" : True}
+            for decay in list(Hdecays) :
+                dprocs["tHW_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
         if "tHq" in all_procs :
-            for decay in list(set(list(Hdecays)) - set(["htt"])) :
-                dprocs["tHq_%s" % decay]              = {"color" : 205, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
-            dprocs["tHq_htt"]                             = {"color" : 205, "fillStype" : 1001, "label" : "tHq"           , "make border" : True}
+            for decay in list(set(list(Hdecays)) - set(["hww"])) :
+                dprocs["tHq_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
+            dprocs["tHq_hww"]                             = {"color" : 208, "fillStype" : 1001, "label" : "tH"           , "make border" : True}
             #dprocs["tHq"]                             = {"color" : 205, "fillStype" : 1001, "label" : "tHq * 3"           , "make border" : True}
         # change the order of the stack if channel is dominated by fakes
+        if "ttH" in all_procs :
+            for decay in list(set(list(Hdecays_long)) - set(["htt"])) :
+                dprocs["ttH_%s" % decay]                 = {"color" :   2, "fillStype" : 1001, "label" : "none"        , "make border" : False}
+            dprocs["ttH_htt"]                                 = {"color" :   2, "fillStype" : 1001, "label" : "ttH"         , "make border" : True}
+            #dprocs["ttH"]                                 = {"color" :   2, "fillStype" : 1001, "label" : "ttH"         , "make border" : True}
         if channel in [ "1l_2tau", "2l_2tau"] :
             ## remove "fakes_data" from first entry and add as last
             del dprocs["data_fakes"]
@@ -93,7 +105,7 @@ def options_plot (analysis, channel, all_procs) :
     return dprocs
 
 def Higgs_proc_decay (proc) :
-    Hdecays_long = ["hww", "hzz", "htt", "hzg", "hmm" ]
+    Hdecays_long = [  "htt",  "hww", "hzz",  "hzg", "hmm"] #
     Hdecays      = ["hww", "hzz", "htt" ]
     #sum(higgs_procs,[])
     return sum([ [y + "_" + x  for x in decays if not (x in ["hzz", "htt", "hzg", "hmm"] and y != "ttH")] for y in sigs], [])
@@ -102,83 +114,75 @@ def options_plot_ranges (analysis) :
     if analysis == "ttH" :
         ### it will have the subcategories for the DNNs
         info_channel = {
-            "2lss_0tau_BKG" : { "minY" : 0.,   "maxY" :  35.,  "minYerr": 0.501, "maxYerr" : 1.59, "useLogPlot" : False, "label" : '2l ss + 0#tau_{h}, BKG - region', "labelX" : "DNN bin#", "cats" : ["ee", "em", "mm"]},
-            "2lss_0tau_NN" : {
-                "minY" : 1.,   "maxY" :  10000.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
-                "useLogPlot" : True,
-                "label" : '2l ss + 0#tau_{h}, ttW - region',
-                "labelX" : "DNN bin#",
-                "position_cats": 250. ,
-                "list_cats" : [""],
-                "cats" : ["ee", "em", "mm"]
-                },
             "2lss_0tau_rest" : {
-                "minY" : 1.,   "maxY" :  70.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
+                "minY" : 0,   "maxY" :  95.,
+                "minYerr": -0.64, "maxYerr" : 0.64,
                 "useLogPlot" : False,
-                "label" : '2l ss + 0#tau_{h}, BKG - region',
-                "labelX" : "DNN bin#",
-                "position_cats": 45. ,
-                "list_cats" : [""],
-                "cats" : ["ee", "em", "mm"]
+                "label" : "2l ss + 0#tau_{h}, Other BKG node",
+                "labelX" : "Bin number",
+                "position_cats": 50. ,
+                "list_cats" : ["ttH_2lss_0tau_ee_Restnode_2018", "ttH_2lss_0tau_em_Restnode_2018", "ttH_2lss_0tau_mm_Restnode_2018"],
+                "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
             "2lss_0tau_ttW" : {
-                "minY" : 1.,   "maxY" :  20.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
+                "minY" : 0.,   "maxY" :  35.,
+                "minYerr": -0.74, "maxYerr" : 0.74,
                 "useLogPlot" : False,
-                "label" : '2l ss + 0#tau_{h}, ttW - region',
-                "labelX" : "DNN bin#",
-                "position_cats": 12. ,
-                "list_cats" : [""],
-                "cats" : ["ee", "em", "mm"]
+                "label" : '2l ss + 0#tau_{h}, t#bar{t}W node',
+                "labelX" : "Bin number",
+                "position_cats": 15. ,
+                "list_cats" : ["ttH_2lss_0tau_ee_ttWnode_2018", "ttH_2lss_0tau_em_ttWnode_2018", "ttH_2lss_0tau_mm_ttWnode_2018"],
+                "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
             "2lss_0tau_ttH" : {
-                "minY" : 1.,   "maxY" :  25.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
+                "minY" : 0,   "maxY" :  25.,
+                "minYerr": -0.65, "maxYerr" : 0.65,
                 "useLogPlot" : False,
-                "label" : '2l ss + 0#tau_{h}, ttH - region',
-                "labelX" : "DNN bin#",
+                "label" : '2l ss + 0#tau_{h}, t#bar{t}H node',
+                "labelX" : "Bin number",
                 "position_cats": 12. ,
-                "list_cats" : [""],
-                "cats" : ["ee", "em", "mm"]
+                "list_cats" : ["ttH_2lss_0tau_ee_ttHnode_2018", "ttH_2lss_0tau_em_ttHnode_2018", "ttH_2lss_0tau_mm_ttHnode_2018"],
+                "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
             "2lss_0tau_tH" : {
-                "minY" : 1.,   "maxY" :  50.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
+                "minY" : 0,   "maxY" :  60.,
+                "minYerr": -0.55, "maxYerr" : 0.55,
                 "useLogPlot" : False,
-                "label" : '2l ss + 0#tau_{h}, tHq - region',
-                "labelX" : "DNN bin#",
-                "position_cats": 30. ,
-                "list_cats" : [""],
-                "cats" : ["ee", "em", "mm"]
+                "label" : '2l ss + 0#tau_{h}, tH node',
+                "labelX" : "Bin number",
+                "position_cats": 35. ,
+                "list_cats" : ["ttH_2lss_0tau_ee_tHQnode_2018", "ttH_2lss_0tau_em_tHQnode_2018", "ttH_2lss_0tau_mm_tHQnode_2018"],
+                "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
-            "ttWctrl"   : { "minY" : -5.,   "maxY" :  115.,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
-            #"2lss_1tau" : { "minY" : 0,  "maxY" :  20.,   "minYerr":  0.0,  "maxYerr" : 2.75, "useLogPlot" : False, "label" : '2l ss + 1#tau_{h}', "labelX" : "DNN bin#", "cats" : ["BKG - region", "tH - refion", "ttH - region"]},
             "2lss_1tau_plain" : {
                 "minY" : 0,  "maxY" :  25.,
                 "minYerr":  0.0,  "maxYerr" : 2.75,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
-                "list_cats" : [""],
-                "labelX" : "DNN bin#", "cats" : [""]
+                "list_cats" : [],
+                "position_cats": 300. ,
+                "labelX" : "Bin number", "cats" : ["ttH_2lss_1tau"]
                 },
             "2lss_1tau" : {
-                "minY" : 0,  "maxY" :  18.0,
-                "minYerr":  0.0,  "maxYerr" : 2.75,
+                "minY" : 0,  "maxY" :  22.0,
+                "minYerr":  -0.34,  "maxYerr" : 0.34,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
-                "labelX" : "DNN bin#",
-                "position_cats": 10.5 ,
-                "list_cats" : [""],
-                "cats" : ["BKG-reg", "tH-reg", "ttH-reg"]
+                "labelX" : "Bin number",
+                "position_cats": 12.5 ,
+                "list_cats" : ["ttH_2lss_1tau_rest_2018", "ttH_2lss_1tau_tH_2018", "ttH_2lss_1tau_ttH_2018"],
+                "cats" :  [
+                ["'Other'", "node"],
+                ['tH', 'node'],
+                ['ttH', 'node'] ]
                 },
             "3l_0tau"   : {
-                "minY" : -6,    "maxY" :  229.,
+                "minY" : -6,    "maxY" :  10.,
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}',
-                "list_cats" : [""],
+                "position_cats": 20. ,
+                "list_cats" : [],
                 "labelX" : "BDT", "cats" : [""]
                 },
             "3l_0tau_NN"   : {
@@ -186,150 +190,173 @@ def options_plot_ranges (analysis) :
                 "minYerr": 0.501, "maxYerr" : 1.59,
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}',
-                "list_cats" : [""],
+                "list_cats" : [],
                 "labelX" : "BDT", "cats" : ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10", "ch11", "ch12", "ch13", "ch11", "ch12", "ch13"]
                 },
             "3l_0tau_ttH" : {
                 "minY" : 0,    "maxY" :  40.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
+                "minYerr":  -0.34,  "maxYerr" : 0.34,
                 "useLogPlot" : False,
-                "label" : '3l + 0#tau_{h}, ttH-region',
-                "labelX" : "DNN bin#",
+                "label" : '3l + 0#tau_{h}, t#bar{t}H output node',
+                "labelX" : "Bin number",
                 "position_cats": 20. ,
-                "list_cats" : [""],
-                "cats" : ["bl", "bt"]
+                "list_cats" : ["ttH_3l_0tau_ttH_bl_2018", "ttH_3l_0tau_ttH_bt_2018"],
+                "cats" : [["bl"], ["bt"]]
                 },
             "3l_0tau_tH" : {
-                "minY" : 0,    "maxY" :  15.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
+                "minY" : 0,    "maxY" :  25.,
+                "minYerr":  -0.64,  "maxYerr" : 0.64,
                 "useLogPlot" : False,
-                "label" : '3l + 0#tau_{h}, tHq-region',
-                "labelX" : "DNN bin#",
-                "position_cats": 10. ,
-                "list_cats" : [""],
-                "cats" : ["bl", "bt"]
+                "label" : '3l + 0#tau_{h}, tH output node',
+                "labelX" : "Bin number",
+                "position_cats": 13. ,
+                "list_cats" : ["ttH_3l_0tau_tH_bl_2018", "ttH_3l_0tau_tH_bt_2018"],
+                "cats" : [["bl"], ["bt"]]
                 },
             "3l_0tau_rest" : {
                 "minY" : 0,    "maxY" :  28.,
-                "minYerr": 0.501, "maxYerr" : 1.59,
+                "minYerr":  -0.54,  "maxYerr" : 0.54,
                 "useLogPlot" : False,
-                "label" : '3l + 0#tau_{h}, BKG region',
-                "labelX" : "DNN bin#",
-                "position_cats": 8. ,
-                "list_cats" : [""],
-                "cats" : ['', "", '', '', '', '', '']
+                "label" : '3l + 0#tau_{h}, Other BKG node',
+                "labelX" : "Bin number",
+                "position_cats": 15. ,
+                "list_cats" : [
+                    "ttH_3l_0tau_rest_eee_2018",
+                    "ttH_3l_0tau_rest_eem_bl_2018",
+                    "ttH_3l_0tau_rest_emm_bl_2018",
+                    "ttH_3l_0tau_rest_mmm_bl_2018",
+                    "ttH_3l_0tau_rest_emm_bt_2018",
+                    "ttH_3l_0tau_rest_mmm_bt_2018",
+                    "ttH_3l_0tau_rest_eem_bt_2018",
+                     ],
+                "cats" : [
+                ["e", "e", "e"],
+                ["ee#mu", " bl"],
+                ["e#mu#mu", " bl"],
+                ["#mu#mu#mu", " bl"],
+                ["e", "e", "m", "bt"],
+                ["e",'#mu', '#mu', "bt"],
+                ["#mu","#mu","#mu", "bt"],
+                ]
                 #"cats" : ['', 'emm bl', "eem bl",  'mmm bl', 'emm bt', "eem bt",  'mmm bt']
                 },
             "3lctrl" : {
                 "minY" : 0.1,    "maxY" :  100000.,
-                "minYerr": -2.001, "maxYerr" : 1.99,
+                "minYerr": -1.01, "maxYerr" : 1.99,
                 "useLogPlot" : True,
                 "label" : '3l-CR',
-                "labelX" : "bin#",
-                "position_cats": 600. ,
+                "labelX" : "Bin number",
+                "position_cats": 100. ,
                 "list_cats" : ["ttH_cr_3l_2018_eee_cr", "ttH_cr_3l_2018_eem_cr", "ttH_cr_3l_2018_emm_cr", "ttH_cr_3l_2018_mmm_cr"],
-                "cats" : ["eee" , "eem", "emm", "mmm"]
+                "cats" : [ ['eee'], ['ee#mu'], ['e#mu#mu'], ['#mu#mu#mu']]
                 },
             "4lctrl" : {
                 "minY" : 0.1,    "maxY" :  100000.,
                 "minYerr": -0.6, "maxYerr" : 0.8,
                 "useLogPlot" : True,
                 "label" : '4l-CR',
-                "labelX" : "bin#",
+                "labelX" : "Bin number",
                 "position_cats": 300. ,
-                "list_cats" : [""],
+                "list_cats" : ["ttH_cr_4l_2018"],
                 "cats" : [""]
                 },
             "2lss_3j" : {
-                "minY" : 0.,    "maxY" :  70.,
-                "minYerr": -0.8, "maxYerr" : 0.8,
+                "minY" : 0.,    "maxY" :  50.,
+                "minYerr": -1.02, "maxYerr" : 1.32,
                 "useLogPlot" : False,
-                "label" : '2lss-3j',
-                "labelX" : "mass(ll)",
+                "label" : '2lss-3j ',
+                "labelX" : "mass(ll) (GeV)",
                 "position_cats": 300. ,
-                "list_cats" : [""],
+                "list_cats" : [],
                 "cats" : [""]
                 },
             "2l_2tau"   : {
                 "minY" : 0.0,
-                "maxY" :  5.5,
-                "minYerr":  0.0,
-                "maxYerr" : 2.75,
+                "maxY" :  6.5,
+                "minYerr":  -0.84,  "maxYerr" : 0.84,
                 "useLogPlot" : False,
                 "label" : '2l + 2#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : [""],
-                "labelX" : "BDT bin#",
+                "list_cats" : [],
+                "labelX" : "Bin number",
                 "cats" : [""]
                 },
             "3l_1tau"   : {
-                "minY" : 0.,  "maxY" :  3.5,
-                "minYerr":  0.0,  "maxYerr" : 5.35,
+                "minY" : 0.,  "maxY" :  4.0,
+                "minYerr":  -0.64,  "maxYerr" : 0.64,
                 "useLogPlot" : False,
                 "label" : '3l + 1#tau_{h}',
-                "labelX" : "BDT bin#",
+                "labelX" : "Bin number",
                 "position_cats": 300. ,
-                "list_cats" : [""],
+                "list_cats" : [],
                 "cats" : [""]
                 },
             "1l_2tau"   : {
-                "minY" : 0.1,  "maxY" :  95.,
-                "minYerr": -1.,  "maxYerr" : 1.87,
+                "minY" : 0,  "maxY" :  55.,
+                "minYerr":  -1.24,  "maxYerr" : 1.64,
                 "useLogPlot" : False,
                 "label" : '1l + 2#tau_{h}',
                 "position_cats": 300. ,
                 "list_cats" : ["ttH_1l_2tau"],
-                "labelX" : "m_{#tau_{h}#tau_{h}} (GeV)", "cats" : [""]
+                "labelX" : "Bin number", "cats" : [""] #   "m_{#tau_{h}#tau_{h}} (GeV)"
+                },
+            "1l_2tau_SS"   : {
+                "minY" : 0,  "maxY" :  55.,
+                "minYerr":  -1.24,  "maxYerr" : 3.64,
+                "useLogPlot" : False,
+                "label" : '1l + 2#tau_{h} SS',
+                "position_cats": 300. ,
+                "list_cats" : ["ttH_1l_2tau"],
+                "labelX" : "M(#tau #tau) Vis (GeV)", "cats" : [""] #   "m_{#tau_{h}#tau_{h}} (GeV)"
                 },
             "2los_1tau" : {
-                "minY" : 0.07,  "maxY" :  5000.,
-                "minYerr": -0.6,  "maxYerr" : 2.85,
-                "useLogPlot" : True,
+                "minY" : 0,  "maxY" :  75.,
+                "minYerr":  -0.94,  "maxYerr" : 0.94,
+                "useLogPlot" : False,
                 "label" : '2l os + 1#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : [""],
-                "labelX" : "BDT", "cats" : [""]
+                "list_cats" : [],
+                "labelX" : "Bin number", "cats" : [""]
                 },
             "0l_2tau"   : {
-                "minY" : 0.07,  "maxY" :  100000.,
-                "minYerr": -0.6,  "maxYerr" : 2.85,
+                "minY" : 0.1,  "maxY" :  80000.,
+                "minYerr": -1.01,  "maxYerr" : 2.99,
                 "useLogPlot" : True,
                 "label" : '0l + 2#tau_{h}',
-                "labelX" : "BDT",
+                "labelX" : "Bin number",
                 "position_cats": 300. ,
-                "list_cats" : [""],
+                "list_cats" : [],
                 "cats" : [""]
                 },
             "1l_1tau"   : {
-                "minY" : 1.,  "maxY" :  1000000.,
-                "minYerr": -0.6,  "maxYerr" : 2.85,
+                "minY" : 10,  "maxY" :  400000.,
+                "minYerr":  -0.74,  "maxYerr" : 0.74,
                 "useLogPlot" : True,
                 "label" : '1l + 1#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : [""],
-                "labelX" : "BDT", "cats" : [""]
+                "list_cats" : [],
+                "labelX" : "Bin number", "cats" : [""]
                 },
             "4l_0tau"   : {
                 "minY" : 0.,
                 "maxY" :  7.5,
-                "minYerr": 0.601,
-                "maxYerr" : 2.19,
+                "minYerr":  -0.94,  "maxYerr" : 0.94,
                 "useLogPlot" : False,
                 "label" : '4l + 0#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : [""],
-                "labelX" : "BDT bin#", "cats" : [""]
+                "list_cats" : ["ttH_4l_2018"],
+                "labelX" : "Bin number", "cats" : [""]
                 },
             "2lss_0tau" : {
-                "minY" : -0.35, "maxY" :  13.9,
-                "minYerr": 0.601, "maxYerr" : 2.19,
+                "minY" : 0., "maxY" :  13.9,
+                "minYerr":  -1.1,  "maxYerr" : 1.54,
                 "useLogPlot" : False,
-                "label" : '2l ss + 0#tau_{h}',
+                "label" : '2l ss - 3j ',
                 "labelX" : "BDT",
                 "list_cats" : [""],
+                "position_cats": 300. ,
                 "cats" : [""]
                 },
-            "ZZctrl"    : { "minY" : -0.35, "maxY" :  13.9,  "minYerr": -0.6,  "maxYerr" : 2.85, "useLogPlot" : False, "label" : '2l + 2#tau_{h}', "labelX" : "BDT", "cats" : [""]},
         }
     else : sys.exit("analysis " + analysis + " not implemented")
     return info_channel
@@ -425,9 +452,9 @@ def list_channels_draw(analysis) :
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
             },
         "2lss_3j": {
-            "bkg_proc_from_data" : [ fakes, "data_flips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : [ "tHq", "tHW", "ggH", "qqH", "ZH", "WH", "HH", "TTWH", "TTZH"]
+            "bkg_proc_from_data" : [ fakes,], # "data_flips"
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares",], ##   "Convs" EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
+            "signal" : [ "ttH" ] # "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH"
             },
         "2lss_0tau_tH" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
@@ -449,8 +476,13 @@ def list_channels_draw(analysis) :
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
             "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
             },
+        "2lss_1tau_plain" : {
+            "bkg_proc_from_data" : [fakes, "data_flips"], # , "data_flips"
+            "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "ggH", "qqH", "TTWH", "TTZH"]
+            },
         "2lss_1tau" : {
-            "bkg_proc_from_data" : [fakes, flips], # , "data_flips"
+            "bkg_proc_from_data" : [fakes, "data_flips"], # , "data_flips"
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "ggH", "qqH", "TTWH", "TTZH"]
             },
@@ -499,6 +531,11 @@ def list_channels_draw(analysis) :
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"]
             },
+        "1l_2tau_SS"   : {
+            "bkg_proc_from_data" : [ "data_fakes"      ],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
+            "signal" : ["ttH", ] # "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"
+            },
         "2l_2tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
@@ -516,8 +553,8 @@ def list_channels_draw(analysis) :
         },
         "0l_2tau"   : {
             "bkg_proc_from_data" : [fakes       ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", conversions, "EWK"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ggH", "qqH", "ZH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : [ "TTZ", "WZ", "ZZ", "DY", "Rares", "TT"], # , conversions, "EWK" , "TTWW" "TTW",
+            "signal" : ["ttH", "tHq", "tHW",  "ggH", "qqH",] # "HH", "TTWH", "TTZH"    "WH",  "ZH",
             },
         "1l_1tau"   : {
             "bkg_proc_from_data" : [fakes       ],

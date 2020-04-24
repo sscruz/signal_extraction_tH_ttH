@@ -31,8 +31,9 @@ def run_cmd(command):
 
 inputShapes = options.inputShapes
 
+cmd = "cd %s; combineCards.py  " % inputShapes
 for era in ["2018", "2017", "2016"] :
-    cmd = "cd %s; combineCards.py  " % inputShapes
+    #cmd = "cd %s; combineCards.py  " % inputShapes
     cmd += " ttH_0l_2tau_%s=ttH_0l_2tau_%s.txt" % (era, era)
     cmd += " ttH_2l_2tau_%s=ttH_2l_2tau_%s.txt" % (era, era)
     cmd += " ttH_3l_1tau_%s=ttH_3l_1tau_%s.txt" % (era, era)
@@ -71,7 +72,8 @@ for era in ["2018", "2017", "2016"] :
     cmd += " ttH_cr_3l_%s_eem_cr=ttH_cr_3l_%s_eem_cr.txt" % (era, era)
     cmd += " ttH_cr_3l_%s_emm_cr=ttH_cr_3l_%s_emm_cr.txt" % (era, era)
     cmd += " ttH_cr_3l_%s_mmm_cr=ttH_cr_3l_%s_mmm_cr.txt" % (era, era)
-    cmd += " > combo_ttHmultilep_%s.txt" % era
-    #print (cmd)
-    #runCombineCmd(cmd, inputShapes)
-    run_cmd(cmd)
+    #cmd += " > combo_ttHmultilep_%s.txt" % era
+cmd += " > combo_ttHmultilep.txt" #% era
+#print (cmd)
+#runCombineCmd(cmd, inputShapes)
+run_cmd(cmd)

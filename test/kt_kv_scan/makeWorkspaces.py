@@ -12,7 +12,7 @@ def makeWorkspace(card, outname, options, outputFolder, verbose=False):
     cmd = "text2workspace.py"
     cmd += " %s" % options
     cmd += " -o %s" % outname
-    cmd += " --PO BRU=0" 
+    cmd += " --PO BRU=0 " 
     cmd += " %s" % card
     #print (cmd)
 

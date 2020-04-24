@@ -32,6 +32,18 @@ parser.add_option("--ttW", action="store_true", dest="ttW", help="add as POI", d
 parser.add_option("--ttZ", action="store_true", dest="ttZ", help="add as POI", default=False)
 parser.add_option("--tH", action="store_true", dest="tH", help="do results also with tH floating", default=False)
 parser.add_option(
+    "--ttH_tH",
+    action="store_true", dest="ttH_tH",
+    help="do results also with ttH and tH floating as SM",
+    default=False
+    )
+parser.add_option(
+    "--unblinded",
+    action="store_true", dest="unblinded",
+    help="self explanatory",
+    default=False
+    )
+parser.add_option(
     "--era", type="int",
     dest="era",
     help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
@@ -83,7 +95,7 @@ namePlot      = options.namePlot
 cardFolder    = options.cardFolder
 era           = options.era
 channel       = options.channel
-blinded = True
+blinded       = not options.unblinded
 #runCombineCmd("mkdir %s"  % (cardFolder))
 FolderOut = cardFolder + "/results/"
 runCombineCmd("mkdir %s"  % (FolderOut))
@@ -98,27 +110,37 @@ if options.ttW : floating_ttV += " --PO 'map=.*/TTW.*:r_ttW[1,0,6]' --PO 'map=.*
 if options.ttZ : floating_ttV += " --PO 'map=.*/TTZ.*:r_ttZ[1,0,6]' "
 
 float_sig_rates = ""
-if not CR : 
-    float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'"
-if options.tH : 
-    float_sig_rates += " --PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
+if options.ttH_tH :
+    float_sig_rates = " --PO 'map=.*/ttH.*:r_SM[1,-1,3]' --PO 'map=.*/tHW.*:r_SM[1,-40,40]' --PO 'map=.*/tHq.*:r_SM[1,-40,40]'"
+else :
+    if not CR :
+        float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'"
+    if options.tH :
+        float_sig_rates += " --PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
 
+print("Floating signal:", float_sig_rates)
+
+if options.ttH_tH :
+    cardToRead = cardToRead + "_SMrate"
 WS_output = cardToRead + "_WS"
-blindStatement = " -t -1 "
+blindStatement = " "
+if blinded :
+    blindStatement = " -t -1 "
 if do_kt_scan_no_kin :
     ## add break if not options.tH
     cmd = "text2workspace.py"
-    cmd += " %s.txt" % cardToRead
+    cmd += " %s.txt" % cardToRead.replace("_SMrate", "")
     cmd += " %s" % floating_ttV
     cmd += "  -P HiggsAnalysis.CombinedLimit.LHCHCGModels:K5 --PO verbose  --PO BRU=0"
     cmd += " -o %s/%s_kappas.root" % (FolderOut, cardToRead)
-    cmd += " ulimit -s unlimited"
+    #cmd += " ulimit -s unlimited"
     runCombineCmd(cmd, cardFolder)
     print ("done %s/%s_kappas.root" % (FolderOut, cardToRead))
 
     cmd = "combine -M MultiDimFit"
     cmd += " %s_kappas.root" % cardToRead
-    if blinded : cmd += blindStatement
+    if blinded :
+        cmd += blindStatement
     cmd += " --algo grid --points 100"
     cmd += " --redefineSignalPOIs kappa_t --setParameterRanges kappa_t=-3,3 --setParameters kappa_t=1.0,kappa_V=1.0,r_ttH=1,r_tH=1"
     cmd += " --freezeParameters kappa_V,kappa_tau,kappa_mu,kappa_b,kappa_c,kappa_g,kappa_gam -m 125 --fastScan"
@@ -137,26 +159,34 @@ if doWS :
     cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
     cmd += " %s" % floating_ttV
     cmd += " %s" % float_sig_rates
-    cmd += " ulimit -s unlimited"
+    #cmd += " ulimit -s unlimited"
     runCombineCmd(cmd, cardFolder)
     print ("done %s/%s_WS.root" % (FolderOut, cardToRead))
 
 doFor = [blindStatement]
 if not blinded : doFor += [" "]
 
-signals = ["ttH"]
-if options.tH : signals += ["tH"]
+if not options.ttH_tH :
+    signals = ["ttH"]
+    if options.tH :
+        signals += ["tH"]
+else :
+    signals = ["SM"]
 
 if doRateAndSignificance :
     for signal in signals :
-      if signal == "tH" : continue
+      #if signal == "tH" : continue
       for ss, statements in enumerate(doFor) :
         if ss == 1 : label = "data"
         if ss == 0 : label = "asimov"
-        if signal == "ttH" :
-            redefine = " --redefineSignalPOI r_ttH  "
-            if options.tH  : redefine += " --freezeParameters r_tH  "
-        if signal == "tH"  : redefine = " --freezeParameters r_ttH --redefineSignalPOI r_tH "
+        if signal == "SM"  :
+            redefine = " --redefineSignalPOI r_SM  "
+        else :
+            if signal == "ttH" :
+                redefine = " --redefineSignalPOI r_ttH  "
+                if options.tH  : redefine += " --freezeParameters r_tH  "
+            if signal == "tH"  :
+                redefine = " --freezeParameters r_ttH --redefineSignalPOI r_tH "
 
         cmd = "combineTool.py -M Significance --signif"
         cmd += " %s_WS.root" % cardToRead
@@ -164,7 +194,7 @@ if doRateAndSignificance :
         cmd += " %s" % blindStatement
         cmd += " %s" % redefine
         cmd += " %s " % setpar
-        #runCombineCmd(cmd, FolderOut, saveout="%s_significance_%s_%s.log" % (cardToRead, label, signal))
+        runCombineCmd(cmd, FolderOut, saveout="%s_significance_%s_%s.log" % (cardToRead, label, signal))
 
         cmd = "combineTool.py  -M MultiDimFit"
         cmd += " %s_WS.root" % cardToRead
@@ -174,22 +204,22 @@ if doRateAndSignificance :
         cmd += " -P r_%s" % signal
         cmd += " %s " % setpar
         cmd += " --floatOtherPOI=1 --saveFitResult -n step1%s  --saveWorkspace" % cardToRead
-        #runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s.log" % (cardToRead, label, signal))
+        runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s.log" % (cardToRead, label, signal))
         ## --saveWorkspace to extract the stats only part of the errors and the limit woth mu=1 injected
         ### Some example of this concept here: https://cms-hcomb.gitbooks.io/combine/content/part3/commonstatsmethods.html#useful-options-for-likelihood-scans
         # --freezeParameters (instead of -S 0) also work on the above
 
-        cmd = "combineTool.py  -M MultiDimFit"
-        cmd += " %s_WS.root" % cardToRead
-        cmd += " --algo singles --cl=0.68"
-        cmd += " %s" % blindStatement
-        cmd += " %s" % redefine
-        cmd += " -P r_%s" % signal
-        cmd += " %s -S 0" % setpar
-        cmd += " --floatOtherPOI=1 --saveFitResult -n step1statsonly  --saveWorkspace"
-        runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s_stats_only_scratch.log" % (cardToRead, label, signal))
+        if 1 < 0 : # ss == 1 :
+            cmd = "combineTool.py  -M MultiDimFit"
+            cmd += " %s_WS.root" % cardToRead
+            cmd += " --algo singles --cl=0.68"
+            cmd += " %s" % blindStatement
+            cmd += " %s" % redefine
+            cmd += " -P r_%s" % signal
+            cmd += " %s -S 0" % setpar
+            cmd += " --floatOtherPOI=1 --saveFitResult -n step1statsonly  --saveWorkspace"
+            runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s_stats_only_scratch.log" % (cardToRead, label, signal))
 
-        if 0 < 1 : # ss == 1 :
             ## Rate: stats only
             cmd = "combine -M MultiDimFit "
             cmd += " -d  higgsCombinestep1%s.MultiDimFit.mH120.root" % cardToRead
@@ -199,6 +229,36 @@ if doRateAndSignificance :
             cmd += " %s" % blindStatement
             cmd += " -S 0 --algo singles"
             runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_stats_only.log" % (cardToRead, signal))
+
+
+if doRateAndSignificance_ttV :
+  for signal in ["ttW", "ttZ"] :
+    for ss, statements in enumerate(doFor) :
+      if ss == 1 :
+          label = "data"
+          continue
+      if ss == 0 :
+          label = "asimov"
+      redefine = " --redefineSignalPOI r_%s  " % signal
+
+      cmd = "combineTool.py -M Significance --signif"
+      cmd += " %s_WS.root" % cardToRead
+      #cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
+      cmd += " %s" % statements
+      cmd += " %s" % redefine
+      cmd += " %s " % setpar
+      runCombineCmd(cmd, FolderOut, saveout="%s_significance_%s_%s.log" % (cardToRead, label, signal))
+
+      cmd = "combineTool.py  -M MultiDimFit"
+      cmd += " %s_WS.root" % cardToRead
+      cmd += " --algo singles --cl=0.68"
+      cmd += " %s" % statements
+      cmd += " %s" % redefine
+      cmd += " -P r_%s" % signal
+      cmd += " %s " % setpar
+      cmd += " --floatOtherPOI=1 --saveFitResult -n step1%s  --saveWorkspace" % cardToRead
+      runCombineCmd(cmd, FolderOut, saveout="%s_rate_%s_%s.log" % (cardToRead, label, signal))
+
 
 if doLimits :
     ## do in two steps: fit to data + limits mu=1 injected
@@ -222,7 +282,7 @@ if doLimits :
 bkgs = []
 if options.ttW : bkgs += ["ttW"]
 if options.ttZ : bkgs += ["ttZ"]
-
+print(bkgs)
 #combine -M MultiDimFit  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/test_3l/results//datacard_3l_output_NN_3l_ttH_tH_3cat_v8_ttH_tH_quantiles_WS.root
 #-t -1  -n For2D_ttH_ttW_68 --algo contour2d --points=20 --cl=0.68 --redefineSignalPOIs r_ttH,r_ttZ
 #--setParameterRanges r_ttH=-1,3:r_ttW=-1,3
@@ -243,7 +303,9 @@ if do2Dlikelihoods :
         bkgs += ["tH"]
     ## ttH x (ttZ , ttW)
     for bkg in bkgs :
-      if not bkg == "tH" : continue
+      if not bkg == "ttZ" : continue
+      #if not bkg == "ttW" : continue
+      #if not bkg == "tH" : continue
       ranges = "-10,10" if bkg == "tH" else "-2,3"
       for typeFit in ["central", "68", "95"] :
         cmd = "combine -M MultiDimFit "
@@ -326,24 +388,38 @@ if do2DlikelihoodsttV :
 
 
 if doHessImpacts :
-    # hessian impacts
-    folderHessian = "%s/HesseImpacts_%s"  % (FolderOut, cardToRead)
-    runCombineCmd("mkdir %s"  % (folderHessian))
-    cmd = "combineTool.py -M Impacts"
-    cmd += " -d ../%s_WS.root" % cardToRead
-    cmd += " %s" % blindStatement
-    cmd += " --rMin -2 --rMax 5"
-    cmd += " -m 125 --doFits --approx hesse"
-    cmd += " --redefineSignalPOI r_ttH --setParameters r_ttH=1,r_ttW=1,r_ttZ=1,r_tH=1"
-    runCombineCmd(cmd, folderHessian)
-    cmd = "combineTool.py -M Impacts"
-    cmd += " -d ../%s_WS.root" % cardToRead
-    cmd += " %s" % blindStatement
-    cmd += " --redefineSignalPOI r_ttH --setParameters r_ttH=1,r_ttW=1,r_ttZ=1,r_tH=1"
-    cmd += " --rexclude _bin"
-    cmd += "  -m 125 -o impacts.json --approx hesse --rMin -2 --rMax 5"
-    runCombineCmd(cmd, folderHessian)
-    runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s  --cms-label %s " % (cardToRead, cardToRead), folderHessian)
+    for signal in signals :
+        if signal == "SM"  :
+            redefine = " --redefineSignalPOI r_SM  "
+        else :
+            if signal == "ttH" :
+                redefine = " --redefineSignalPOI r_ttH  "
+                #if options.tH  : redefine += " --freezeParameters r_tH  "
+            if signal == "tH"  :
+                redefine = " --redefineSignalPOI r_tH " # --freezeParameters r_ttH
+        # hessian impacts
+        folderHessian = "%s/HesseImpacts_%s_%s"  % (FolderOut, cardToRead, signal)
+        runCombineCmd("mkdir %s"  % (folderHessian))
+        cmd = "combineTool.py -M Impacts"
+        cmd += " -d ../%s_WS.root" % cardToRead
+        cmd += " %s" % blindStatement
+        cmd += " --rMin -2 --rMax 5"
+        cmd += " -m 125 --doFits --approx hesse"
+        cmd += redefine
+        cmd += " --setParameters r_ttH=1" #",r_ttW=1,r_ttZ=1,r_tH=1"
+        cmd += " --maxFailedSteps 20 --X-rtd MINIMIZER_analytic"
+        runCombineCmd(cmd, folderHessian)
+        cmd = "combineTool.py -M Impacts"
+        cmd += " -d ../%s_WS.root" % cardToRead
+        cmd += " %s" % blindStatement
+        cmd += redefine
+        cmd += " --setParameters r_ttH=1,r_ttW=1,r_ttZ=1,r_tH=1"
+        cmd += " --rexclude _bin"
+        cmd += "  -m 125 -o impacts.json --approx hesse --rMin -2 --rMax 5"
+        cmd += " --maxFailedSteps 20 --X-rtd MINIMIZER_analytic"
+        runCombineCmd(cmd, folderHessian)
+        blindedOutputOpt = ' '
+        runCombineCmd("plotImpacts.py -i impacts.json -o  impacts_%s_%s  --cms-label %s %s" % (cardToRead, signal, cardToRead, blindedOutputOpt), folderHessian)
 
 if doImpactsNoSubmit :
     #run_cmd("cd "+enterHere+" ; combineTool.py -M Impacts -m 125 -d ../%s.root %s --redefineSignalPOI r_ttH  --parallel 8 %s --doInitialFit  --keepFailures ; cd - "  % (WS_output, setpar,blindStatement))
@@ -412,8 +488,9 @@ if doCategoriesWS :
     cmd += " %s" % floating_ttV
     cmd += " %s" % float_sig_rates
     cmd += " %s" % floating_by_cat
+    #cmd += " ulimit -s unlimited"
     print (cmd)
-    #runCombineCmd(cmd, folderCat)
+    runCombineCmd(cmd, folderCat)
 
 if doCategoriesMu :
     runCombineCmd("mkdir %s"  % (folderCat))
@@ -437,6 +514,7 @@ if doCategoriesMu :
         #"ttH_3l_1tau",
         #"ttH_2l_2tau",
         #] : continue
+        #if rate not in ["ttZ", "ttW"] : continue
         cmd = "combineTool.py -M MultiDimFit"
         cmd += " %s_Catpoi_final.root" % cardToRead
         cmd += " %s" % blindStatement
@@ -444,12 +522,12 @@ if doCategoriesMu :
         cmd += " --algo singles --cl=0.68" # remember why it was --algo none
         cmd += " -P r_%s" % rate
         cmd += " -n rate_%s_%s" % (rate, namePlot)
-        cmd += " --floatOtherPOI=1 --cminDefaultMinimizerType Minuit --keepFailures" #  -S 0
-        #if sendToCondor :
-        #    cmd += " %s ttH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
-        #    runCombineCmd(cmd, folderCat)
-        #else :
-        #    runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
+        cmd += " --floatOtherPOI=1  --keepFailures" #  -S 0 --cminDefaultMinimizerType Minuit
+        if sendToCondor :
+            cmd += " %s ttH_%s_%s" % (ToSubmit.replace("+MaxRuntime = 1800", "+MaxRuntime = 900"), rate,  namePlot) # .replace("+MaxRuntime = 1800", "+MaxRuntime = 60")
+            runCombineCmd(cmd, folderCat)
+        else :
+            runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
         print (cmd)
 
 if doCategoriesSig :
@@ -525,14 +603,14 @@ if doCategoriesMu_tH :
     for rate in sigRates : parameters = parameters + ",r_"+rate.replace("ttH", "tH")+"=1"
     print ("Will fit the parameters "+parameters)
     for rate in sigRates :
-        #if rate in [
-        #"ttH_2lss_0tau",
-        #"ttH_3l_0tau",
+        if rate not in [
+        "ttH_2lss_0tau",
+        "ttH_3l_0tau",
         #"ttH_4l",
-        #"ttH_2lss_1tau",
+        "ttH_2lss_1tau",
         #"ttH_3l_1tau",
         #"ttH_2l_2tau",
-        #] : continue
+        ] : continue
         cmd = "combineTool.py -M MultiDimFit"
         cmd += " %s_Catpoi_final_tH.root" % cardToRead
         cmd += " %s" % blindStatement
