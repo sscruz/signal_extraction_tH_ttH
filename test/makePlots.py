@@ -169,7 +169,7 @@ flips       = "data_flips" # "flips_mc" #
 conversions = "Convs"
 fakes       = "data_fakes" # "fakes_mc" #
 
-info_file = "/home/acaan/CMSSW_10_2_13/" + "/src/signal_extraction_tH_ttH/configs/plot_options.py" # os.environ["CMSSW_BASE"] +
+info_file = os.environ["CMSSW_BASE"] + "/src/signal_extraction_tH_ttH/configs/plot_options.py"
 execfile(info_file)
 print ("list of signals/bkgs by channel taken from: " +  info_file)
 procs  = list_channels_draw("ttH")[category] #: OrderedDict()
