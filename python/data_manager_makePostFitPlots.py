@@ -77,7 +77,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
     hist.SetMaximum(maxY)
     #hist.Sumw2() ## if prefit
     for ii in xrange(1, allbins + 1) :
-        print ("total ocntent", total_hist.GetBinContent(ii), total_hist.GetBinError(ii))
+        print ("total content", total_hist.GetBinContent(ii), total_hist.GetBinError(ii))
         bin_width = 1.
         if divideByBinWidth : bin_width = total_hist.GetXaxis().GetBinWidth(ii)
         hist.SetBinContent(ii + lastbin, total_hist.GetBinContent(ii)/bin_width)
@@ -99,7 +99,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
     hist.GetYaxis().SetLabelSize(0.050)
     return allbins
 
-def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin, catbin) :
+def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin, catbin, original) :
     print folder+"/"+name
     hist = fin[0].Get(folder+"/"+name)
     allbins = catbin #hist.GetNbinsX() #GetNonZeroBins(hist)
@@ -109,7 +109,7 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
         return {
             "lastbin" : allbins,
             "binEdge" : lastbin - 0.5 , # if lastbin > 0 else 0
-            "labelPos" : float(allbins/2)
+            "labelPos" : 0 if not original == "none" else float(allbins/2)
             }
     if len(fin) == 3 :
         for eraa in [1,2] :

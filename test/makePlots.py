@@ -428,7 +428,6 @@ for kk, key in  enumerate(dprocs.keys()) :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
         else :
-            #readFrom = catcat
             readFrom = catcat # folder #
             readFrom += "_prefit"
         info_hist = rebin_hist(
@@ -440,9 +439,11 @@ for kk, key in  enumerate(dprocs.keys()) :
             divideByBinWidth,
             addlegend,
             lastbin,
-            nbinscatlist[cc]
+            nbinscatlist[cc],
+            options.original
             )
         # hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin
+        print (info_hist["lastbin"] , lastbin, nbinscatlist[cc] )
         lastbin += info_hist["lastbin"]
         if kk == 0 :
             #print ("pllt category label at position: ", info_hist["labelPos"])
