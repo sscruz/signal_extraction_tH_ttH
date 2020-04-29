@@ -4,7 +4,7 @@ def sigmatHW(KT, KV):
     return (2.91*KT**2 + 2.31*KV**2 - 4.22*KT*KV)
 
 
-def options_plot (analysis, channel, all_procs) :
+def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
     dprocs = OrderedDict()
     Hdecays_long = [ "hww", "hzz", "htt",] #  "hzg", "hmm"
     Hdecays      = ["hww", "htt" , "hzz"]
@@ -48,8 +48,8 @@ def options_plot (analysis, channel, all_procs) :
                     #if other_H_proc == 0 :
                     #    dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "Other H processes"       , "make border" : False}
                     #    other_H_proc = 1
-                    if "%s_%s" % (hig_proc, decay) == "ggH_htt" : # tHW_hww
-                        dprocs["ggH_htt"]       = {"color" : 4, "fillStype" : 1001, "label" : "VH + ggH + qqH"      , "make border" : False} # "Other H processes" "tHW + VH + ggH + qqH + HH + ttVH"
+                    if "%s_%s" % (hig_proc, decay) == leading_minor_H_local : #
+                        dprocs[leading_minor_H_local]       = {"color" : 4, "fillStype" : 1001, "label" : "VH + ggH + qqH"      , "make border" : False} # "Other H processes" "tHW + VH + ggH + qqH + HH + ttVH"
                     else :
                         dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
                     #dprocs["%s_htt" % hig_proc]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
@@ -122,6 +122,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 50. ,
                 "list_cats" : ["ttH_2lss_0tau_ee_Restnode_2018", "ttH_2lss_0tau_em_Restnode_2018", "ttH_2lss_0tau_mm_Restnode_2018"],
+                "list_cats_original" : ["ttH_2lss_0tau_ee_Restnode_2018", "ttH_2lss_0tau_em_Restnode_2018", "ttH_2lss_0tau_mm_Restnode_2018"],
                 "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
             "2lss_0tau_ttW" : {
@@ -132,6 +133,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 15. ,
                 "list_cats" : ["ttH_2lss_0tau_ee_ttWnode_2018", "ttH_2lss_0tau_em_ttWnode_2018", "ttH_2lss_0tau_mm_ttWnode_2018"],
+                "list_cats_original" : ["ttH_2lss_0tau_ee_ttWnode_2018", "ttH_2lss_0tau_em_ttWnode_2018", "ttH_2lss_0tau_mm_ttWnode_2018"],
                 "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
             "2lss_0tau_ttH" : {
@@ -142,6 +144,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 12. ,
                 "list_cats" : ["ttH_2lss_0tau_ee_ttHnode_2018", "ttH_2lss_0tau_em_ttHnode_2018", "ttH_2lss_0tau_mm_ttHnode_2018"],
+                "list_cats_original" : ["ttH_2lss_0tau_ee_ttHnode_2018", "ttH_2lss_0tau_em_ttHnode_2018", "ttH_2lss_0tau_mm_ttHnode_2018"],
                 "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
             "2lss_0tau_tH" : {
@@ -152,16 +155,28 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 35. ,
                 "list_cats" : ["ttH_2lss_0tau_ee_tHQnode_2018", "ttH_2lss_0tau_em_tHQnode_2018", "ttH_2lss_0tau_mm_tHQnode_2018"],
+                "list_cats_original" : ["ttH_2lss_0tau_ee_tHQnode_2018", "ttH_2lss_0tau_em_tHQnode_2018", "ttH_2lss_0tau_mm_tHQnode_2018"],
                 "cats" : [['ee'], ['e#mu'], ['#mu#mu']]
                 },
             "2lss_1tau_plain" : {
+                "minY" : 0,  "maxY" :  10.,
+                "minYerr":  0.0,  "maxYerr" : 2.75,
+                "useLogPlot" : False,
+                "label" : '2l ss + 1#tau_{h}',
+                "list_cats" : ["ttH_2lss_1tau"],
+                "list_cats_original" : ["ttH_2lss_1tau"],
+                "position_cats": 300. ,
+                "labelX" : "Bin number", "cats" : ["ttH_2lss_1tau"]
+                },
+            "2lss_1tau_no_miss" : {
                 "minY" : 0,  "maxY" :  25.,
                 "minYerr":  0.0,  "maxYerr" : 2.75,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
                 "list_cats" : [],
+                "list_cats_original" : [],
                 "position_cats": 300. ,
-                "labelX" : "Bin number", "cats" : ["ttH_2lss_1tau"]
+                "labelX" : "Bin number", "cats" : ["ttH_2lss_1tau_nomiss"]
                 },
             "2lss_1tau" : {
                 "minY" : 0,  "maxY" :  22.0,
@@ -171,6 +186,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 12.5 ,
                 "list_cats" : ["ttH_2lss_1tau_rest_2018", "ttH_2lss_1tau_tH_2018", "ttH_2lss_1tau_ttH_2018"],
+                "list_cats_original" : ["ttH_2lss_1tau_rest_2018", "ttH_2lss_1tau_tH_2018", "ttH_2lss_1tau_ttH_2018"],
                 "cats" :  [
                 ["'Other'", "node"],
                 ['tH', 'node'],
@@ -182,8 +198,10 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}',
                 "position_cats": 20. ,
-                "list_cats" : [],
-                "labelX" : "BDT", "cats" : [""]
+                "list_cats" : ["ttH_3l_0tau_2018"],
+                "list_cats_original" : ["ttH_3l_0tau"],
+                "labelX" : "BDT",
+                "cats" : [""]
                 },
             "3l_0tau_NN"   : {
                 "minY" : -6,    "maxY" :  229.,
@@ -191,6 +209,7 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '3l + 0#tau_{h}',
                 "list_cats" : [],
+                "list_cats_original" : [],
                 "labelX" : "BDT", "cats" : ["ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7", "ch8", "ch9", "ch10", "ch11", "ch12", "ch13", "ch11", "ch12", "ch13"]
                 },
             "3l_0tau_ttH" : {
@@ -201,6 +220,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 20. ,
                 "list_cats" : ["ttH_3l_0tau_ttH_bl_2018", "ttH_3l_0tau_ttH_bt_2018"],
+                "list_cats_original" : ["ttH_3l_0tau_ttH_bl_2018", "ttH_3l_0tau_ttH_bt_2018"],
                 "cats" : [["bl"], ["bt"]]
                 },
             "3l_0tau_tH" : {
@@ -211,6 +231,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 13. ,
                 "list_cats" : ["ttH_3l_0tau_tH_bl_2018", "ttH_3l_0tau_tH_bt_2018"],
+                "list_cats_original" : ["ttH_3l_0tau_tH_bl_2018", "ttH_3l_0tau_tH_bt_2018"],
                 "cats" : [["bl"], ["bt"]]
                 },
             "3l_0tau_rest" : {
@@ -229,6 +250,15 @@ def options_plot_ranges (analysis) :
                     "ttH_3l_0tau_rest_mmm_bt_2018",
                     "ttH_3l_0tau_rest_eem_bt_2018",
                      ],
+                "list_cats_original" : [
+                    "ttH_3l_0tau_rest_eee_2018",
+                    "ttH_3l_0tau_rest_eem_bl_2018",
+                    "ttH_3l_0tau_rest_emm_bl_2018",
+                    "ttH_3l_0tau_rest_mmm_bl_2018",
+                    "ttH_3l_0tau_rest_emm_bt_2018",
+                    "ttH_3l_0tau_rest_mmm_bt_2018",
+                    "ttH_3l_0tau_rest_eem_bt_2018",
+                     ],
                 "cats" : [
                 ["e", "e", "e"],
                 ["ee#mu", " bl"],
@@ -238,7 +268,6 @@ def options_plot_ranges (analysis) :
                 ["e",'#mu', '#mu', "bt"],
                 ["#mu","#mu","#mu", "bt"],
                 ]
-                #"cats" : ['', 'emm bl', "eem bl",  'mmm bl', 'emm bt', "eem bt",  'mmm bt']
                 },
             "3lctrl" : {
                 "minY" : 0.1,    "maxY" :  100000.,
@@ -248,6 +277,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 100. ,
                 "list_cats" : ["ttH_cr_3l_2018_eee_cr", "ttH_cr_3l_2018_eem_cr", "ttH_cr_3l_2018_emm_cr", "ttH_cr_3l_2018_mmm_cr"],
+                "list_cats_original" : ["ttH_cr_3l_2018_eee_cr", "ttH_cr_3l_2018_eem_cr", "ttH_cr_3l_2018_emm_cr", "ttH_cr_3l_2018_mmm_cr"],
                 "cats" : [ ['eee'], ['ee#mu'], ['e#mu#mu'], ['#mu#mu#mu']]
                 },
             "4lctrl" : {
@@ -258,6 +288,7 @@ def options_plot_ranges (analysis) :
                 "labelX" : "Bin number",
                 "position_cats": 300. ,
                 "list_cats" : ["ttH_cr_4l_2018"],
+                "list_cats_original" : ["ttH_cr_4l_2018"],
                 "cats" : [""]
                 },
             "2lss_3j" : {
@@ -268,6 +299,63 @@ def options_plot_ranges (analysis) :
                 "labelX" : "mass(ll) (GeV)",
                 "position_cats": 300. ,
                 "list_cats" : [],
+                "list_cats_original" : [],
+                "cats" : [""]
+                },
+            #######
+            "ttH_2lss_3j_ee" : {
+                "minY" : 0.,    "maxY" :  50.,
+                "minYerr": -1.02, "maxYerr" : 1.32,
+                "useLogPlot" : False,
+                "label" : " ee",
+                "labelX" : "mass(ll) (GeV)",
+                "position_cats": 300. ,
+                "list_cats" : ["ttH_2lss_3j_2018_ee"],
+                "list_cats_original" : ["ttH_2lss_3j_2018_ee"],
+                "cats" : [""]
+                },
+            "ttH_2lss_3j_em_neg" : {
+                "minY" : 0.,    "maxY" :  50.,
+                "minYerr": -1.02, "maxYerr" : 1.32,
+                "useLogPlot" : False,
+                "label" : " e#mu --",
+                "labelX" : "mass(ll) (GeV)",
+                "position_cats": 300. ,
+                "list_cats" : ["ttH_2lss_3j_2018_em_neg"],
+                "list_cats_original" : ["ttH_2lss_3j_2018_em_neg"],
+                "cats" : [""]
+                },
+            "ttH_2lss_3j_em_pos" : {
+                "minY" : 0.,    "maxY" :  50.,
+                "minYerr": -1.02, "maxYerr" : 1.32,
+                "useLogPlot" : False,
+                "label" : " e#mu ++",
+                "labelX" : "mass(ll) (GeV)",
+                "position_cats": 300. ,
+                "list_cats" : ["ttH_2lss_3j_2018_em_pos"],
+                "list_cats_original" : ["ttH_2lss_3j_2018_em_pos"],
+                "cats" : [""]
+                },
+            "ttH_2lss_3j_mm_neg" : {
+                "minY" : 0.,    "maxY" :  50.,
+                "minYerr": -1.02, "maxYerr" : 1.32,
+                "useLogPlot" : False,
+                "label" : " #mu#mu --",
+                "labelX" : "mass(ll) (GeV)",
+                "position_cats": 300. ,
+                "list_cats" : ["ttH_2lss_3j_2018_mm_neg"],
+                "list_cats_original" : ["ttH_2lss_3j_2018_mm_neg"],
+                "cats" : [""]
+                },
+            "ttH_2lss_3j_mm_pos" : {
+                "minY" : 0.,    "maxY" :  50.,
+                "minYerr": -1.02, "maxYerr" : 1.32,
+                "useLogPlot" : False,
+                "label" : " #mu#mu ++",
+                "labelX" : "mass(ll) (GeV)",
+                "position_cats": 300. ,
+                "list_cats" : ["ttH_2lss_3j_2018_mm_pos"],
+                "list_cats_original" : ["ttH_2lss_3j_2018_mm_pos"],
                 "cats" : [""]
                 },
             "2l_2tau"   : {
@@ -277,7 +365,8 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '2l + 2#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : [],
+                "list_cats" : ["ttH_2l_2tau_2018"],
+                "list_cats_original" : ["ttH_2l_2tau"],
                 "labelX" : "Bin number",
                 "cats" : [""]
                 },
@@ -288,7 +377,8 @@ def options_plot_ranges (analysis) :
                 "label" : '3l + 1#tau_{h}',
                 "labelX" : "Bin number",
                 "position_cats": 300. ,
-                "list_cats" : [],
+                "list_cats" : ["ttH_3l_1tau_2018"],
+                "list_cats_original" : ["ttH_3l_1tau"],
                 "cats" : [""]
                 },
             "1l_2tau"   : {
@@ -297,8 +387,10 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '1l + 2#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : ["ttH_1l_2tau"],
-                "labelX" : "Bin number", "cats" : [""] #   "m_{#tau_{h}#tau_{h}} (GeV)"
+                "list_cats" : ["ttH_1l_2tau_2018"],
+                "list_cats_original" : ["ttH_1l_2tau"],
+                "labelX" : "Bin number",
+                "cats" : [""]
                 },
             "1l_2tau_SS"   : {
                 "minY" : 0,  "maxY" :  55.,
@@ -306,8 +398,10 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '1l + 2#tau_{h} SS',
                 "position_cats": 300. ,
-                "list_cats" : ["ttH_1l_2tau"],
-                "labelX" : "M(#tau #tau) Vis (GeV)", "cats" : [""] #   "m_{#tau_{h}#tau_{h}} (GeV)"
+                "list_cats" : ["ttH_1l_2tau_2018"],
+                "list_cats_original" : ["ttH_1l_2tau"],
+                "labelX" : "M(#tau #tau) Vis (GeV)", #   "m_{#tau_{h}#tau_{h}} (GeV)"
+                "cats" : [""]
                 },
             "2los_1tau" : {
                 "minY" : 0,  "maxY" :  75.,
@@ -315,8 +409,10 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '2l os + 1#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : [],
-                "labelX" : "Bin number", "cats" : [""]
+                "list_cats" : ["ttH_2los_1tau_2018"],
+                "list_cats_original" : ["ttH_2los_1tau"],
+                "labelX" : "Bin number",
+                "cats" : [""]
                 },
             "0l_2tau"   : {
                 "minY" : 0.1,  "maxY" :  80000.,
@@ -325,7 +421,8 @@ def options_plot_ranges (analysis) :
                 "label" : '0l + 2#tau_{h}',
                 "labelX" : "Bin number",
                 "position_cats": 300. ,
-                "list_cats" : [],
+                "list_cats" : ["ttH_0l_2tau_2018"],
+                "list_cats_original" : ["ttH_0l_2tau"],
                 "cats" : [""]
                 },
             "1l_1tau"   : {
@@ -334,8 +431,10 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : True,
                 "label" : '1l + 1#tau_{h}',
                 "position_cats": 300. ,
-                "list_cats" : [],
-                "labelX" : "Bin number", "cats" : [""]
+                "list_cats" : ["ttH_1l_1tau_2018"],
+                "list_cats_original" : ["ttH_1l_1tau"],
+                "labelX" : "Bin number",
+                "cats" : [""]
                 },
             "4l_0tau"   : {
                 "minY" : 0.,
@@ -345,7 +444,9 @@ def options_plot_ranges (analysis) :
                 "label" : '4l + 0#tau_{h}',
                 "position_cats": 300. ,
                 "list_cats" : ["ttH_4l_2018"],
-                "labelX" : "Bin number", "cats" : [""]
+                "list_cats_original" : ["ttH_4l_2018"],
+                "labelX" : "Bin number",
+                "cats" : [""]
                 },
             "2lss_0tau" : {
                 "minY" : 0., "maxY" :  13.9,
@@ -353,7 +454,8 @@ def options_plot_ranges (analysis) :
                 "useLogPlot" : False,
                 "label" : '2l ss - 3j ',
                 "labelX" : "BDT",
-                "list_cats" : [""],
+                "list_cats" : [],
+                "list_cats_original" : [],
                 "position_cats": 300. ,
                 "cats" : [""]
                 },
@@ -391,7 +493,6 @@ def options_plot_labels (analysis) :
                 "mom" : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/higgs_3l_0tau/",
                 "stat" : "high"
                 },
-            #"2lss_1tau" : { "latex" : r'$2\ell ss +1\tau_{h}$', "prefix" : "tHq_2lss_mm_" , "mom" : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/higgs_2lss_1tau/", "stat" : "low"},
             "2l_2tau"   : {
                 "latex" : r'$2\ell +2\tau_{h}$',
                 "prefix" : "datacard_2l_2tau_lepdisabled_taudisabled_sumOS_mvaOutput_final_" ,
@@ -439,132 +540,193 @@ def list_channels_draw(analysis) :
         info_channel = {
         "ttWctrl"   : { "bkg_proc_from_data" : [fakes, flips], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions], "signal" : []},
         "ttZctrl"   : { "bkg_proc_from_data" : [fakes       ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions], "signal" : []},
-        #"3lctrl"    : { "bkg_proc_from_data" : [fakes, flips], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares"],              "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]},
-        #"4lctrl"    : { "bkg_proc_from_data" : [fakes, flips], "bkg_procs_from_MC"  : ["TTZ",  "ZZ", "Rares"],                                  "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]},
         "2lss_0tau" : {
             "bkg_proc_from_data" : [ fakes, "mcFlips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_0tau_NN" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_3j": {
-            "bkg_proc_from_data" : [ fakes,], # "data_flips"
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares",], ##   "Convs" EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : [ "ttH" ] # "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH"
+            "bkg_proc_from_data" : [ fakes, "data_flips"], #
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
+            "leading_minor_H" : "ggH_htt"
+            },
+        ####
+        "ttH_2lss_3j_ee": {
+            "bkg_proc_from_data" : [ fakes, "data_flips"], #
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
+            "leading_minor_H" : "ggH_htt"
+            },
+        "ttH_2lss_3j_em_neg": {
+            "bkg_proc_from_data" : [ fakes, "data_flips"], #
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
+            "leading_minor_H" : "ZH_hww"
+            },
+        "ttH_2lss_3j_em_pos": {
+            "bkg_proc_from_data" : [ fakes, "data_flips"], #
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
+            "leading_minor_H" : "ZH_hww"
+            },
+        "ttH_2lss_3j_mm_neg": {
+            "bkg_proc_from_data" : [ fakes, "data_flips"], #
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
+            "leading_minor_H" : "ZH_hww"
+            },
+        "ttH_2lss_3j_mm_pos": {
+            "bkg_proc_from_data" : [ fakes, "data_flips"], #
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
+            "leading_minor_H" : "WH_hww"
             },
         "2lss_0tau_tH" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_0tau_ttH" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_0tau_ttW" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_0tau_rest" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"], ##  EWK should be substituted by WZ and ZZ and Conv uniformized with the rest --- update that!
-            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
+            "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_1tau_plain" : {
-            "bkg_proc_from_data" : [fakes, "data_flips"], # , "data_flips"
+            "bkg_proc_from_data" : [fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "ggH", "qqH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "qqH", "ggH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
+            },
+        "2lss_1tau_nno_miss" : {
+            "bkg_proc_from_data" : [fakes, "data_flips"],
+            "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
+            "signal" : ["ttH", "tHq", "tHW"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_1tau" : {
-            "bkg_proc_from_data" : [fakes, "data_flips"], # , "data_flips"
+            "bkg_proc_from_data" : [fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "ggH", "qqH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "ggH", "qqH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2lss_1tau_NN" : {
-            "bkg_proc_from_data" : [fakes, flips], # , "data_flips"
+            "bkg_proc_from_data" : [fakes, flips],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT", "TTWH", "TTZH", "HH",],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH"] # , "TTWH", "TTZH"
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH"], # , "TTWH", "TTZH"
+            "leading_minor_H" : "ggH_htt"
             },
         "3l_0tau"   : {
             "bkg_proc_from_data" : [fakes, flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "3lctrl"   : {
             "bkg_proc_from_data" : [fakes, flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions],
-            "signal" : ["ttH", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "4lctrl"   : {
             "bkg_proc_from_data" : ["data_fakes", flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTZ", "WZ", "ZZ", "Rares", conversions],
-            "signal" : ["ttH", ]
+            "signal" : ["ttH", ],
+            "leading_minor_H" : "ggH_htt"
             },
         "3l_0tau_NN"   : {
             "bkg_proc_from_data" : [fakes,  flips ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "3l_0tau_ttH"   : {
             "bkg_proc_from_data" : [fakes,  flips ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "3l_0tau_tH"   : {
             "bkg_proc_from_data" : [fakes,  flips ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "3l_0tau_rest"   : {
             "bkg_proc_from_data" : ["data_fakes" ], # ,  flips
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ",  "WZ", "ZZ", "Rares", conversions, "TT"], # "EWK",
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ",  "WZ", "ZZ", "Rares", conversions, "TT"],
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "1l_2tau"   : {
             "bkg_proc_from_data" : [ "data_fakes"      ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "1l_2tau_SS"   : {
             "bkg_proc_from_data" : [ "data_fakes"      ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
-            "signal" : ["ttH", ] # "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2l_2tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "qqH", "ggH", "HH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "qqH", "ggH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "3l_1tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "TT", "Rares", conversions],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "2los_1tau" : {
             "bkg_proc_from_data" : [fakes, flips],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
         },
         "0l_2tau"   : {
             "bkg_proc_from_data" : [fakes       ],
-            "bkg_procs_from_MC"  : [ "TTZ", "WZ", "ZZ", "DY", "Rares", "TT"], # , conversions, "EWK" , "TTWW" "TTW",
-            "signal" : ["ttH", "tHq", "tHW",  "ggH", "qqH",] # "HH", "TTWH", "TTZH"    "WH",  "ZH",
+            "bkg_procs_from_MC"  : [ "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", "TTWW" ,"TTW",],
+            "signal" : ["ttH", "tHq", "tHW",  "ggH", "qqH", "HH", "TTWH", "TTZH"    "WH",  "ZH",],
+            "leading_minor_H" : "ggH_htt"
             },
         "1l_1tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", conversions, "EWK"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "WH", "ZH", "HH", "TTWH", "TTZH"]
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "WH", "ZH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
             },
         "4l_0tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", conversions, "EWK"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"]},
-            }
+            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
+            "leading_minor_H" : "ggH_htt"
+            },
+        }
     else : sys.exit("analysis " + analysis + " not implemented")
     return info_channel

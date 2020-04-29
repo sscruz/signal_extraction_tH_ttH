@@ -47,8 +47,8 @@ for era in ["2018", "2017", "2016"] :
     if options.per_year :
         cmd += " > combo_ttHmultilep_CRs_%s.txt" % era
         run_cmd(cmd)
-        print (cmd)
+        #print (cmd)
 if not options.per_year :
     cmd += " > combo_ttHmultilep_CRs.txt" #% era
-    print (cmd)
+    #print (cmd)
     run_cmd(cmd)

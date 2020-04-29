@@ -37,12 +37,12 @@ parser.add_option(
     help="do results also with ttH and tH floating as SM",
     default=False
     )
-parser.add_option(
-    "--unblinded",
-    action="store_true", dest="unblinded",
-    help="self explanatory",
-    default=False
-    )
+#parser.add_option(
+#    "--unblinded",
+#    action="store_true", dest="unblinded",
+#    help="self explanatory",
+#    default=False
+#    )
 parser.add_option(
     "--era", type="int",
     dest="era",
@@ -85,7 +85,7 @@ def runCombineCmd(combinecmd, outfolder=".", saveout=None):
 
 def run_cmd(command):
   print ("executing command = '%s'" % command)
-  p = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+  p = Popen(command, shell = True, stdout = PIPE, stderr = PIPE)
   stdout, stderr = p.communicate()
   return stdout
 
@@ -95,7 +95,7 @@ namePlot      = options.namePlot
 cardFolder    = options.cardFolder
 era           = options.era
 channel       = options.channel
-blinded       = not options.unblinded
+#blinded       = not options.unblinded
 #runCombineCmd("mkdir %s"  % (cardFolder))
 FolderOut = cardFolder + "/results/"
 runCombineCmd("mkdir %s"  % (FolderOut))
@@ -110,12 +110,12 @@ if options.ttW : floating_ttV += " --PO 'map=.*/TTW.*:r_ttW[1,0,6]' --PO 'map=.*
 if options.ttZ : floating_ttV += " --PO 'map=.*/TTZ.*:r_ttZ[1,0,6]' "
 
 float_sig_rates = ""
-if options.ttH_tH :
+if options.ttH_tH and not doCategoriesWS:
     float_sig_rates = " --PO 'map=.*/ttH.*:r_SM[1,-1,3]' --PO 'map=.*/tHW.*:r_SM[1,-40,40]' --PO 'map=.*/tHq.*:r_SM[1,-40,40]'"
 else :
-    if not CR :
+    if not CR and not doCategoriesWS:
         float_sig_rates = " --PO 'map=.*/ttH.*:r_ttH[1,-1,3]'"
-    if options.tH :
+    if options.tH and not doCategoriesWS_tH :
         float_sig_rates += " --PO 'map=.*/tHW.*:r_tH[1,-40,40]' --PO 'map=.*/tHq.*:r_tH[1,-40,40]'"
 
 print("Floating signal:", float_sig_rates)
@@ -664,7 +664,8 @@ if preparePlotHavester or preparePlotCombine :
     if preparePlotCombine :
         cmd = "combineTool.py -M FitDiagnostics "
         cmd += " %s_WS.root" % cardToRead
-        #if blinded : cmd += " -t -1 "
+        if blinded :
+            cmd += " -t -1 "
         cmd += " --saveShapes --saveWithUncertainties "
         #cmd += " --freezeParameters CMS_ttHl_ZZ_lnU,CMS_ttHl_WZ_lnU"
         # redefineToTTH
@@ -683,8 +684,8 @@ if preparePlotHavester or preparePlotCombine :
         print ("[WARNING:] combineHavester does not deal well with autoMCstats option for bin by bin stat uncertainty -- it does some approximations on errors -- this is good option to run fast prefit plots on diagnosis stage")
         # to have Totalprocs computed
         cmd = "combineTool.py -M FitDiagnostics %s_WS.root" % cardToRead
-        #if blinded :
-        #    cmd += " -t -1 "
+        if blinded :
+            cmd += " -t -1 "
         if sendToLXBatch :
             cmd += " %s %s" % (ToSubmit, cardToRead)
         cmd += " -n _%s" % cardToRead
@@ -712,6 +713,7 @@ if preparePlotHavester or preparePlotCombine :
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/" + shapeDatacard )
 
+
     cmd = "python test/makePlots.py "
     if preparePlotHavester  :
         cmd += " --input  %s" % FolderOut + "/" + shapeDatacard
@@ -719,8 +721,8 @@ if preparePlotHavester or preparePlotCombine :
     if preparePlotCombine :
         cmd += " --input  %s" % FolderOut + "/fitDiagnostics_shapes_combine_" + cardToRead + ".root"
     cmd += " --odir %s" % FolderOut
-    if doPostFit         :
-        cmd += " --postfit "
+    #if doPostFit         :
+    #    cmd += " --postfit "
     if not plainBins :
         cmd += " --original %s/../%s.root"        % (FolderOut, cardToRead)
     cmd += " --era %s" % str(era)
@@ -729,37 +731,43 @@ if preparePlotHavester or preparePlotCombine :
     cmd += " --channel %s" % channel
     if not blinded         :
         cmd += " --unblind "
-    runCombineCmd(cmd, FolderOut)
-    print ("created " + FolderOut + "/*" + namePlot + "*.pdf"  )
-    #python test/makePlots.py --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/IHEP_NNs/datacards_V0624.1/V0624_DNN_datacards_All/DNNSubCat2_option1/DNN_maxval/by_bin//results//fitDiagnostics_shapes_combine.root
-    #--odir /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/IHEP_NNs/datacards_V0624.1/V0624_DNN_datacards_All/DNNSubCat2_option1/DNN_maxval/by_bin//results/
-    #--channel "ch1" --maxY 20. --nameLabel "ttH_region_2017"
+    if drawPlot and not doPostFit :
+        output = run_cmd(cmd)
+        ff = open("%s/%s.log" % (FolderOut, cardToRead) ,"w+")
+        ff.write(output)
+        ff.close()
+        print ("see the path of the .pdf created on %s/%s.log" % (FolderOut, cardToRead)  )
+    else :
+        print ("suggestion of command to run to have the plot: ")
+        print (cmd)
 
-if doTablePrefit :
-    execfile("python/data_manager_makePostFitPlots.py")
-    ROOT.gSystem.Load('libHiggsAnalysisCombinedLimit')
-    print ("Retrieving yields from workspace: %s_WS.root" % cardToRead)
-    fin = ROOT.TFile("%s/%s_WS.root" % (FolderOut, cardToRead))
-    wsp = fin.Get('w')
-    cmb = ch.CombineHarvester()
-    cmb.SetFlag("workspaces-use-clone", True)
-    ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', False)
-    print "datacardToRead parsed"
-    import os
-    print ("taking uncertainties from: fitDiagnostics_%s.root " % cardToRead)
-    mlf = ROOT.TFile("%s/fitDiagnostics_%s.root " % (FolderOut, cardToRead))
-    rfr = mlf.Get('fit_s')
-    fit = "prefit"
-    if fit == "postfit" :
-        cmb.UpdateParameters(rfr)
-        print ' Parameters updated '
-    colapseCat = False
-    filey = open(FolderOut + "/" + cardToRead + "_prefit_yields_" + str(era) + ".log","w")
-    labels = ["ttH_%s" % channel]
-    if fit == "prefit" :
-        PrintTable(cmb, tuple(), filey, blindedOutput, labels, type)
-    if fit == "postfit" :
-        PrintTable(cmb, (rfr, 500), filey, blindedOutput, labels, type)
+    if doTableYields :
+        execfile("python/data_manager_makePostFitPlots.py")
+        ROOT.gSystem.Load('libHiggsAnalysisCombinedLimit')
+        print ("Retrieving yields from workspace: %s_WS.root" % cardToRead)
+        fin = ROOT.TFile("%s/%s_WS.root" % (FolderOut, cardToRead))
+        wsp = fin.Get('w')
+        cmb = ch.CombineHarvester()
+        cmb.SetFlag("workspaces-use-clone", True)
+        ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', False)
+        print "datacardToRead parsed"
+        import os
+        print ("taking uncertainties from: fitDiagnostics_%s.root " % cardToRead)
+        mlf = ROOT.TFile("%s/fitDiagnostics_%s.root " % (FolderOut, cardToRead))
+        rfr = mlf.Get('fit_s')
+        fit = "prefit"
+        if doPostFit :
+            fit = "postfit"
+        if fit == "postfit" :
+            cmb.UpdateParameters(rfr)
+            print ' Parameters updated '
+        colapseCat = False
+        filey = open(FolderOut + "/" + cardToRead + "_prefit_yields_" + str(era) + ".log","w")
+        labels = ["ttH_%s" % channel]
+        if fit == "prefit" :
+            PrintTable(cmb, tuple(), filey, blindedOutput, labels, type)
+        if fit == "postfit" :
+            PrintTable(cmb, (rfr, 500), filey, blindedOutput, labels, type)
 
 
 

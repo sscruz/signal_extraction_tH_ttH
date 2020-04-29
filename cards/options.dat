@@ -1,7 +1,7 @@
 #####################################################################
 ## How to do?
-blinded         = True
-blindedOutput   = True ## do not draw the rate on the impacts plot
+blinded         = False ## use -t -1
+blindedOutput   = False ## do not draw the rate on the impacts plot
 sendToCondor    = False ## Impacts / GOF / likelihood scans for combo need it
 sendToLXBatch   = False ## the mu's result retrieval are not working in condor -- but they work with lxbatch
 #####################################################################
@@ -14,8 +14,8 @@ sendToLXBatch   = False ## the mu's result retrieval are not working in condor -
 
 # 0) Combo results
 doWS                    = True ## To do any of the rest you must have ran with this being True once
-doRateAndSignificance   = True
-doRateAndSignificance_ttV   = True
+doRateAndSignificance   = False
+doRateAndSignificance_ttV   = False
 doLimits                = False
 do2Dlikelihoods         = False
 do2DlikelihoodsttV      = False
@@ -61,11 +61,12 @@ GOF_submit = False
 
 # 5)
 # OR you do from Combine or from from Havester
-preparePlotCombine  = False
+preparePlotCombine  = True
 preparePlotHavester = False
 doPostFit           = False # if False do Prefit only, it True it does both
-plainBins           = True # relevant only for the PlotHavester
-doTablePrefit       = False
+plainBins           = True # If False do not take the template to reescale X-axis
+drawPlot            = True # if "doPostFit = True" that is superseeded with False
+doTableYields       = False
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
