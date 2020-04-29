@@ -54,32 +54,29 @@ unblided     = options.unblided
 
 eras = [ 2016, 2017, 2018, 0 ]
 
-"""
-"ttH_1l_2tau_ERA"         : {
-    "original"          : "ttH_1l_2tau_SS_mTTVis_ERA", # name of the datacard(.txt/.root) to take binX templates
-    "binToReadOriginal" : "ttH_1l_2tau",               # if the datacard(.txt/.root) has a subfolder this is the name of the subfolder
-    "IHEP"              : False ,                      # True if the datacard(.txt/.root) has no subfolder
-    "channel"           : "1l_2tau_SS",                # to take the plot options of the options_plot_ranges function on configs/plot_options.py
-    "binToRead"         : "ttH_1l_2tau_ERA",           # bin inside the fitDiagnosis, assumes that you use test/combine_cards_legacy_CR.py to merge cards before doing it
-    "nameLabel"         : "none"                       # if you want to overwrite the option on plot options of the options_plot_ranges function on configs/plot_options.py
-},
-"tH_cr_4l_ERA"           : {
-    "original"  : "none" ,
-    "channel"   : "4lctrl",
-    "IHEP"      : False ,
-    "binToRead" : "ttH_cr_4l_ERA",
-    "nameLabel" : "none"
-},
-"ttH_3l_cr_ERA"          : {
-    "original"  : "none" ,
-    "channel"   : "3lctrl",
-    "IHEP"      : False ,
-    "binToRead" : "ttH_3l_cr_ERA",
-    "nameLabel" : "none"
-},
-"""
 cards_to_do = {
-
+    "ttH_1l_2tau_ERA"         : {
+        "original"          : "ttH_1l_2tau_SS_mTTVis_ERA", # name of the datacard(.txt/.root) to take binX templates
+        "binToReadOriginal" : "ttH_1l_2tau",               # if the datacard(.txt/.root) has a subfolder this is the name of the subfolder
+        "IHEP"              : False ,                      # True if the datacard(.txt/.root) has no subfolder
+        "channel"           : "1l_2tau_SS",                # to take the plot options of the options_plot_ranges function on configs/plot_options.py
+        "binToRead"         : "ttH_1l_2tau_ERA",           # bin inside the fitDiagnosis, assumes that you use test/combine_cards_legacy_CR.py to merge cards before doing it
+        "nameLabel"         : "none"                       # if you want to overwrite the option on plot options of the options_plot_ranges function on configs/plot_options.py
+    },
+    "tH_cr_4l_ERA"           : {
+        "original"  : "none" ,
+        "channel"   : "4lctrl",
+        "IHEP"      : False ,
+        "binToRead" : "ttH_cr_4l_ERA",
+        "nameLabel" : "none"
+    },
+    "ttH_3l_cr_ERA"          : {
+        "original"  : "none" ,
+        "channel"   : "3lctrl",
+        "IHEP"      : False ,
+        "binToRead" : "ttH_3l_cr_ERA",
+        "nameLabel" : "none"
+    },
     "ttH_2lss_3j_ERA_ee"     : {
         "original"          : "ttH_2lss_3j_ERA_ee" ,
         "channel"           : "ttH_2lss_3j_ee",
