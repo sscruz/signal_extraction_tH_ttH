@@ -14,7 +14,7 @@ parser.add_option(
     "--cards_dir",
     type="string",
     dest="cards_dir",
-    help="Full path of where to put the plots"
+    help="Full path of where the original datacards.txt/root are (to take templates)"
     )
 parser.add_option(
     "--fitDiagnosis",
