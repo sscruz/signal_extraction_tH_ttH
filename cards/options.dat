@@ -17,10 +17,16 @@ doWS                    = True ## To do any of the rest you must have ran with t
 doRateAndSignificance   = False
 doRateAndSignificance_ttV   = False
 doLimits                = False
-do2Dlikelihoods         = False
-do2DlikelihoodsttV      = False
+
+## For 2D likelihood plots (that are also lengthy runs) do one by one in parallel
+do2Dlikelihoods_ttH_ttZ = False
+do2Dlikelihoods_ttH_ttW = False
+do2Dlikelihoods_ttH_tH  = False
+do2DlikelihoodsttV      = False # ttZ X ttW
 
 # 1) results by category
+## ---> It does assume that you had already run with 'doRateAndSignificance = True' above
+## --> It will take the log files of those to add the combo result on the plot of mu/categories
 doCategoriesWS            = False ## To do any of the rest you must have ran with this being True once
 doCategoriesLimitsFromMu1 = False
 doCategoriesMu            = False
@@ -66,6 +72,7 @@ preparePlotHavester = False
 doPostFit           = False # if False do Prefit only, it True it does both
 plainBins           = True # If False do not take the template to reescale X-axis
 drawPlot            = True # if "doPostFit = True" that is superseeded with False
+drawPlotOnly        = False # if you already did all the above and just want to polish plot use that True
 doTableYields       = False
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.

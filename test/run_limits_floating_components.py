@@ -37,12 +37,20 @@ parser.add_option(
     help="do results also with ttH and tH floating as SM",
     default=False
     )
-#parser.add_option(
-#    "--unblinded",
-#    action="store_true", dest="unblinded",
-#    help="self explanatory",
-#    default=False
-#    )
+parser.add_option(
+    "--plainBins",
+    type="string",
+    dest="plainBins",
+    help="Overwrite the option on the cards/options.dat\n Chose between True / False / No\n -- 'No' does not overwrite ",
+    default="No"
+    )
+parser.add_option(
+    "--unblinded",
+    type="string",
+    dest="unblinded",
+    help="Overwrite the option on the cards/options.dat\n Chose between True / False / No\n -- 'No' does not overwrite the cards/options.dat",
+    default="No"
+    )
 parser.add_option(
     "--era", type="int",
     dest="era",
@@ -53,6 +61,13 @@ parser.add_option(
     "--channel", type="string", dest="channel",
     help="Name of the category as it is appear on the input file",
     default="1l_2tau"
+    )
+parser.add_option(
+    "--savePlotsOn",
+    type="string",
+    dest="savePlotsOn",
+    help="If a full path is given, it will save plots there (you need to create it first) ",
+    default="none"
     )
 parser.add_option("--CR", action="store_true", dest="CR", help="add as POI", default=False)
 
@@ -95,10 +110,19 @@ namePlot      = options.namePlot
 cardFolder    = options.cardFolder
 era           = options.era
 channel       = options.channel
-#blinded       = not options.unblinded
+
 #runCombineCmd("mkdir %s"  % (cardFolder))
 FolderOut = cardFolder + "/results/"
 runCombineCmd("mkdir %s"  % (FolderOut))
+
+plainBinsLocal = options.plainBins
+savePlotsOn    = options.savePlotsOn
+
+unblinded       = options.unblinded
+if unblinded == "True" : # True / False / No
+    blinded = False
+if unblinded == "False" : # True / False / No
+    blinded = True
 
 setpar = "--setParameters r_ttH=1,r_tH=1"
 if options.ttW : setpar += ",r_ttW=1"
@@ -153,15 +177,16 @@ if do_kt_scan_no_kin :
     # python test/plot_1D_kappa_scan.py --input2 higgsCombinekt_scan_test.MultiDimFit.mH125.root --label2 "NN_v5" --outputFolder /afs/cern.ch/work/a/acarvalh/CMSSW_10_2_10/src/tth-bdt-training/treatDatacards/2lss_1tau_NN_tHcat_2019Jun17/
 
 if doWS :
-    cmd = "text2workspace.py"
-    cmd += " %s.txt  " % cardToRead
-    cmd += " -o %s/%s_WS.root" % (FolderOut, cardToRead)
-    cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
-    cmd += " %s" % floating_ttV
-    cmd += " %s" % float_sig_rates
-    #cmd += " ulimit -s unlimited"
-    runCombineCmd(cmd, cardFolder)
-    print ("done %s/%s_WS.root" % (FolderOut, cardToRead))
+    if not era == 0 :
+        cmd = "text2workspace.py"
+        cmd += " %s.txt  " % cardToRead
+        cmd += " -o %s/%s_WS.root" % (FolderOut, cardToRead)
+        cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
+        cmd += " %s" % floating_ttV
+        cmd += " %s" % float_sig_rates
+        #cmd += " ulimit -s unlimited"
+        runCombineCmd(cmd, cardFolder)
+        print ("done %s/%s_WS.root" % (FolderOut, cardToRead))
 
 doFor = [blindStatement]
 if not blinded : doFor += [" "]
@@ -283,19 +308,12 @@ bkgs = []
 if options.ttW : bkgs += ["ttW"]
 if options.ttZ : bkgs += ["ttZ"]
 print(bkgs)
-#combine -M MultiDimFit  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/test_3l/results//datacard_3l_output_NN_3l_ttH_tH_3cat_v8_ttH_tH_quantiles_WS.root
-#-t -1  -n For2D_ttH_ttW_68 --algo contour2d --points=20 --cl=0.68 --redefineSignalPOIs r_ttH,r_ttZ
-#--setParameterRanges r_ttH=-1,3:r_ttW=-1,3
 
-#combine -M MultiDimFit  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/test_3l/results//datacard_3l_output_NN_3l_ttH_tH_3cat_v8_ttH_tH_quantiles_WS.root
-#-t -1  -n For2D_ttH_ttW_95 --algo contour2d --points=20 --cl=0.95 --redefineSignalPOIs r_ttH,r_ttZ
-#--setParameterRanges r_ttH=-1,3:r_ttW=-1,3
 
-#combine -M MultiDimFit  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/signal_extraction_tH_ttH/test_3l/results//datacard_3l_output_NN_3l_ttH_tH_3cat_v8_ttH_tH_quantiles_WS.root
-#-t -1  -n For2D_ttH_ttW --algo grid --points 80000 --fastScan --redefineSignalPOIs r_ttH,r_ttZ
-#--setParameterRanges r_ttH=-1,3:r_ttW=-1,3
 
-if do2Dlikelihoods :
+
+
+if do2Dlikelihoods_ttH_ttZ or do2Dlikelihoods_ttH_ttW or do2Dlikelihoods_ttH_tH  :
   for ss, statements in enumerate(doFor) :
     if ss == 1 : label = "data"
     if ss == 0 : label = "asimov"
@@ -303,9 +321,9 @@ if do2Dlikelihoods :
         bkgs += ["tH"]
     ## ttH x (ttZ , ttW)
     for bkg in bkgs :
-      if not bkg == "ttZ" : continue
-      #if not bkg == "ttW" : continue
-      #if not bkg == "tH" : continue
+      if not bkg == "ttZ" and do2Dlikelihoods_ttH_ttZ : continue
+      if not bkg == "ttW" and do2Dlikelihoods_ttH_ttW : continue
+      if not bkg == "tH"  and do2Dlikelihoods_ttH_tH  : continue
       ranges = "-10,10" if bkg == "tH" else "-2,3"
       for typeFit in ["central", "68", "95"] :
         cmd = "combine -M MultiDimFit "
@@ -341,9 +359,6 @@ if do2Dlikelihoods :
       runCombineCmd(cmd)
       print ("saved " +  "%s/nllscan_%s-vs_ttH_%s.pdf" % (FolderOut, bkg, namePlot))
       # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_tH_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_tH_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_tH_95_asimov.root --second tH  --plotName 68only  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
-      # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttZ_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttZ_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttZ_95_asimov.root --second ttZ  --plotName 68only  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
-      # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttW_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttW_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttH_ttW_95_asimov.root --second ttW  --plotName 68only  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
-      # plot2DLLScan.py --input /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttW_ttZ_central_asimov.root --input68 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttW_ttZ_68_asimov.root --input95 /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/combo_ttHmultilep_all_2Dlik_ttW_ttZ_95_asimov.root --second ttW  --plotName 68onlyttV  --label " " --outputFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/
 
 if do2DlikelihoodsttV :
     for ss, statements in enumerate(doFor) :
@@ -529,6 +544,8 @@ if doCategoriesMu :
         else :
             runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
         print (cmd)
+    ### add command to make Mu Plot
+    ## python test/makeMuPlot.py --input_folder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_11April20_unblinded/results//categories_combo_ttHmultilep_2018 --era 2018 --is_tH
 
 if doCategoriesSig :
     runCombineCmd("mkdir %s"  % (folderCat))
@@ -566,6 +583,25 @@ if doCategoriesSig :
         else :
             runCombineCmd(cmd, folderCat, saveout="%s_sig_%s_%s.log" % (cardToRead, rate, namePlot))
         #print (cmd)
+        ####
+        cmd = "python test/makeMuPlot.py "
+        cmd += " --input_folder  %s" % folderCat
+        cmd += " --era  %s" % str(era)
+        output = run_cmd(cmd)
+        fileInfo = "%s/makeMuPlot_ttH_%s.log" % (folderCat, str(era))
+        ff = open(fileInfo ,"w+")
+        ff.write(output)
+        ff.close()
+        didPlot = False
+        for line in open(fileInfo):
+            if '.pdf' in line and "saved" in line :
+                print(line)
+                didPlot = True
+                break
+        if didPlot == False :
+            print ("!!!!!!!!!!!!!!!!!!!!!!!! The makeMuPlots did not worked, to debug please check %s to see up to when the script worked AND run again for chasing the error:" % fileInfo)
+            print(cmd)
+            sys.exit()
 
 #cmd = "combineTool.py -M Significance --signif"
 #cmd += " %s_WS.root" % cardToRead
@@ -625,7 +661,26 @@ if doCategoriesMu_tH :
             runCombineCmd(cmd, folderCat)
         else :
             runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate.replace("ttH", "tH"), namePlot))
-        # python test/makeMuPlot.py --input_folder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL/results/categories_combo_ttHmultilep_2018/ --era 2018 --is_tH
+        ####
+        cmd = "python test/makeMuPlot.py "
+        cmd += " --input_folder  %s" % folderCat
+        cmd += " --era  %s" % str(era)
+        cmd += " --is_tH"
+        output = run_cmd(cmd)
+        fileInfo = "%s/MuPlot_tH_%s.log" % (folderCat, str(era))
+        ff = open(fileInfo ,"w+")
+        ff.write(output)
+        ff.close()
+        didPlot = False
+        for line in open(fileInfo):
+            if '.pdf' in line and "saved" in line :
+                print(line)
+                didPlot = True
+                break
+        if didPlot == False :
+            print ("!!!!!!!!!!!!!!!!!!!!!!!! The makeMuPlot did not worked, to debug please check %s to see up to when the script worked AND run again for chasing the error:" % fileInfo)
+            print(cmd)
+            sys.exit()
 
 if doCategoriesLimits :
     runCombineCmd("mkdir %s"  % (folderCat))
@@ -661,7 +716,18 @@ if doCategoriesLimitsFromMu1 :
         runCombineCmd(cmd, folderCat, saveout="%s/%s_limit_from0_%s.log" % (folderCat, WS_output_byCat, rate))
 
 if preparePlotHavester or preparePlotCombine :
-    if preparePlotCombine :
+    if plainBinsLocal == "True" : # True / False / No
+        plainBins = True
+    if plainBinsLocal == "False" : # True / False / No
+        plainBins = False
+
+    eraDraw = era
+    if era == 0 :
+        eraDraw = 0
+        era = 2018
+        print ("=====> Mind that 'era 0 ' will only work if the other eras are already done")
+
+    if preparePlotCombine and not eraDraw == 0 and not drawPlotOnly:
         cmd = "combineTool.py -M FitDiagnostics "
         cmd += " %s_WS.root" % cardToRead
         if blinded :
@@ -680,7 +746,7 @@ if preparePlotHavester or preparePlotCombine :
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/fitDiagnostics_shapes_combine_%s.root" % cardToRead)
 
-    if preparePlotHavester  :
+    if preparePlotHavester and not eraDraw == 0 and not drawPlotOnly:
         print ("[WARNING:] combineHavester does not deal well with autoMCstats option for bin by bin stat uncertainty -- it does some approximations on errors -- this is good option to run fast prefit plots on diagnosis stage")
         # to have Totalprocs computed
         cmd = "combineTool.py -M FitDiagnostics %s_WS.root" % cardToRead
@@ -713,30 +779,41 @@ if preparePlotHavester or preparePlotCombine :
         runCombineCmd(cmd, FolderOut)
         print ("created " + FolderOut + "/" + shapeDatacard )
 
-
+    if savePlotsOn == "none" :
+        savePlotsOn = FolderOut
     cmd = "python test/makePlots.py "
     if preparePlotHavester  :
         cmd += " --input  %s" % FolderOut + "/" + shapeDatacard
         cmd += " --fromHavester"
     if preparePlotCombine :
         cmd += " --input  %s" % FolderOut + "/fitDiagnostics_shapes_combine_" + cardToRead + ".root"
-    cmd += " --odir %s" % FolderOut
+    cmd += " --odir %s" % savePlotsOn
     #if doPostFit         :
     #    cmd += " --postfit "
     if not plainBins :
         cmd += " --original %s/../%s.root"        % (FolderOut, cardToRead)
-    cmd += " --era %s" % str(era)
-    cmd += " --nameOut %s" % cardToRead
+    cmd += " --era %s" % str(eraDraw)
+    cmd += " --nameOut %s" % cardToRead.replace(str(era), str(eraDraw))
     cmd += " --do_bottom "
     cmd += " --channel %s" % channel
     if not blinded         :
         cmd += " --unblind "
     if drawPlot and not doPostFit :
         output = run_cmd(cmd)
-        ff = open("%s/%s.log" % (FolderOut, cardToRead) ,"w+")
+        fileInfo = "%s/%s.log" % (savePlotsOn, cardToRead)
+        ff = open(fileInfo ,"w+")
         ff.write(output)
         ff.close()
-        print ("see the path of the .pdf created on %s/%s.log" % (FolderOut, cardToRead)  )
+        didPlot = False
+        for line in open(fileInfo):
+            if '.pdf' in line and "saved" in line :
+                print(line)
+                didPlot = True
+                break
+        if didPlot == False :
+            print ("!!!!!!!!!!!!!!!!!!!!!!!! The makePlots did not worked, to debug please check %s to see up to when the script worked AND run again for chasing the error:" % fileInfo)
+            print(cmd)
+            sys.exit()
     else :
         print ("suggestion of command to run to have the plot: ")
         print (cmd)

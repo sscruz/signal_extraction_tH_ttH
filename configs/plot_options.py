@@ -180,7 +180,7 @@ def options_plot_ranges (analysis) :
                 },
             "2lss_1tau" : {
                 "minY" : 0,  "maxY" :  22.0,
-                "minYerr":  -0.34,  "maxYerr" : 0.34,
+                "minYerr":  -1.1,  "maxYerr" : 2.34,
                 "useLogPlot" : False,
                 "label" : '2l ss + 1#tau_{h}',
                 "labelX" : "Bin number",
@@ -282,7 +282,7 @@ def options_plot_ranges (analysis) :
                 },
             "4lctrl" : {
                 "minY" : 0.1,    "maxY" :  100000.,
-                "minYerr": -0.6, "maxYerr" : 0.8,
+                "minYerr": -1.1, "maxYerr" : 1.8,
                 "useLogPlot" : True,
                 "label" : '4l-CR',
                 "labelX" : "Bin number",
@@ -544,188 +544,188 @@ def list_channels_draw(analysis) :
             "bkg_proc_from_data" : [ fakes, "mcFlips"],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_0tau_NN" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : ["ttH", "tHq", "tHW", "VH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_3j": {
             "bkg_proc_from_data" : [ fakes, "data_flips"], #
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         ####
         "ttH_2lss_3j_ee": {
             "bkg_proc_from_data" : [ fakes, "data_flips"], #
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "ttH_2lss_3j_em_neg": {
             "bkg_proc_from_data" : [ fakes, "data_flips"], #
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
-            "leading_minor_H" : "ZH_hww"
+            "leading_minor_H" : "ZH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "ttH_2lss_3j_em_pos": {
             "bkg_proc_from_data" : [ fakes, "data_flips"], #
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
-            "leading_minor_H" : "ZH_hww"
+            "leading_minor_H" : "ZH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "ttH_2lss_3j_mm_neg": {
             "bkg_proc_from_data" : [ fakes, "data_flips"], #
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
-            "leading_minor_H" : "ZH_hww"
+            "leading_minor_H" : "ZH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "ttH_2lss_3j_mm_pos": {
             "bkg_proc_from_data" : [ fakes, "data_flips"], #
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : [ "ttH", "tHq", "tHW", "ggH", "qqH", "ZH", "WH" , "HH", "TTWH", "TTZH" ],
-            "leading_minor_H" : "WH_hww"
+            "leading_minor_H" : "WH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_0tau_tH" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "WH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_0tau_ttH" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "WH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_0tau_ttW" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "WH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_0tau_rest" : {
             "bkg_proc_from_data" : [ fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", "Convs"],
             "signal" : ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "WH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_1tau_plain" : {
             "bkg_proc_from_data" : [fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "qqH", "ggH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_1tau_nno_miss" : {
             "bkg_proc_from_data" : [fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_1tau" : {
             "bkg_proc_from_data" : [fakes, "data_flips"],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "ggH", "qqH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "WH_hww" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2lss_1tau_NN" : {
             "bkg_proc_from_data" : [fakes, flips],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT", "TTWH", "TTZH", "HH",],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH"], # , "TTWH", "TTZH"
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "3l_0tau"   : {
             "bkg_proc_from_data" : [fakes, flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "tHq", "tHW", "VH"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "3lctrl"   : {
             "bkg_proc_from_data" : [fakes, flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions],
             "signal" : ["ttH", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "4lctrl"   : {
             "bkg_proc_from_data" : ["data_fakes", flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTZ", "WZ", "ZZ", "Rares", conversions],
             "signal" : ["ttH", ],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "3l_0tau_NN"   : {
             "bkg_proc_from_data" : [fakes,  flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "3l_0tau_ttH"   : {
             "bkg_proc_from_data" : [fakes,  flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "3l_0tau_tH"   : {
             "bkg_proc_from_data" : [fakes,  flips ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "3l_0tau_rest"   : {
             "bkg_proc_from_data" : ["data_fakes" ], # ,  flips
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ",  "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "1l_2tau"   : {
             "bkg_proc_from_data" : [ "data_fakes"      ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "1l_2tau_SS"   : {
             "bkg_proc_from_data" : [ "data_fakes"      ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2l_2tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "qqH", "ggH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "3l_1tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "TT", "Rares", conversions],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2los_1tau" : {
             "bkg_proc_from_data" : [fakes, flips],
             "bkg_procs_from_MC"  : ["TTW",  "TTZ", "WZ", "ZZ", "Rares", conversions, "TT"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
         },
         "0l_2tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : [ "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", "TTWW" ,"TTW",],
             "signal" : ["ttH", "tHq", "tHW",  "ggH", "qqH", "HH", "TTWH", "TTZH"    "WH",  "ZH",],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "1l_1tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", conversions, "EWK"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "WH", "ZH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "4l_0tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", conversions, "EWK"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
-            "leading_minor_H" : "ggH_htt"
+            "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         }
     else : sys.exit("analysis " + analysis + " not implemented")

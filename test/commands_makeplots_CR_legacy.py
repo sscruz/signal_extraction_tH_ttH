@@ -8,7 +8,8 @@ parser.add_option(
     "--odir",
     type="string",
     dest="odir",
-    help="Full path of where to put the plots"
+    help="Full path of where to put the plots",
+    default="none"
     )
 parser.add_option(
     "--cards_dir",
@@ -52,7 +53,11 @@ cards_dir    = options.cards_dir
 doPostFit    = options.doPostFit
 unblided     = options.unblided
 
-eras = [ 2016, 2017, 2018, 0 ]
+if odir == "none" :
+    odir = cards_dir + "/plots"
+run_cmd("mkdir %s"  % (odir))
+
+eras = [ 2016, 2017, 2018, 0 ] 
 
 cards_to_do = {
     "ttH_1l_2tau_ERA"         : {
