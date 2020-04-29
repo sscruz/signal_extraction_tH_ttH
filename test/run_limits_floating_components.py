@@ -544,7 +544,30 @@ if doCategoriesMu :
         else :
             runCombineCmd(cmd, folderCat, saveout="%s_rate_%s_%s.log" % (cardToRead, rate, namePlot))
         print (cmd)
-    ### add command to make Mu Plot
+    ####
+    cmd = "python test/makeMuPlot.py "
+    cmd += " --input_folder  %s" % folderCat
+    cmd += " --era  %s" % str(era)
+    output = run_cmd(cmd)
+    fileInfo = "%s/makeMuPlot_ttH_%s.log" % (folderCat, str(era))
+    ff = open(fileInfo ,"w+")
+    ff.write(output)
+    ff.close()
+    didPlot = False
+    for line in open(fileInfo):
+        if '.pdf' in line and "saved" in line :
+            print(line)
+            didPlot = True
+            break
+    if didPlot == False :
+        print ("!!!!!!!!!!!!!!!!!!!!!!!! The makeMuPlots did not worked, to debug please check %s to see up to when the script worked AND run again for chasing the error:" % fileInfo)
+        print(cmd)
+        print ("")
+        print ("First suspect: ")
+        print ("   --> It does assume that you had already run with 'doRateAndSignificance = True' above")
+        print ("   --> It will take the log files of those to add the combo result on the plot of mu/categories")
+        print ("-----> Did you ran it?")
+        sys.exit()
     ## python test/makeMuPlot.py --input_folder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_11April20_unblinded/results//categories_combo_ttHmultilep_2018 --era 2018 --is_tH
 
 if doCategoriesSig :
@@ -583,25 +606,6 @@ if doCategoriesSig :
         else :
             runCombineCmd(cmd, folderCat, saveout="%s_sig_%s_%s.log" % (cardToRead, rate, namePlot))
         #print (cmd)
-        ####
-        cmd = "python test/makeMuPlot.py "
-        cmd += " --input_folder  %s" % folderCat
-        cmd += " --era  %s" % str(era)
-        output = run_cmd(cmd)
-        fileInfo = "%s/makeMuPlot_ttH_%s.log" % (folderCat, str(era))
-        ff = open(fileInfo ,"w+")
-        ff.write(output)
-        ff.close()
-        didPlot = False
-        for line in open(fileInfo):
-            if '.pdf' in line and "saved" in line :
-                print(line)
-                didPlot = True
-                break
-        if didPlot == False :
-            print ("!!!!!!!!!!!!!!!!!!!!!!!! The makeMuPlots did not worked, to debug please check %s to see up to when the script worked AND run again for chasing the error:" % fileInfo)
-            print(cmd)
-            sys.exit()
 
 #cmd = "combineTool.py -M Significance --signif"
 #cmd += " %s_WS.root" % cardToRead
@@ -680,7 +684,13 @@ if doCategoriesMu_tH :
         if didPlot == False :
             print ("!!!!!!!!!!!!!!!!!!!!!!!! The makeMuPlot did not worked, to debug please check %s to see up to when the script worked AND run again for chasing the error:" % fileInfo)
             print(cmd)
+            print ("")
+            print ("First suspect: ")
+            print ("   --> It does assume that you had already run with 'doRateAndSignificance = True' above")
+            print ("   --> It will take the log files of those to add the combo result on the plot of mu/categories")
+            print ("-----> Did you ran it?")
             sys.exit()
+
 
 if doCategoriesLimits :
     runCombineCmd("mkdir %s"  % (folderCat))
