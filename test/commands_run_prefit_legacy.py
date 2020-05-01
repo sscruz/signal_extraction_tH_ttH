@@ -74,93 +74,93 @@ eras = [ 2016, 2017, 2018,  0 ]
 plots_to_do_MVA = {
     "ttH_0l_2tau_ERA"        : {
         "cards_to_merge"      : [],
-        "plainBins"            : True,
+        "plainBins"            : False,   # when False it does use the original datacard as template for the X-axis
         "channel"             : "0l_2tau"
     },
     "ttH_1l_1tau_ERA"        : {
         "cards_to_merge"      : [],
-        "plainBins"            : True,
+        "plainBins"            : False,
         "channel"             : "1l_1tau"
     },
     "ttH_1l_2tau_ERA"        : {
         "cards_to_merge"      : [],
-        "plainBins"            : True,
+        "plainBins"            : False,
         "channel"             : "1l_2tau"
     },
     "ttH_2los_1tau_ERA"      : {
         "cards_to_merge"      : [],
-        "plainBins"            : True,
+        "plainBins"            : False,
         "channel"             : "2los_1tau"
     },
     "ttH_2l_2tau_ERA"        : {
         "cards_to_merge"      : [],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "2l_2tau"
     },
     "ttH_3l_1tau_ERA"        : {
         "cards_to_merge"      : [],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "3l_1tau"
     },
     "ttH_4l_ERA"             : {
         "cards_to_merge"      : [],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "4l_0tau"
     },
     "ttH_cr_4l_ERA"          : {
         "cards_to_merge"      : [],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "4lctrl"
     },
     ###
     "ttH_cr_3l_ERA_cr"   : {
-        "cards_to_merge"      : ["ttH_cr_3l_ERA_eee_cr", "ttH_cr_3l_ERA_eem_cr", "ttH_cr_3l_ERA_mmm_cr"],
-        "plainBins"            : False,
+        "cards_to_merge"      : ["ttH_cr_3l_ERA_eee_cr", "ttH_cr_3l_ERA_eem_cr", "ttH_cr_3l_ERA_emm_cr", "ttH_cr_3l_ERA_mmm_cr"],
+        "plainBins"            : True,
         "channel"             : "3lctrl"
     },
     "ttH_2lss_1tau_ERA"      : {
         "cards_to_merge"      : ["ttH_2lss_1tau_rest_ERA", "ttH_2lss_1tau_tH_ERA", "ttH_2lss_1tau_ttH_ERA"],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "2lss_1tau"
     },
     "ttH_2lss_0tau_rest_ERA" : {
         "cards_to_merge"      : ["ttH_2lss_0tau_ee_Restnode_ERA", "ttH_2lss_0tau_em_Restnode_ERA", "ttH_2lss_0tau_mm_Restnode_ERA" ],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "2lss_0tau_rest"
     },
     "ttH_2lss_0tau_tH_ERA"   : {
         "cards_to_merge"      : ["ttH_2lss_0tau_ee_tHQnode_ERA", "ttH_2lss_0tau_em_tHQnode_ERA", "ttH_2lss_0tau_mm_tHQnode_ERA"],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "2lss_0tau_tH"
     },
     "ttH_2lss_0tau_ttH_ERA"  : {
         "cards_to_merge"      : ["ttH_2lss_0tau_ee_ttHnode_ERA", "ttH_2lss_0tau_em_ttHnode_ERA", "ttH_2lss_0tau_mm_ttHnode_ERA"],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "2lss_0tau_ttH"
     },
     "ttH_2lss_0tau_ttW_ERA"  : {
         "cards_to_merge"      : ["ttH_2lss_0tau_ee_ttWnode_ERA", "ttH_2lss_0tau_em_ttWnode_ERA", "ttH_2lss_0tau_mm_ttWnode_ERA" ],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "2lss_0tau_ttW"
     },
     "ttH_3l_0tau_rest_ERA"   : {
         "cards_to_merge"      : ["ttH_3l_0tau_rest_eee_ERA", "ttH_3l_0tau_rest_eem_bl_ERA", "ttH_3l_0tau_rest_eem_bt_ERA", "ttH_3l_0tau_rest_emm_bl_ERA", "ttH_3l_0tau_rest_emm_bt_ERA", "ttH_3l_0tau_rest_mmm_bl_ERA", "ttH_3l_0tau_rest_mmm_bt_ERA"],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "3l_0tau_rest"
     },
     "ttH_3l_0tau_tH_ERA"     : {
         "cards_to_merge"      : ["ttH_3l_0tau_tH_bl_ERA", "ttH_3l_0tau_tH_bt_ERA"],
-        "plainBins"            : False,
-        "channel"             : "ttH_3l_0tau_tH"
+        "plainBins"            : True,
+        "channel"             : "3l_0tau_tH"
     },
     "ttH_3l_0tau_ttH_ERA"    : {
         "cards_to_merge"      : ["ttH_3l_0tau_ttH_bl_ERA", "ttH_3l_0tau_ttH_bt_ERA"],
-        "plainBins"            : False,
-        "channel"             : "ttH_3l_0tau_ttH"
+        "plainBins"            : True,
+        "channel"             : "3l_0tau_ttH"
     },
     "ttH_2lss_1tau_ERA"      : {
         "cards_to_merge"      : ["ttH_2lss_1tau_rest_ERA", "ttH_2lss_1tau_tH_ERA", "ttH_2lss_1tau_ttH_ERA"],
-        "plainBins"            : False,
+        "plainBins"            : True,
         "channel"             : "2lss_1tau"
     },
 
@@ -198,8 +198,8 @@ for era in eras :
         cmd2 += "--savePlotsOn %s " % odir
         if not unblinded == "No" : # True / False / No
             cmd2 += "--unblinded %s " % unblinded
-        if plots_to_do_MVA[key]["plainBins"] :
-            cmd2 += "--plainBins %s " % str(plots_to_do_MVA[key]["plainBins"])
+        #if plots_to_do_MVA[key]["plainBins"] :
+        cmd2 += "--plainBins %s " % str(plots_to_do_MVA[key]["plainBins"])
         cmd2 += "--savePlotsOn %s " % odir
         cmd2 += "--era %s " % (str(era))
         cmd2 += "--cardToRead %s " % (card_to_read)

@@ -726,9 +726,9 @@ if doCategoriesLimitsFromMu1 :
         runCombineCmd(cmd, folderCat, saveout="%s/%s_limit_from0_%s.log" % (folderCat, WS_output_byCat, rate))
 
 if preparePlotHavester or preparePlotCombine :
-    if plainBinsLocal == "True" : # True / False / No
+    if str(plainBinsLocal) == "True" : # True / False / No
         plainBins = True
-    if plainBinsLocal == "False" : # True / False / No
+    if str(plainBinsLocal) == "False" : # True / False / No
         plainBins = False
 
     eraDraw = era

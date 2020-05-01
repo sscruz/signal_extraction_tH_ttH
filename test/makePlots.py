@@ -164,6 +164,7 @@ else : name_total = "TotalProcs"
 
 execfile("python/data_manager_makePostFitPlots.py")
 ROOT.gStyle.SetOptStat(0)
+###ROOT.gROOT.SetBatch(0) ---> it still does not solve in batch if 1, and break in iterative if 0
 
 flips       = "data_flips"
 conversions = "Convs"
@@ -394,7 +395,7 @@ canvas.cd()
 dumb = topPad.Draw()
 del dumb
 topPad.cd()
-
+del topPad
 dumb = hist_total.Draw("axis")
 
 del dumb
@@ -438,15 +439,18 @@ for kk, key in  enumerate(dprocs.keys()) :
             print (info_hist)
             print ("info_hist[binEdge]", info_hist["binEdge"])
             if info_hist["binEdge"] > 0 :
-                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.2)] # (legend_y0 + 0.05)*maxY
-            x0 = float(lastbin - info_hist["labelPos"] -1)
+                linebin += [ROOT.TLine(info_hist["binEdge"], 0., info_hist["binEdge"], y0*1.1)] # (legend_y0 + 0.05)*maxY
+            x0 = float(lastbin - info_hist["labelPos"] - 1)
             sum_inX = 0.1950
-            if cc > 2 :
-                if cc == 3 :
-                    sum_inX = 0.65
+            if len(catcat) > 2 :
+                if len(catcat) == 3 :
+                    sum_inX = 5.85
                 else :
-                    sum_inX = 0.35
-            poslinebinW_X += [x0 - sum_inX]
+                    sum_inX = 4.0
+            if len(catcat) == 0 :
+                poslinebinW_X += [x0 - sum_inX]
+            else :
+                poslinebinW_X += [options_plot_ranges("ttH")[typeCat]["catsX"][cc]]
             pos_linebinW_Y += [y0]
 
     if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # : (info_hist["labelPos"] == 0 and not options.original == "none" )
@@ -492,7 +496,10 @@ for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
         linebinW.SetTextAlign(12)
         linebinW.SetTextSize(0.05)
         linebinW.SetTextColor(1)
-        sumBottom += -2.6
+        if era == 0 :
+            sumBottom += -4.4
+        else :
+            sumBottom += -2.4
 
 legend1.AddEntry(hist_total, "Uncertainty", "f")
 
@@ -550,6 +557,7 @@ if do_bottom :
     dumb = line.Draw("same")
     del dumb
     print ("done bottom pad")
+    del bottomPad
 ##################################
 oplin = "linear"
 if options.useLogPlot :
@@ -561,12 +569,13 @@ if divideByBinWidth :
 
 savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat
 print ("saving...")
-dumb = canvas.SaveAs(savepdf + ".pdf")
+dumb = canvas.Print(savepdf + ".pdf")
 print ("saved", savepdf + ".pdf")
 del dumb
-dumb = canvas.SaveAs(savepdf + ".root")
+dumb = canvas.Print(savepdf + ".root")
 print ("saved", savepdf + ".root")
 del dumb
+canvas.IsA().Destructor(canvas)
 #dumb = canvas.SaveAs(savepdf + ".png")
 #print ("saved", savepdf + ".png")
 #del dumb
