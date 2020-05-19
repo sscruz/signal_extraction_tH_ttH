@@ -4,8 +4,12 @@ import os, sys, time,math
 import ROOT
 from optparse import OptionParser
 from collections import OrderedDict
+
 sys.stdout.flush()
 sys.stdout.flush()
+
+from ROOT import gROOT
+#gROOT.SetBatch(1)
 
 from optparse import OptionParser
 parser = OptionParser()
@@ -96,6 +100,11 @@ parser.add_option(
     default=False
     )
 parser.add_option(
+    "--HH", action="store_true", dest="HH",
+    help="is HH",
+    default=False
+    )
+parser.add_option(
     "--era", type="int",
     dest="era",
     help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
@@ -122,6 +131,7 @@ else :
 print ("category", category, typeCat)
 do_bottom = options.do_bottom
 shapes_input = options.input
+HH           = options.HH
 
 binToRead = options.binToRead
 if binToRead == "none" :
@@ -178,6 +188,8 @@ print procs
 leading_minor_H = list_channels_draw("ttH")[category]["leading_minor_H"]
 print ("leading_minor_H", leading_minor_H)
 dprocs = options_plot ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg_procs_from_MC'] + procs["signal"], leading_minor_H)
+if HH :
+    dprocsHH = options_plot ("ttH", category,  procs["signal_HH"], "HH")
 
 label_head = options_plot_ranges("ttH")[typeCat]["label"]
 print (options_plot_ranges("ttH")[typeCat])
@@ -247,6 +259,8 @@ if not options.original == "none" :
     fileorriginal = ROOT.TFile(fileOrig, "READ")
     if options.IHEP :
         histRead = "x_TTZ"
+    elif HH :
+        histRead = "TTH"
     else :
         histRead = "ttH_htt"
     template = fileorriginal.Get(readFrom + histRead )
@@ -459,6 +473,97 @@ for kk, key in  enumerate(dprocs.keys()) :
     dumb = histogramStack_mc.Add(hist_rebin)
     del dumb
 
+if HH :
+    #"""
+    histHH = template.Clone()
+    lastbin = 0
+    for cc, catcat in enumerate(catcats) :
+        if not options.fromHavester :
+            readFrom = folder + "/" + catcat
+        else :
+            readFrom = catcat
+            readFrom += "_prefit"
+        print ("read the hist with total uncertainties", readFrom, catcat)
+        lastbin += rebin_total(
+            histHH,
+            readFrom,
+            fin,
+            divideByBinWidth,
+            "signal_ggf_nonresonant_hh_bbvvSM",
+            lastbin,
+            do_bottom,
+            labelX,
+            nbinscatlist[cc]
+            )
+    #fin[0].Get("shapes_prefit/HH_2l_0tau/signal_ggf_nonresonant_hh_bbvvSM")
+    # "color" : 8, "fillStype" : 3315,
+    histHH.SetMarkerSize(0)
+    histHH.SetLineWidth(3)
+    histHH.SetFillColor(1)
+    histHH.SetLineColor(1)
+    histHH.SetFillStyle(3315)
+    legend1.AddEntry(histHH, "HH SM bbvv dl", "f")
+    ###
+    #histHH2 = fin[0].Get("shapes_prefit/HH_2l_0tau/signal_ggf_nonresonant_hh_bbttSM")
+    histHH2 = template.Clone()
+    lastbin = 0
+    for cc, catcat in enumerate(catcats) :
+        if not options.fromHavester :
+            readFrom = folder + "/" + catcat
+        else :
+            readFrom = catcat
+            readFrom += "_prefit"
+        print ("read the hist with total uncertainties", readFrom, catcat)
+        lastbin += rebin_total(
+            histHH2,
+            readFrom,
+            fin,
+            divideByBinWidth,
+            "signal_ggf_nonresonant_hh_bbttSM",
+            lastbin,
+            do_bottom,
+            labelX,
+            nbinscatlist[cc]
+            )
+    # "color" : 8, "fillStype" : 3315,
+    histHH2.SetMarkerSize(0)
+    histHH2.SetLineWidth(3)
+    histHH2.SetFillColor(4)
+    histHH2.SetLineColor(4)
+    histHH2.SetFillStyle(3351)
+    legend1.AddEntry(histHH2, "HH SM tt", "f")
+    #"""
+    ###
+    """
+    #print("test HH =====> ", histHH.Integral())
+    histogramStack_mcHH = ROOT.THStack()
+    for key in procs["signal_HH"] :
+        if not options.fromHavester :
+            readFrom = folder + "/" + catcat
+        else :
+            readFrom = catcat
+            readFrom += "_prefit"
+        hist_rebin2 = template.Clone()
+        for cc, catcat in enumerate(catcats) :
+            if not cc == 0 : addlegend = False
+            info_hist2 = rebin_hist(
+                hist_rebin2,
+                fin,
+                readFrom,
+                key,
+                dprocsHH[key],
+                divideByBinWidth,
+                addlegend,
+                lastbin,
+                nbinscatlist[cc],
+                options.original
+                )
+        print("signal HH stack", key, hist_rebin2.Integral())
+    dumb = histogramStack_mcHH.Add(hist_rebin2)
+    del dumb
+    #"""
+
+
 for line1 in linebin :
     line1.SetLineColor(1)
     line1.SetLineStyle(3)
@@ -468,11 +573,20 @@ dumb = histogramStack_mc.Draw("hist,same")
 del dumb
 dumb = hist_total.Draw("e2,same")
 del dumb
+if HH :
+    #dumb = histogramStack_mcHH.Draw("hist,same")
+    #del dumb
+    dumb = histHH.Draw("hist,same")
+    dumb = histHH2.Draw("hist,same")
+    del dumb
 if options.unblind :
     dumb = dataTGraph1.Draw("e1P,same")
     del dumb
 dumb = hist_total.Draw("axis,same")
 del dumb
+#if HH  :
+#    dumb = histogramStack_mcHH.Draw("hist,same")
+#    del dumb
 dumb = legend1.Draw("same")
 del dumb
 
@@ -568,13 +682,14 @@ if divideByBinWidth :
     optbin = "divideByBinWidth"
 
 savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat
-print ("saving...")
-dumb = canvas.Print(savepdf + ".pdf")
+print ("saving...", savepdf )
+dumb = canvas.SaveAs(savepdf + ".pdf")
 print ("saved", savepdf + ".pdf")
 del dumb
-dumb = canvas.Print(savepdf + ".root")
-print ("saved", savepdf + ".root")
-del dumb
+if not HH :
+    dumb = canvas.Print(savepdf + ".root")
+    print ("saved", savepdf + ".root")
+    del dumb
 canvas.IsA().Destructor(canvas)
 #dumb = canvas.SaveAs(savepdf + ".png")
 #print ("saved", savepdf + ".png")

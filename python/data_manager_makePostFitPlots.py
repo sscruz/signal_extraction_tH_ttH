@@ -99,9 +99,10 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
     hist.GetYaxis().SetLabelSize(0.050)
     return allbins
 
-def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin, catbin, original) :
+def rebin_hist(hist_rebin_local, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin, catbin, original) :
     print folder+"/"+name
     hist = fin[0].Get(folder+"/"+name)
+    print("signal HH stack inside 1", key, hist_rebin_local.Integral(), fin[0])
     allbins = catbin #hist.GetNbinsX() #GetNonZeroBins(hist)
     try  : hist.Integral()
     except :
@@ -133,13 +134,14 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
                         continue
                 else :
                     continue
-    hist_rebin.SetMarkerSize(0)
-    hist_rebin.SetFillColor(itemDict["color"])
-    hist_rebin.SetFillStyle(itemDict["fillStype"])
+    hist_rebin_local.SetMarkerSize(0)
+    hist_rebin_local.SetFillColor(itemDict["color"])
+    hist_rebin_local.SetFillStyle(itemDict["fillStype"])
+    print("signal HH stack inside", key, hist_rebin_local.Integral())
 
-    if "none" not in itemDict["label"] and addlegend : legend1.AddEntry(hist_rebin, itemDict["label"], "f")
-    if itemDict["make border"] == True :  hist_rebin.SetLineColor(1)
-    else : hist_rebin.SetLineColor(itemDict["color"])
+    if "none" not in itemDict["label"] and addlegend : legend1.AddEntry(hist_rebin_local, itemDict["label"], "f")
+    if itemDict["make border"] == True :  hist_rebin_local.SetLineColor(1)
+    else : hist_rebin_local.SetLineColor(itemDict["color"])
     for ii in xrange(1, allbins + 1) :
         bin_width = 1.
         if divideByBinWidth : bin_width = hist.GetXaxis().GetBinWidth(ii)
@@ -151,12 +153,12 @@ def rebin_hist(hist_rebin, fin, folder, name, itemDict, divideByBinWidth, addleg
             print ("bin with negative entry: ", ii, '\t', binContent_original)
             binError2_modified = binError2_original + math.pow((binContent_original-binContent_modified),2)
             if not binError2_modified >= 0. : print "Bin error negative!"
-            hist_rebin.SetBinError(  ii + lastbin, math.sqrt(binError2_modified)/bin_width)
-            hist_rebin.SetBinContent(ii + lastbin, 0.)
+            hist_rebin_local.SetBinError(  ii + lastbin, math.sqrt(binError2_modified)/bin_width)
+            hist_rebin_local.SetBinContent(ii + lastbin, 0.)
             print 'binerror_original= ', binError2_original, '\t',  'bincontent_original', '\t', binContent_original,'\t', 'bincontent_modified', '\t', binContent_modified, '\t', 'binerror= ', hist_rebin.GetBinError(ii)
         else :
-            hist_rebin.SetBinError(  ii + lastbin,   hist.GetBinError(ii)/bin_width)
-            hist_rebin.SetBinContent(ii + lastbin, hist.GetBinContent(ii)/bin_width)
+            hist_rebin_local.SetBinError(  ii + lastbin,   hist.GetBinError(ii)/bin_width)
+            hist_rebin_local.SetBinContent(ii + lastbin, hist.GetBinContent(ii)/bin_width)
     if not hist.GetSumw2N() : hist.Sumw2()
     return {
         "lastbin" : allbins,

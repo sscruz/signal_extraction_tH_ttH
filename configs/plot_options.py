@@ -29,7 +29,9 @@ def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
         if "Convs" in all_procs : dprocs["Convs"] = {"color" :   5, "fillStype" : 1001, "label" : "Conversions"       , "make border" :  True}
         if "TT" in all_procs     : dprocs["TT"]           = {"color" : 114, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
         if "Rares" in all_procs     : dprocs["Rares"]     = {"color" : 851, "fillStype" : 1001, "label" : "Rares"       , "make border" : True}
+        if "Others" in all_procs     : dprocs["Rares"]     = {"color" : 851, "fillStype" : 1001, "label" : "Rares"       , "make border" : True}
         if "EWK" in all_procs       : dprocs["EWK"]       = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
+        if "W" in all_procs       : dprocs["W"]       = {"color" : 610, "fillStype" : 1001, "label" : "W"         , "make border" : True}
         if "ZZ" in all_procs        : dprocs["ZZ"]        = {"color" : 52,  "fillStype" : 1001, "label" : "ZZ"          , "make border" : True}
         if "WZ" in all_procs        : dprocs["WZ"]        = {"color" : 6, "fillStype" : 1001, "label" : "WZ"          , "make border" : True}
         if "TTWW" in all_procs :
@@ -40,8 +42,9 @@ def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
         if "TTZ" in all_procs       : dprocs["TTZ"]       = {"color" : 822, "fillStype" : 1001, "label" : "ttZ"         , "make border" : True}
         ### signals
         if "HH" in all_procs         : dprocs["HH"]         = {"color" : 4, "fillStype" : 1001, "label" : "none"           , "make border" : False}
+        if "VH" in all_procs         : dprocs["VH"]         = {"color" : 4, "fillStype" : 1001, "label" : "VH"           , "make border" : True}
         for hig_proc in ["TTWH", "TTZH", "qqH", "VH", "WH", "ZH", "ggH"] :
-            if hig_proc in all_procs       :
+            if hig_proc in all_procs   and not leading_minor_H_local == "HH"    :
                 for decay in Hdecays : # list(set(list(Hdecays)) - set(["htt"])) :
                     #if not "%s_%s" % (hig_proc, decay) in all_procs :
                     #    continue
@@ -84,12 +87,19 @@ def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
                 dprocs["tHq_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
             dprocs["tHq_hww"]                             = {"color" : 208, "fillStype" : 1001, "label" : "tH"           , "make border" : True}
             #dprocs["tHq"]                             = {"color" : 205, "fillStype" : 1001, "label" : "tHq * 3"           , "make border" : True}
+        if "TTH" in all_procs     : dprocs["TH"]           = {"color" : 2, "fillStype" : 1001, "label" : 'TH'   , "make border" : True}
         # change the order of the stack if channel is dominated by fakes
         if "ttH" in all_procs :
             for decay in list(set(list(Hdecays_long)) - set(["htt"])) :
                 dprocs["ttH_%s" % decay]                 = {"color" :   2, "fillStype" : 1001, "label" : "none"        , "make border" : False}
             dprocs["ttH_htt"]                                 = {"color" :   2, "fillStype" : 1001, "label" : "ttH"         , "make border" : True}
             #dprocs["ttH"]                                 = {"color" :   2, "fillStype" : 1001, "label" : "ttH"         , "make border" : True}
+        if "TTH" in all_procs     : dprocs["TTH"]           = {"color" : 2, "fillStype" : 1001, "label" : 'TTH'   , "make border" : True}
+        ### HH signals "signal_ggf_nonresonant_hh_bbttSM", "signal_ggf_nonresonant_hh_bbvv_slSM", "signal_ggf_nonresonant_hh_bbvvSM"
+        if "signal_ggf_nonresonant_hh_bbttSM" in all_procs         : dprocs["signal_ggf_nonresonant_hh_bbttSM"]         = {"color" : 4, "fillStype" : 3351, "label" : "HH SM bbtt"           , "make border" : True}
+        if "signal_ggf_nonresonant_hh_bbvv_slSM" in all_procs      : dprocs["signal_ggf_nonresonant_hh_bbvv_slSM"]   = {"color" : 6, "fillStype" : 3315, "label" : "HH SM bbvv sl"           , "make border" : True}
+        if "signal_ggf_nonresonant_hh_bbvvSM" in all_procs         : dprocs["signal_ggf_nonresonant_hh_bbvvSM"]         = {"color" : 1, "fillStype" : 3315, "label" : "HH SM bbvv dl"           , "make border" : True}
+
         if channel in [ "1l_2tau", "2l_2tau"] :
             ## remove "fakes_data" from first entry and add as last
             del dprocs["data_fakes"]
@@ -99,6 +109,20 @@ def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
             dprocs["DY"]                                  = {"color" : 221, "fillStype" : 1001, "label" : "DY"         , "make border" : True}
             del dprocs[fakes]
             dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
+            del dprocs["TT"]
+            dprocs["TT"]                                  = {"color" : 17, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
+        if channel in ["1l_1tau", "2los_1tau", "0l_2tau"] :
+            #del dprocs["DY"]
+            dprocs["DY"]                                  = {"color" : 221, "fillStype" : 1001, "label" : "DY"         , "make border" : True}
+            del dprocs[fakes]
+            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
+            del dprocs["TT"]
+            dprocs["TT"]                                  = {"color" : 17, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
+        if channel in ["2l_0tau"] and not leading_minor_H_local =="HH" :
+            del dprocs[fakes]
+            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
+            #del dprocs["DY"]
+            dprocs["DY"]                                  = {"color" : 221, "fillStype" : 1001, "label" : "DY"         , "make border" : True}
             del dprocs["TT"]
             dprocs["TT"]                                  = {"color" : 17, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
     else : sys.exit("analysis " + analysis + " not implemented")
@@ -116,7 +140,7 @@ def options_plot_ranges (analysis) :
         info_channel = {
             "2lss_0tau_rest" : {
                 "minY" : 0,   "maxY" :  95.,
-                "minYerr": -0.64, "maxYerr" : 1.1,
+                "minYerr": -0.64, "maxYerr" : 0.99,
                 "useLogPlot" : False,
                 "label" : "2l ss + 0#tau_{h}, Other BKG node",
                 "labelX" : "Bin number",
@@ -128,7 +152,7 @@ def options_plot_ranges (analysis) :
                 },
             "2lss_0tau_ttW" : {
                 "minY" : 0.,   "maxY" :  45.,
-                "minYerr": -1.1, "maxYerr" : 2.74,
+                "minYerr": -0.65, "maxYerr" : 1.48,
                 "useLogPlot" : False,
                 "label" : '2l ss + 0#tau_{h}, t#bar{t}W node',
                 "labelX" : "Bin number",
@@ -140,7 +164,7 @@ def options_plot_ranges (analysis) :
                 },
             "2lss_0tau_ttH" : {
                 "minY" : 0,   "maxY" :  35.,
-                "minYerr": -1.1, "maxYerr" : 2.35,
+                "minYerr": -0.65, "maxYerr" : 1.8,
                 "useLogPlot" : False,
                 "label" : '2l ss + 0#tau_{h}, t#bar{t}H node',
                 "labelX" : "Bin number",
@@ -152,7 +176,7 @@ def options_plot_ranges (analysis) :
                 },
             "2lss_0tau_tH" : {
                 "minY" : 0,   "maxY" :  75.,
-                "minYerr": -1.1, "maxYerr" : 1.1,
+                "minYerr": -0.65, "maxYerr" : 1.8,
                 "useLogPlot" : False,
                 "label" : '2l ss + 0#tau_{h}, tHQ node',
                 "labelX" : "Bin number",
@@ -301,7 +325,7 @@ def options_plot_ranges (analysis) :
                 },
             "4lctrl" : {
                 "minY" : 0.1,    "maxY" :  100000.,
-                "minYerr": -1.1, "maxYerr" : 1.8,
+                "minYerr": -0.5, "maxYerr" : 1.1,
                 "useLogPlot" : True,
                 "label" : '4l-CR',
                 "labelX" : "Bin number",
@@ -447,7 +471,7 @@ def options_plot_ranges (analysis) :
                 },
             "0l_2tau"   : {
                 "minY" : 0.1,  "maxY" :  1500000.,
-                "minYerr": -1.01,  "maxYerr" : 1.7,
+                "minYerr": -0.3,  "maxYerr" : 0.3,
                 "useLogPlot" : True,
                 "label" : '0l + 2#tau_{h}',
                 "labelX" : "BDT output",
@@ -459,7 +483,7 @@ def options_plot_ranges (analysis) :
                 },
             "1l_1tau"   : {
                 "minY" : 10,  "maxY" :  400000.,
-                "minYerr":  -0.74,  "maxYerr" : 0.74,
+                "minYerr":  -0.1,  "maxYerr" : 0.1,
                 "useLogPlot" : True,
                 "label" : '1l + 1#tau_{h}',
                 "position_cats": 300. ,
@@ -491,6 +515,19 @@ def options_plot_ranges (analysis) :
                 "list_cats" : [],
                 "list_cats_original" : [],
                 "position_cats": 300. ,
+                "cats" : [""],
+                "catsX" :  [0.0]
+                },
+            ##################
+            "2l_0tau" : {
+                "minY" : 0.1,    "maxY" :  100000000.,
+                "minYerr": -1.02, "maxYerr" : 1.32,
+                "useLogPlot" : True,
+                "label" : 'HH bbWW 2l (HH SM normalized to 1pb)',
+                "labelX" : "BDT bin#",
+                "position_cats": 300. ,
+                "list_cats" : [],
+                "list_cats_original" : [],
                 "cats" : [""],
                 "catsX" :  [0.0]
                 },
@@ -761,6 +798,13 @@ def list_channels_draw(analysis) :
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", conversions, "EWK"],
             "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
             "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
+            },
+        "2l_0tau"   : {
+            "bkg_proc_from_data" : [fakes       ],
+            "bkg_procs_from_MC"  : [ "TT", "Convs", "TTH", "TH", "TTZ", "TTW", "TTWW", "TT", "Other", "VH", "DY", "W", "WW", "WZ", "ZZ"], #
+            "signal" : [], # "signal_ggf_nonresonant_hh_bbttSM", "signal_ggf_nonresonant_hh_bbvv_slSM", "signal_ggf_nonresonant_hh_bbvvSM"
+            "signal_HH" : ["signal_ggf_nonresonant_hh_bbttSM", "signal_ggf_nonresonant_hh_bbvv_slSM", "signal_ggf_nonresonant_hh_bbvvSM"], #
+            "leading_minor_H" : "TH" ## The legend for the mino H proc will only appear if this process is in the card
             },
         }
     else : sys.exit("analysis " + analysis + " not implemented")
