@@ -157,13 +157,7 @@ plots_to_do_MVA = {
         "cards_to_merge"      : ["ttH_3l_0tau_ttH_bl_ERA", "ttH_3l_0tau_ttH_bt_ERA"],
         "plainBins"            : True,
         "channel"             : "3l_0tau_ttH"
-    },
-    "ttH_2lss_1tau_ERA"      : {
-        "cards_to_merge"      : ["ttH_2lss_1tau_rest_ERA", "ttH_2lss_1tau_tH_ERA", "ttH_2lss_1tau_ttH_ERA"],
-        "plainBins"            : True,
-        "channel"             : "2lss_1tau"
-    },
-
+    }
 
 }
 

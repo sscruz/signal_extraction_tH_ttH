@@ -13,7 +13,7 @@ sendToLXBatch   = False ## the mu's result retrieval are not working in condor -
 # (like this, they can be also done in parallel)
 
 # 0) Combo results
-doWS                    = True ## To do any of the rest you must have ran with this being True once
+doWS                    = False ## To do any of the rest you must have ran with this being True once
 doRateAndSignificance   = False
 doRateAndSignificance_ttV   = False
 doLimits                = False
@@ -30,11 +30,13 @@ do2DlikelihoodsttV      = False # ttZ X ttW
 doCategoriesWS            = False ## To do any of the rest you must have ran with this being True once
 doCategoriesLimitsFromMu1 = False
 doCategoriesMu            = False
+doCategoriesMu_likScan    = False
 doCategoriesLimits        = False
 doCategoriesSig           = False
 
-doCategoriesWS_tH         = False
-doCategoriesMu_tH         = False
+doCategoriesWS_tH         = True
+doCategoriesMu_tH         = True
+doCategoriesMu_tH_likScan = True
 
 # 2)
 # for combo is almost mandatory send impacts calculation to grid, -- update instructions
@@ -67,13 +69,13 @@ GOF_submit = False
 
 # 5)
 # OR you do from Combine or from from Havester
-preparePlotCombine  = True
+preparePlotCombine  = False
 preparePlotHavester = False
 doPostFit           = False # if False do Prefit only, it True it does both
-plainBins           = True # If False do not take the template to reescale X-axis
+plainBins           = False # If False do not take the template to reescale X-axis
 drawPlot            = True # if "doPostFit = True" that is superseeded with False
 drawPlotOnly        = False # if you already did all the above and just want to polish plot use that True
-doTableYields       = False
+doTableYields       = True
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots

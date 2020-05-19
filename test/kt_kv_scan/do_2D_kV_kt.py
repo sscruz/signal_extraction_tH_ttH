@@ -69,6 +69,7 @@ def runCombineCommand(combinecmd, card, verbose=False, outfolder=".", queue=None
 
 def process(inputfile, inputfile2, xaxis, shiftBy):
     print ("inputfile", inputfile)
+    print ("inputfile2", inputfile)
     df = pd.read_csv(inputfile, sep=",", index_col=None)
     df_r0 = pd.read_csv(inputfile2, sep=",", index_col=None)
 
@@ -97,86 +98,59 @@ def process(inputfile, inputfile2, xaxis, shiftBy):
 allPoints = pd.DataFrame()
 init = 50
 points = [
-30,
-#--
-35,
-40,
-45,
-46,
-48,
-50,
-#--
 52,
 54,
 55,
 56,
 58,
 60,
-#--
 62,
 64,
 65,
 66,
 68,
 70,
-#--
 72,
 74,
 75,
 76,
 78,
 80,
-#--
 82,
 84,
-#85,
-86,
-88,
-90,
-#--
+85,
 92,
-#94,
-#95,
+94,
+95,
 96,
 98,
-100,
---
-102,
-#104,
-#105,
+104,
+105,
 106,
 108,
-110,
-#--
+100,
 112,
 114,
-#115,
+115,
 116,
 118,
-120,
-#--
-#122,
-#124,
-#125,
+110,
+122,
+124,
+125,
 126,
 128,
-130,
-#--
+120,
 132,
-134,
-#135,
-136,
 138,
 140,
-#--
 142,
-#144,
-#145,
+144,
+145,
 146,
 147,
 148,
-150,
-
+150
 ]
 
 """
@@ -187,9 +161,9 @@ points = [
 45,
 46,
 48,
-50,
+50, --> running
 --
-52,
+52,--done
 54,
 55,
 56,
@@ -201,7 +175,7 @@ points = [
 65,
 66,
 68,
-70,
+70, --> running from 54
 --
 72,
 74,
@@ -215,21 +189,21 @@ points = [
 85,
 86,
 88,
-90,
+90, --> running from 72
 --
-92,
+92, -- done
 94,
 95,
 96,
 98,
-#100,
+100,
 --
 102,
 104,
 105,
 106,
 108,
-110,
+110, --> running from 94
 --
 112,
 114,
@@ -243,7 +217,7 @@ points = [
 125,
 126,
 128,
-130,
+130, --> running from 112
 --
 132,
 134,
@@ -258,34 +232,95 @@ points = [
 146,
 147,
 148,
-150,
+150,-- runnning from 132
 --
 155
+--
+152,
+154
+156,
+158,
+160,
+162,
+164
+--------------------------
+"""
 
-
+"""
+52,
+54,
+55,
+56,
+58,
+60,
+62,
+64,
+65,
+66,
+68,
+70,
+72,
+74,
+75,
+76,
+78,
+80,
+82,
+84,
+85,
+92,
+94,
+95,
+96,
+98,
+104,
+105,
+106,
+108,
+100,
+112,
+114,
+115,
+116,
+118,
+110,
+122,
+124,
+125,
+126,
+128,
+120,
+132,
+134,
+135,
+136,
+138,
+142,
+144,
+140,
 
 """
 
-shiftBy = 31.096 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
+shiftBy = 30.943 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
 for kVint in points : #range(init, 155, 5) :
     kV = float(kVint)/100
     print ("doing kV = " + str(kV))
     if 0 > 0 :
         runCombineCommand(
-            "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/ -t kV_%s --kV %s -r 0 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
+            "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/ -t kV_%s --kV %s -r 0 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
             "/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
         )
         runCombineCommand(
-            "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/ -t kV_%s --kV %s -r 1 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
+            "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/ -t kV_%s --kV %s -r 1 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
             "/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
         )
         #runCombineCommand(
-        #    "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/ -t _kV_%s --kV %s -r 2 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_16March20_Ov_lep_TLL_tau_kt_scan/results_oneGo/" % (str(kV).replace(".","p"), str(kV)),
+        #    "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/ -t _kV_%s --kV %s -r 2 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_16March20_Ov_lep_TLL_tau_kt_scan/results_oneGo/" % (str(kV).replace(".","p"), str(kV)),
         #    "/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
         #)
     elif 1 > 0 :
-        filename = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/nll_scan_r1_kV_%s.csv" % str(kV).replace(".","p")
-        filename2 = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/nll_scan_r0_kV_%s.csv" % str(kV).replace(".","p")
+        filename = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/nll_scan_r1_kV_%s.csv" % str(kV).replace(".","p")
+        filename2 = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/nll_scan_r0_kV_%s.csv" % str(kV).replace(".","p")
         if kVint == init :
             allPoints = process(filename, filename2, "rescalect", shiftBy)
         else :
@@ -305,7 +340,8 @@ allPoints.dropna(inplace=True)
 print allPoints
 
 if 1 > 0  :
-    outfile = "plots/teste_2D_kappa_points_mar2020"
+    #outfile = "plots/teste_2D_kappa_points_may2020_unblided_pointss"
+    outfile = "plots/teste_2D_kappa_points_may2020_unblided"
     x1 = np.linspace(-2, 2, len(allPoints["rescalect"].unique()))
     y1 = np.linspace(-2, 2, len(allPoints["rescalecv"].unique()))
     x2, y2 = np.meshgrid(x1, y1, sparse=False)
@@ -324,10 +360,10 @@ if 1 > 0  :
     CS = ax.contour(x2, y2, z2, levels, colors='k', linestyles=['solid', 'dashed'] )
     #CS = ax.contour(x_dense, y_dense, z_dense_smooth_griddata, levels, colors='k',)
     #ax.clabel(CS, inline=False, fontsize=10, )
-    ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
+    #ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
 
     x_low, x_high = -1.5, 1.5
-    y_low, y_high = 0.35, 1.6
+    y_low, y_high = 0.32, 1.8
     ax.set_xlim(x_low, x_high)
     ax.set_ylim(y_low, y_high)
 
@@ -337,9 +373,15 @@ if 1 > 0  :
 
     line_up, = plt.plot(x1, ls='-', color='k',label="68% C.l.")
     line_down, = ax.plot(x1, ls='--', color='k',label="95% C.l.")
-    legend = plt.legend(handles=[line_up, line_down], loc='upper left', title="Expected", frameon=True, framealpha=1.0, fontsize=12)
+    legend = plt.legend(handles=[line_up, line_down], loc='lower left', title="Observed", frameon=True, framealpha=1.0, fontsize=12)
     legend.get_frame().set_facecolor('white')
     legend.get_frame().set_linewidth(0)
+    line_SM = ax.scatter([1], [1], marker="*", label="SM expected", s=50, c='k')
+    legend2 = plt.legend(handles=[ line_SM], loc='lower right', title="", frameon=True, framealpha=1.0, fontsize=12, scatterpoints=1)
+    legend2.get_frame().set_facecolor('white')
+    legend2.get_frame().set_linewidth(0)
+    ax.add_artist(legend)
+    ax.add_artist(legend2)
 
 
     plt.savefig("%s.pdf"%outfile, bbox_inches='tight')

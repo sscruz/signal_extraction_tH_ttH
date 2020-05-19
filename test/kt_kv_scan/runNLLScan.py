@@ -123,6 +123,8 @@ def runNLLScan(card, outfolder, kV, rate, setratio=None, verbose=False, toysFile
 def main(args, options):
     #cards, runtag = processInputs(args, options)
     cards = glob.glob(options.cards + "/ws*.root")
+    print("paths: ",  options.cards + "/ws*.root")
+    print(cards)
     runtag = options.tag
     rate = options.rate
 
@@ -229,5 +231,7 @@ if __name__ == '__main__':
     parser.add_option("--cosa", dest="cosa", action='store_true', default=False,
                       help="if true only consider cards with cos(alpha)")
     (options, args) = parser.parse_args()
+
+    print("Reading WS paths from: ",  options.cards + "/ws*.root")
 
     sys.exit(main(args, options))
