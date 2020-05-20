@@ -1,23 +1,34 @@
 {
-    "name" : "nll_scan",
+    "name" : "nll_scan_may2020",
     "inputdir" : "files",
     "tag2" : "$\\mathrm{H}\\to\\mathrm{W}\\mathrm{W}/\\mathrm{Z}\\mathrm{Z}/\\mathrm{\\tau}\\mathrm{\\tau}$",
-    "tag3" : "$\\kappa_{\\mathrm{V}}=1.0$, resolved",
+    "tag3" : "$\\kappa_{\\mathrm{V}}=1.0$",
     "tag4" : "",
-    "header_left" : "$\\mathbf{CMS} Preliminary$",
+    "header_left" : "$\\mathbf{CMS}\\, Preliminary$",
     "header_right": "137.2 $\\mathrm{fb}^{-1}$ (13 TeV)",
     "xaxis" : "rescalect",
     "x_axis_label" : "$\\kappa_\\mathrm{t}$",
     "xmax" : 2.0,
     "entries" : [
-        {
-            "csv_file"    : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/nll_scan_r1__kv_1p0.csv",
-            "csv_file_r0" : "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_10Feb_lepOv_tauTLL/MVA/results_102x/nll_scan_r0__kv_1p0.csv",
-            "label" : "Expected",
-            "color" : "black",
-            "line_width" : 2.0,
-            "line_style" : "--",
-            "marker_style" : ""
-        }
+      {
+        "csv_file"    : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r1_exp.csv",
+        "csv_file_r0" : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r0_exp.csv",
+          "label" : "Expected",
+          "color" : "black",
+          "line_width" : 2.0,
+          "line_style" : "--",
+          "marker_style" : "",
+          "SM" : 30.943
+      },
+      {
+        "csv_file"    : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r1_obs.csv",
+        "csv_file_r0" : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r0_obs.csv",
+          "label" : "Observed",
+          "color" : "black",
+          "line_width" : 2.0,
+          "line_style" : "-",
+          "marker_style" : "",
+          "SM" : 32.95
+      }
     ]
 }

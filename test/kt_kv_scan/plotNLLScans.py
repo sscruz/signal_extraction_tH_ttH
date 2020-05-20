@@ -40,6 +40,50 @@ def process(inputfile, filename_r0, xaxis, shiftBy, added=None):
     #    df['dnll'] = -2*df.dnll
     df['dnll'] = 2*(df.dnll - df_r0.dnll)
 
+    # drop one suspicious point
+    """
+    if "kV_1p" in inputfile and not "kV_1p0" in inputfile :
+        df = df[~((df.cv == 1.0) & (abs(df.cf) == 0.75))]
+    if "kV_0p48" in inputfile  :
+        df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+        #df = df[~((df.cv == 1.0) & (abs(df.cf) == 1.5))]
+        df = df[~((df.cv == 1.5) & (abs(df.cf) == 2.0))]
+    if "kV_0p45" in inputfile  :
+        #df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+        #df = df[~((df.cv == 1.0) & (abs(df.cf) == 1.5))]
+        df = df[~((df.cv == 1.5) & (abs(df.cf) == 2.0))]
+    if "kV_0p4." in inputfile  :
+        #df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+        #df = df[~((df.cv == 1.0) & (abs(df.cf) == 1.5))]
+        df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+        df = df[~((df.cv == 1.0) & (abs(df.cf) == 3.0))]
+        df = df[~((df.cv == 0.5) & (abs(df.cf) == 2.0))]
+        #df = df[~((df.cv == 0.5) & (abs(df.cf) == 3.0))]
+    if "kV_0p35." in inputfile  :
+        #df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+        #df = df[~((df.cv == 1.0) & (abs(df.cf) == 1.5))]
+        df = df[~((df.cv == 1.5) & (abs(df.cf) == 2.0))]
+        #df = df[~((df.cv == 0.5) & (abs(df.cf) == 3.0))]
+        df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+        df = df[~((df.cv == 0.5) & (abs(df.cf) == 2.0))]
+        df = df[~((df.cv == 0.5) & (abs(df.cf) == 3.0))]
+    if "kV_0p3." in inputfile  :
+        #df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+        #df = df[~((df.cv == 1.0) & (abs(df.cf) == 1.5))]
+        #df = df[~((df.cv == 1.5) & (abs(df.cf) == 2.0))]
+        df = df[~((df.cv == 1.0) & (abs(df.cf) == 3.0))]
+        #df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+    #if "kV_0p" in inputfile  : # and not ("kV_0p7" in inputfile or "kV_0p7" in inputfile)
+    #    df = df[~((df.cv == 1.5) & (abs(df.cf) == 2.0))]
+    #
+    #if  "kV_0p7" in inputfile or "kV_0p8" in inputfile :
+    #    df = df[~((df.cv == 1.5) & (abs(df.cf) == 1.25))]
+    #if  "kV_0p3" in inputfile:
+    #    df = df[~((df.cv == 0.5) & (abs(df.cf) == 1.25))]
+    #if  "kV_0p3" in inputfile:
+    #    df = df[~((df.cv == 0.5) & (abs(df.cf) == 2.0))]
+    #"""
+
     # Add in ratio column if it's not there
     if not 'ratio' in df.columns:
         try:
@@ -126,7 +170,7 @@ def addInterpolatingPoints(dframe, filename, npoints=3):
     return dframe
 
 
-def plotNLLScans(cfg, do2D, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
+def plotNLLScans(cfg, do2D, doSMmanual, outdir='plots/', tag='', nosplines=False, smoothing=0.0):
     for entry in cfg['entries']:
         filename = entry['csv_file']
         shiftBy = 0.
@@ -174,7 +218,7 @@ def plotNLLScans(cfg, do2D, outdir='plots/', tag='', nosplines=False, smoothing=
     ax.set_ylim(0., 30)
 
 
-    if do2D :
+    if do2D and not doSMmanual :
         ax.axhline(2.3, lw=0.5, ls='--', color='gray')
         ax.axhline(5.99, lw=0.5, ls='--', color='gray')
         #ax.axhline(9.0, lw=0.5, ls='--', color='gray')
@@ -231,11 +275,11 @@ def plotNLLScans(cfg, do2D, outdir='plots/', tag='', nosplines=False, smoothing=
     for entry in cfg['entries']:
         legentries.append(mpl.lines.Line2D([], [],
                           color=entry['color'], linestyle=entry['line_style'],
-                          label=entry['label'], marker=entry['marker_style'], markersize=7,
+                          label=entry['label'], marker=entry['marker_style'], markersize=10,
                           markerfacecolor=entry['color'], c=entry['color'], linewidth=2))
 
     # Legend
-    legend = plt.legend(handles=legentries, fontsize=20, loc='upper right',
+    legend = plt.legend(handles=legentries, fontsize=22, loc='upper right',
                         frameon=True, framealpha=cfg["text_bg_alpha"])
     legend.get_frame().set_facecolor('white')
     legend.get_frame().set_linewidth(0)
@@ -287,9 +331,12 @@ if __name__ == '__main__':
                       default=None, help="Smoothing for splines")
     parser.add_option("--do2D", dest="do2D",
                       action="store_true", default=False)
+    parser.add_option("--doSMmanual", dest="doSMmanual",
+                      action="store_true", default=False)
     # -86.536405
     (options, args) = parser.parse_args()
     do2D = options.do2D
+    doSMmanual = options.doSMmanual
 
     try:
         os.system('mkdir -p %s' % options.outdir)
@@ -314,6 +361,7 @@ if __name__ == '__main__':
             if getattr(options, attr, None) is not None:
                 plotConfig[attr] = str(getattr(options, attr, plotConfig[attr]))
 
-        plotNLLScans(plotConfig, do2D, outdir=options.outdir, tag=options.tag, nosplines=options.nosplines)
+        #sigmalines1D = doSMmanual or do2D
+        plotNLLScans(plotConfig, do2D, doSMmanual, outdir=options.outdir, tag=options.tag, nosplines=options.nosplines)
 
     sys.exit(0)
