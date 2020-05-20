@@ -77,7 +77,7 @@ if options.is_tH :
     ylinemax = 15. # 10.0
 
 for key in dprocs.keys() :
-    my_file_pattern =  os.path.join(input_folder, "*rate_%s*.log" % (key)) #"%s/ttH_%s_rate.txt" % (input_folder, key)
+    my_file_pattern =  os.path.join(input_folder, "*rate_%s*test.log" % (key)) #"%s/ttH_%s_rate.txt" % (input_folder, key)
     #my_file = os.path.join(input_folder, "ttH_%s*.out" % (key))
     my_files = glob.glob(my_file_pattern)
     if not len(my_files) > 0 :
@@ -113,7 +113,11 @@ print " "
 erastring = "dumbCombo"
 if options.era > 0 : erastring = str(options.era)
 if options.era == 0 : erastring = "all"
-my_file = "%s/../combo_ttHmultilep_rate_asimov_%s.log" % (input_folder, process)
+if options.era > 0 :
+    my_file = "%s/../combo_ttHmultilep_%s_rate_data_%s.log" % (input_folder, str(era), process)
+else :
+    my_file = "%s/../combo_ttHmultilep_rate_data_%s.log" % (input_folder, process)
+
 print ("reading:", my_file)
 combined = []
 print "Combined: "
@@ -224,15 +228,15 @@ gStyle.SetEndErrorSize(0)
 mg.Draw("A")
 gPad.RedrawAxis()
 
-xmin = -3.0 #-2.8
-xmax = 5.0
-xsumComb = -2.0
+xmin = -6.0 #-3.0 #-2.8
+xmax = 10.0 #5.0
+xsumComb = -5.0 #-2.0
 xcomb = 0.5
 if is_tH :
-    xmin = -60. #-100.0 #-2.8
-    xmax = 60. #100.0
-    xsumComb = -30. #-50.0
-    xcomb = 10
+    xmin = -28. #-12. #-100.0 #-2.8
+    xmax = 36. #100.0
+    xcomb = 1
+    xsumComb = -18.5 #-10.5 #-50.0
 
 mg.GetXaxis().SetLimits(xmin, xmax)
 mg.GetYaxis().SetRangeUser(ymin, ymax)
@@ -276,11 +280,11 @@ tex2 = TLatex()
 tex2.SetTextSize(0.035)
 tex3 = TLatex()
 tex3.SetTextSize(0.018)
-xtext = 1.75
+xtext = 4.75 #1.75
 ysumtext = + 0.3
 ycomb = 16.5 # 11.
 if is_tH :
-    xtext = 35
+    xtext = 18
     ysumtext = -0.01
     ycomb = 15.5 # 11.
 for kk, key in enumerate(dprocs.keys()) :

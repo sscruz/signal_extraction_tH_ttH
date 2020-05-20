@@ -4,24 +4,20 @@ from subprocess import Popen, PIPE
 
 from optparse import OptionParser
 parser = OptionParser()
-parser.add_option("--inputShapes",    type="string",       dest="inputShapes", help="Full path of prepareDatacards.root")
+parser.add_option(
+    "--inputShapes",
+    type="string",
+    dest="inputShapes",
+    help="Full path of prepareDatacards.root"
+    )
+parser.add_option(
+    "--per_year",
+    action="store_true",
+    dest="per_year",
+    help="self-explaining",
+    default=False
+    )
 (options, args) = parser.parse_args()
-
-def runCombineCmd(combinecmd, outfolder=".", saveout=None):
-    print ("Command: ", combinecmd)
-    try:
-        p = Popen(shlex.split(combinecmd) , stdout=PIPE, stderr=PIPE, cwd=outfolder)
-        comboutput = p.communicate()[0]
-    except OSError:
-        print ("command not known\n", combinecmd)
-        comboutput = None
-    if not saveout == None :
-        saveTo = outfolder + "/" + saveout
-        with open(saveTo, "w") as text_file:
-            text_file.write(comboutput)
-        print ("Saved result to: " + saveTo)
-    print ("\n")
-    return comboutput
 
 def run_cmd(command):
   print ("executing command = '%s'" % command)
@@ -31,8 +27,12 @@ def run_cmd(command):
 
 inputShapes = options.inputShapes
 
-for era in ["2018", "2017", "2016"] :
+if not options.per_year :
     cmd = "cd %s; combineCards.py  " % inputShapes
+
+for era in ["2018", "2017", "2016"] :
+    if options.per_year :
+        cmd = "cd %s; combineCards.py  " % inputShapes
     cmd += " ttH_0l_2tau_%s=ttH_0l_2tau_%s.txt" % (era, era)
     cmd += " ttH_2l_2tau_%s=ttH_2l_2tau_%s.txt" % (era, era)
     cmd += " ttH_3l_1tau_%s=ttH_3l_1tau_%s.txt" % (era, era)
@@ -71,7 +71,11 @@ for era in ["2018", "2017", "2016"] :
     cmd += " ttH_cr_3l_%s_eem_cr=ttH_cr_3l_%s_eem_cr.txt" % (era, era)
     cmd += " ttH_cr_3l_%s_emm_cr=ttH_cr_3l_%s_emm_cr.txt" % (era, era)
     cmd += " ttH_cr_3l_%s_mmm_cr=ttH_cr_3l_%s_mmm_cr.txt" % (era, era)
-    cmd += " > combo_ttHmultilep_%s.txt" % era
-    #print (cmd)
-    #runCombineCmd(cmd, inputShapes)
+    if options.per_year :
+        cmd += " > combo_ttHmultilep_%s.txt" % era
+        run_cmd(cmd)
+        print (cmd)
+if not options.per_year :
+    cmd += " > combo_ttHmultilep.txt" #% era
+    print (cmd)
     run_cmd(cmd)

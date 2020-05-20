@@ -61,20 +61,38 @@ def runNLLScan(card, outfolder, kV, rate, setratio=None, verbose=False, toysFile
         comboutput = runCombineCommand(combinecmd_toys, card, verbose=verbose, outfolder=outfolder)
         elapsed = parseOutput(comboutput)
 
-    combinecmd = "combine -M MultiDimFit"
-    combinecmd += " --algo fixed --fixedPointPOIs r=%s" % rate
-    combinecmd += " --rMin=0 --rMax=20 --X-rtd ADDNLL_RECURSIVE=0"
-    combinecmd += " --cminDefaultMinimizerStrategy 0" # default is 1
-    combinecmd += " --cminDefaultMinimizerTolerance 0.01" # default is 0.1
-    combinecmd += " --cminPreScan" # default is off
-    #combinecmd += " --X-rtd MINIMIZER_analytic" # trying out for aa toys
-    #print(combinecmd)
-    combinecmd += " -m 125 --verbose 0 -n _nll_scan_r%s_%s" % (rate, filetag)
-    combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f" % (ratio*kV, kV) # kappa_tau=1.0,
-    combinecmd += " --freezeParameters kappa_t,kappa_V,"
-    combinecmd += "kappa_mu,kappa_b,kappa_c" # kappa_tau, ,kappa_g, kappa_gam, r,
-    #combinecmd += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
-    combinecmd += " --redefineSignalPOIs r"
+    if rate == 2 :
+        outroot = "/higgsCombine_nll_scan_oneGo_%s.MultiDimFit.mH125.root" % (filetag)
+        combinecmd = "combine -M MultiDimFit"
+        combinecmd += " --algo fixed --fixedPointPOIs r=0"
+        combinecmd += " --rMin=0 --rMax=20 --X-rtd ADDNLL_RECURSIVE=0"
+        combinecmd += " --cminDefaultMinimizerStrategy 0" # default is 1
+        combinecmd += " --cminDefaultMinimizerTolerance 0.01" # default is 0.1
+        combinecmd += " --cminPreScan" # default is off
+        #combinecmd += " --X-rtd MINIMIZER_analytic" # trying out for aa toys
+        #print(combinecmd)
+        combinecmd += " -m 125 --verbose 0 -n _nll_scan_oneGo_%s" % (filetag)
+        combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f,r=1" % (ratio*kV, kV) # kappa_tau=1.0,
+        combinecmd += " --freezeParameters r,kappa_t,kappa_V,"
+        combinecmd += "kappa_mu,kappa_b,kappa_c" # kappa_tau, ,kappa_g, kappa_gam, r,
+        #combinecmd += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
+        combinecmd += " --redefineSignalPOIs r"
+    elif rate in  [0, 1] :
+        outroot = "/higgsCombine_nll_scan_r%s_%s.MultiDimFit.mH125.root" % (str(rate), filetag)
+        combinecmd = "combine -M MultiDimFit"
+        combinecmd += " --algo fixed --fixedPointPOIs r=%s" % str(rate)
+        combinecmd += " --rMin=0 --rMax=20  --X-rtd ADDNLL_RECURSIVE=0 " #
+        combinecmd += " --cminDefaultMinimizerStrategy 0" # default is 1
+        combinecmd += " --cminDefaultMinimizerTolerance 0.01" # default is 0.1
+        combinecmd += " --cminPreScan" # default is off
+        #combinecmd += " --maxFailedSteps 20 --X-rtd MINIMIZER_analytic --robustFit 1  --setCrossingTolerance 1E-6" # " --X-rtd MINIMIZER_analytic" # trying out for aa toys
+        #print(combinecmd)
+        combinecmd += " -m 125 --verbose 0 -n _nll_scan_r%s_%s" % (str(rate), filetag)
+        combinecmd += " --setParameters kappa_t=%.2f,kappa_V=%.2f" % (ratio*kV, kV) # kappa_tau=1.0,
+        combinecmd += " --freezeParameters kappa_t,kappa_V,"
+        combinecmd += "kappa_mu,kappa_b,kappa_c" # kappa_tau, ,kappa_g, kappa_gam, r,
+        #combinecmd += "pdfindex_TTHHadronicTag_13TeV,pdfindex_TTHLeptonicTag_13TeV"
+        combinecmd += " --redefineSignalPOIs r  "
 
     if blind :
         #assert(os.path.isfile(toysFile)), "file not found %s" % toysFile
@@ -85,8 +103,9 @@ def runNLLScan(card, outfolder, kV, rate, setratio=None, verbose=False, toysFile
     elapsed = parseOutput(comboutput)
     #bestfitr_r1 = 1
     #dnll_r1 = 1
+
     try:
-        data = getNLLFromRootFile(outfolder + "/higgsCombine_nll_scan_r%s_%s.MultiDimFit.mH125.root" % (rate, filetag))
+        data = getNLLFromRootFile(outfolder + outroot)
         printout += "r=%5.2f, dNLL=%+7.3f " % (data[0][0], data[1][1])
         #bestfitr_r1 = data[0][0]
         #dnll_r1 = data[1][1]
@@ -104,8 +123,10 @@ def runNLLScan(card, outfolder, kV, rate, setratio=None, verbose=False, toysFile
 def main(args, options):
     #cards, runtag = processInputs(args, options)
     cards = glob.glob(options.cards + "/ws*.root")
+    print("paths: ",  options.cards + "/ws*.root")
+    print(cards)
     runtag = options.tag
-    rate = str(options.rate)
+    rate = options.rate
 
     if options.toysFile:
         runtag += "_toys"
@@ -203,12 +224,14 @@ if __name__ == '__main__':
                       help="Add three steps between each point for interpolation")
     parser.add_option("-o","--outputFolder", dest="outputFolder", type="string", default="",
                       help="where to save the outputs of combine run")
-    parser.add_option("-r","--rate", dest="rate", type="string", default="0",
+    parser.add_option("-r","--rate", dest="rate", type="int", default="2",
                       help="where to save the outputs of combine run")
     parser.add_option("--kV", dest="kV", type="float", default=1.0,
                       help="KappaV to consider")
     parser.add_option("--cosa", dest="cosa", action='store_true', default=False,
                       help="if true only consider cards with cos(alpha)")
     (options, args) = parser.parse_args()
+
+    print("Reading WS paths from: ",  options.cards + "/ws*.root")
 
     sys.exit(main(args, options))

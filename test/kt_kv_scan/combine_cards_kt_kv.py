@@ -35,6 +35,7 @@ def run_cmd(command):
   print ("executing command = '%s'" % command)
   p = Popen(command, shell = True, stdout = PIPE, stderr = PIPE)
   stdout, stderr = p.communicate()
+  print (stderr)
   return stdout
 
 inputShapes = options.inputShapes
@@ -143,6 +144,7 @@ for ee, entry in enumerate(list_couplings) :
         cmd += " ttH_cr_3l_%s_emm_cr=ttH_cr_3l_%s_emm_cr_%s.txt" % (era, era, couplingsName)
         cmd += " ttH_cr_3l_%s_mmm_cr=ttH_cr_3l_%s_mmm_cr_%s.txt" % (era, era, couplingsName)
     cmd += " > combo_ttHmultilep_%s.txt" % couplingsName
+    #cmd += " > combo_tau_%s.txt" % couplingsName
     #print (cmd)
     #runCombineCmd(cmd, inputShapes)
     run_cmd(cmd)

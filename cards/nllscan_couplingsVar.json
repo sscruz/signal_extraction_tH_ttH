@@ -7,28 +7,28 @@
     "header_left" : "$\\mathbf{CMS}\\, Preliminary$",
     "header_right": "137.2 $\\mathrm{fb}^{-1}$ (13 TeV)",
     "xaxis" : "rescalect",
-    "x_axis_label" : "$\\kappa_\\mathrm{t}$",
+    "x_axis_label" : "kappa_{t}",
     "xmax" : 2.0,
     "entries" : [
-      {
-        "csv_file"    : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r1_exp.csv",
-        "csv_file_r0" : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r0_exp.csv",
-          "label" : "Expected",
-          "color" : "black",
-          "line_width" : 2.0,
-          "line_style" : "--",
-          "marker_style" : "",
-          "SM" : 30.943
-      },
-      {
-        "csv_file"    : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r1_obs.csv",
-        "csv_file_r0" : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r0_obs.csv",
-          "label" : "Observed",
-          "color" : "black",
-          "line_width" : 2.0,
-          "line_style" : "-",
-          "marker_style" : "",
-          "SM" : 32.95
-      }
+        {
+          "csv_file"    : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/nll_scan_r1_kV_1p0.csv",
+          "csv_file_r0" : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_23March20_Ov_lep_TLL_tau_kt_scan/results/nll_scan_r0_kV_1p0.csv",
+            "label" : "Expected",
+            "color" : "black",
+            "line_width" : 2.0,
+            "line_style" : "--",
+            "marker_style" : "",
+            "SM" : 3.204
+        },
+        {
+          "csv_file"    : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results//nll_scan_r1_comb6.csv",
+          "csv_file_r0" : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results//nll_scan_r0_comb6.csv",
+            "label" : "Observed",
+            "color" : "black",
+            "line_width" : 2.0,
+            "line_style" : "-",
+            "marker_style" : "",
+            "SM" : 10.204
+        }
     ]
 }

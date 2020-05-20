@@ -1,6 +1,6 @@
 #####################################################################
 ## How to do?
-blinded         = False
+blinded         = False ## use -t -1
 blindedOutput   = False ## do not draw the rate on the impacts plot
 sendToCondor    = False ## Impacts / GOF / likelihood scans for combo need it
 sendToLXBatch   = False ## the mu's result retrieval are not working in condor -- but they work with lxbatch
@@ -15,19 +15,28 @@ sendToLXBatch   = False ## the mu's result retrieval are not working in condor -
 # 0) Combo results
 doWS                    = False ## To do any of the rest you must have ran with this being True once
 doRateAndSignificance   = False
+doRateAndSignificance_ttV   = False
 doLimits                = False
-do2Dlikelihoods         = False
-do2DlikelihoodsttV      = False
+
+## For 2D likelihood plots (that are also lengthy runs) do one by one in parallel
+do2Dlikelihoods_ttH_ttZ = False
+do2Dlikelihoods_ttH_ttW = False
+do2Dlikelihoods_ttH_tH  = False
+do2DlikelihoodsttV      = False # ttZ X ttW
 
 # 1) results by category
+## ---> It does assume that you had already run with 'doRateAndSignificance = True' above
+## --> It will take the log files of those to add the combo result on the plot of mu/categories
 doCategoriesWS            = False ## To do any of the rest you must have ran with this being True once
 doCategoriesLimitsFromMu1 = False
 doCategoriesMu            = False
+doCategoriesMu_likScan    = False
 doCategoriesLimits        = False
 doCategoriesSig           = False
 
-doCategoriesWS_tH         = False
-doCategoriesMu_tH         = False
+doCategoriesWS_tH         = True
+doCategoriesMu_tH         = True
+doCategoriesMu_tH_likScan = True
 
 # 2)
 # for combo is almost mandatory send impacts calculation to grid, -- update instructions
@@ -61,10 +70,12 @@ GOF_submit = False
 # 5)
 # OR you do from Combine or from from Havester
 preparePlotCombine  = False
-preparePlotHavester = True
-doPostFit           = True # if False do Prefit only, it True it does both
-plainBins           = False # relevant only for the PlotHavester
-doTablePrefit       = False
+preparePlotHavester = False
+doPostFit           = False # if False do Prefit only, it True it does both
+plainBins           = False # If False do not take the template to reescale X-axis
+drawPlot            = True # if "doPostFit = True" that is superseeded with False
+drawPlotOnly        = False # if you already did all the above and just want to polish plot use that True
+doTableYields       = True
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
