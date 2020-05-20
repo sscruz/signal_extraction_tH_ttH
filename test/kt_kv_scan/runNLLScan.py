@@ -109,7 +109,7 @@ def runNLLScan(card, outfolder, kV, rate, setratio=None, verbose=False, toysFile
         printout += "r=%5.2f, dNLL=%+7.3f " % (data[0][0], data[1][1])
         #bestfitr_r1 = data[0][0]
         #dnll_r1 = data[1][1]
-    except AssertionError, IndexError:
+    except (AssertionError, IndexError, RuntimeError):
         return np.nan, np.nan
         #bestfitr_r1 = np.nan
         #dnll_r1 = np.nan
