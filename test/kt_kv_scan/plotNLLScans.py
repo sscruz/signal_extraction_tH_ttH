@@ -13,13 +13,13 @@ from scipy.interpolate import splev, splrep
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-#import seaborn as sns
-#sns.set(style="ticks")
-#sns.set_context("poster")
+import seaborn as sns
+sns.set(style="ticks")
+sns.set_context("poster")
 
 from process_limits import scale_limits
 from plotLimit import readConfig
-#from plotLimit import setUpMPL
+from plotLimit import setUpMPL
 
 ## type 1
 
@@ -357,7 +357,7 @@ if __name__ == '__main__':
     except ValueError:
         pass
 
-    #setUpMPL()
+    setUpMPL()
     for ifile in args:
         print ("ifile =", ifile)
         if not os.path.exists(ifile):
