@@ -344,7 +344,7 @@ points = [
 
 """
 
-shiftBy = 32.95 +1.1243172592437487 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
+shiftBy = 32.95 +1.1243172592437487+ 2.2444828832823793 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
 for kVint in points : #range(init, 155, 5) :
     kV = float(kVint)/100
     #print ("doing kV = " + str(kV))
