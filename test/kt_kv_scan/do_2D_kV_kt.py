@@ -409,7 +409,7 @@ if 1 > 0  :
             #print (xxx2) #
             yyy2 = fff([float(x) / 100. for x in xxx2])
             min_index = np.argmin(yyy2)
-            if yyy2[min_index] <= kt_BF :
+            if yyy2[min_index] <= nll_BF :
                 kt_BF = float(xxx2[min_index])/100.
                 kv_BF = kv_local
                 nll_BF = yyy2[min_index]
@@ -423,7 +423,7 @@ if 1 > 0  :
     ###############
     xx = np.linspace(-1.5,1.5,50)
     xxx = np.linspace(1.5,2.4,10)
-    ## those are the attemps to a 2D fit 
+    ## those are the attemps to a 2D fit
     #ff = SmoothBivariateSpline(allPoints["rescalect"], allPoints["rescalecv"], allPoints['dnll'])
     ff = interp2d(allPoints["rescalect"], allPoints["rescalecv"], allPoints['dnll'], kind='linear')
     #yy1 = ff(xx, xxx)
