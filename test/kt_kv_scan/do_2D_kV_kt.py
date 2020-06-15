@@ -10,7 +10,7 @@ from functools import partial
 from collections import namedtuple
 from scipy.interpolate import splev, splrep
 from scipy.interpolate import griddata
-from scipy.interpolate import interp2d
+from scipy.interpolate import interp2d, SmoothBivariateSpline, interp1d
 import scipy.interpolate as interp
 import matplotlib
 import numpy as np
@@ -21,8 +21,6 @@ import matplotlib.pyplot as plt
 import sys, os, re, shlex
 import multiprocessing
 from subprocess import Popen, PIPE
-
-
 
 def print_header(axes, x_low, x_high, y_low, y_high, inside = False, logscale = False):
   y_val = y_high + 0.015 * (y_high - y_low)
@@ -68,8 +66,8 @@ def runCombineCommand(combinecmd, card, verbose=False, outfolder=".", queue=None
     return comboutput
 
 def process(inputfile, inputfile2, xaxis, shiftBy):
-    print ("inputfile", inputfile)
-    print ("inputfile2", inputfile)
+    #print ("inputfile", inputfile)
+    #print ("inputfile2", inputfile)
     df = pd.read_csv(inputfile, sep=",", index_col=None)
     df_r0 = pd.read_csv(inputfile2, sep=",", index_col=None)
 
@@ -119,29 +117,32 @@ points = [
 82,
 84,
 85,
+86,
 92,
 94,
 95,
 96,
 98,
+100,
 104,
 105,
 106,
 108,
-100,
+110,
 112,
 114,
 115,
 116,
 118,
-110,
+120,
 122,
 124,
-125,
 126,
 128,
-120,
+130,
 132,
+134,
+135,
 138,
 140,
 142,
@@ -150,8 +151,50 @@ points = [
 146,
 147,
 148,
-150
+150,
+152,
+154,
+156,
+158,
+166,
+168,
+170,
+172,
+174,
+176,
+178,
+180,
+182,
+184,
+186,
+188,
+190,
+190,
+192,
+194,
+196,
+198,
+200,
+201,
+202,
+203,
+204,
+206,
+210,
+212,
+214,
+216,
+218,
+220,
+240,
+260,
+280,
 ]
+
+
+"""
+
+"""
 
 """
 30,
@@ -301,10 +344,10 @@ points = [
 
 """
 
-shiftBy = 30.943 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
+shiftBy = 32.95 +1.1243172592437487 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
 for kVint in points : #range(init, 155, 5) :
     kV = float(kVint)/100
-    print ("doing kV = " + str(kV))
+    #print ("doing kV = " + str(kV))
     if 0 > 0 :
         runCombineCommand(
             "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/ -t kV_%s --kV %s -r 0 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
@@ -336,34 +379,120 @@ allPoints.dropna(inplace=True)
 #allPoints = allPoints[~((allPoints.cv == 1.5) & (abs(allPoints.cf) == 1.25))]
 #allPoints.drop(pd.Index(allPoints[(allPoints.cv == 0.5) & (abs(allPoints.cf) == 1.25) & ((abs(allPoints.rescalecv) == 0.3))].index) , inplace=True) #
 
-#allPoints.drop(allPoints.loc[ (allPoints['cf']==-1) &  (allPoints['cv']==1) ].index, inplace=True)
+allPoints.drop(allPoints.loc[ (allPoints["rescalect"] > 2.3) | (allPoints["rescalect"] < -2.3)  ].index, inplace=True)
+allPoints.drop(allPoints.loc[ (allPoints["rescalecv"] < 0.5) | (allPoints["rescalecv"] > 2.8)  ].index, inplace=True)
 print allPoints
 
 if 1 > 0  :
-    #outfile = "plots/teste_2D_kappa_points_may2020_unblided_pointss"
+    ####
+    # find BF
+    kt_BF = 100.
+    kv_BF = 100.
+    nll_BF = 100.
+    for pointY in points :
+        #if 1 > 0 : continue
+        kv_local = float(pointY)/100
+        if not (pointY >=50 and pointY <= 200): continue
+        print(kv_local)
+        if (len(allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"]) >= 3) :
+            #print (kv_local, allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"])
+            try :
+                fff = interp1d(
+                allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"],
+                allPoints.loc[(allPoints["rescalecv"] == kv_local), 'dnll'],
+                kind='cubic'
+                )
+            except :
+                continue
+            ###
+            xxx2 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == kv_local).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"].values)*100))
+            #print (xxx2) #
+            yyy2 = fff([float(x) / 100. for x in xxx2])
+            min_index = np.argmin(yyy2)
+            if yyy2[min_index] <= kt_BF :
+                kt_BF = float(xxx2[min_index])/100.
+                kv_BF = kv_local
+                nll_BF = yyy2[min_index]
+                #print(yyy2)
+                print(yyy2[min_index],  fff(float(xxx2[min_index])/100.), float(xxx2[min_index])/100., kv_local)
+
+    print ("found BF")
+    print("kt_BF =", kt_BF)
+    print("kv_BF =", kv_BF)
+    print("nll_BF =", nll_BF)
+    ###############
+    xx = np.linspace(-1.5,1.5,50)
+    xxx = np.linspace(1.5,2.4,10)
+    ## those are the attemps to a 2D fit 
+    #ff = SmoothBivariateSpline(allPoints["rescalect"], allPoints["rescalecv"], allPoints['dnll'])
+    ff = interp2d(allPoints["rescalect"], allPoints["rescalecv"], allPoints['dnll'], kind='linear')
+    #yy1 = ff(xx, xxx)
+    print("interpolated", ff(1., 1.))
+    if 0 > 0 :
+        for pointY in points :
+            #if 1 > 0 : continue
+            kv_local = float(pointY)/100
+            if not (pointY >= 50 and pointY <= 200): continue
+            print(kv_local)
+            if (len(allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"]) > 4) :
+                #print (kv_local, allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"])
+                try :
+                    fff = interp1d(
+                    allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"],
+                    allPoints.loc[(allPoints["rescalecv"] == kv_local), 'dnll'],
+                    kind='cubic'
+                    )
+                except :
+                    continue
+                for pointX in range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == kv_local).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"].values)*100), 10) :
+                    kt_local = float(pointX)/100.
+                    #print(kt_local)
+                    result = -1
+                    try :
+                        fff(kt_local)
+                        result = fff(kt_local)
+                    except :
+                        try :
+                            fff(kt_local) > -100.
+                            result = fff(kt_local)[0]
+                        except :
+                            print("fff(kt_local), not a number",  fff(kt_local))
+                            continue
+                    #print(fff(kt_local))
+                    allPoints = allPoints.append(
+                    {
+                    #'Animal':'mouse',
+                    #'Color':'black'
+                    "fname": "interpolatedPoint",
+                    "cv" : -1,
+                    "cf" : -1,
+                    "cosa" : -1,
+                    "rescalecv" : kv_local,
+                    "rescalect" : kt_local,
+                    "ratio" : -1,
+                    "bestfitr" : -1,
+                    "dnll" : fff(kt_local)
+                    },
+                    ignore_index=True)
+        #allPoints.drop_duplicates(subset=["rescalect", "rescalecv"], inplace=True)
+        #"""
+    ###############
     outfile = "plots/teste_2D_kappa_points_may2020_unblided"
+    #outfile = "plots/teste_2D_kappa_points_may2020_unblided"
     x1 = np.linspace(-2, 2, len(allPoints["rescalect"].unique()))
     y1 = np.linspace(-2, 2, len(allPoints["rescalecv"].unique()))
     x2, y2 = np.meshgrid(x1, y1, sparse=False)
-    #interpolator = CloughTocher2DInterpolator((YREF.ravel(), XREF.ravel()),
-    #                                          vals.ravel())
     z2 = griddata((allPoints["rescalect"], allPoints["rescalecv"]), allPoints['dnll'], (x2, y2), method='cubic')
-    #z_sparse_smooth = fun_smooth(x2, y2)
-    #N_dense = 20
-    #x_dense,y_dense = gimme_mesh(N_dense)
-    #z_dense_smooth_griddata = interp.griddata(np.array([x2.ravel(),y2.ravel()]).T,
-    #                                      z_sparse_smooth.ravel(),
-    #                                      (x_dense,y_dense), method='cubic')
 
     fig, ax = plt.subplots(figsize=(5, 5))
-    levels = [2.3, 5.99 ] #[-1.0, 2.0 ] #np.arange(2.3, 5.99 )
+    levels = [ 2.3, 5.99 ]
     CS = ax.contour(x2, y2, z2, levels, colors='k', linestyles=['solid', 'dashed'] )
-    #CS = ax.contour(x_dense, y_dense, z_dense_smooth_griddata, levels, colors='k',)
-    #ax.clabel(CS, inline=False, fontsize=10, )
+    ##
+    print("number of points: " , len(allPoints['dnll']), len(x2))
     #ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
 
     x_low, x_high = -1.5, 1.5
-    y_low, y_high = 0.32, 1.8
+    y_low, y_high = 0.22, 2.5
     ax.set_xlim(x_low, x_high)
     ax.set_ylim(y_low, y_high)
 
@@ -377,7 +506,9 @@ if 1 > 0  :
     legend.get_frame().set_facecolor('white')
     legend.get_frame().set_linewidth(0)
     line_SM = ax.scatter([1], [1], marker="*", label="SM expected", s=50, c='k')
-    legend2 = plt.legend(handles=[ line_SM], loc='lower right', title="", frameon=True, framealpha=1.0, fontsize=12, scatterpoints=1)
+    line_BF = ax.scatter([kt_BF], [kv_BF], marker="*", label="Best fit", s=50, c='r')
+
+    legend2 = plt.legend(handles=[ line_SM, line_BF ], loc='lower right', title="", frameon=True, framealpha=1.0, fontsize=12, scatterpoints=1)
     legend2.get_frame().set_facecolor('white')
     legend2.get_frame().set_linewidth(0)
     ax.add_artist(legend)
@@ -387,3 +518,134 @@ if 1 > 0  :
     plt.savefig("%s.pdf"%outfile, bbox_inches='tight')
     #plt.savefig("%s.png"%outfilen bbox_inches='tight', dpi=300) #
     print ("saved ", "%s.pdf"%outfile)
+    ###############
+    outfile = "plots/teste_2D_kappa_points_may2020_unblided_pointss"
+    fig, ax = plt.subplots(figsize=(5, 5))
+    levels = [ 2.3, 5.99 ]
+    ax.set_xlim(x_low, x_high)
+    ax.set_ylim(y_low, y_high)
+    CS = ax.contour(x2, y2, z2, levels, colors='k', linestyles=['solid', 'dashed'] )
+    ax.plot(allPoints["rescalect"].values, allPoints["rescalecv"].values, 'ko', ms=3)
+    plt.savefig("%s.pdf"%outfile, bbox_inches='tight')
+    print ("saved ", "%s.pdf"%outfile)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    xxx = np.linspace(-2.5,2.5,100)
+    #yy1 = ff(xx, 2.0)
+    #yy2 = ff(xxx, 2.6)
+    #yy3 = ff(xxx, 0.52)
+    #yy4 = ff(xxx, 1.04)
+    #plt.plot(xx,yy1, 'g')
+    #plt.plot(xxx,yy2, 'r')
+    #plt.plot(xxx,yy3, 'g')
+    #plt.plot(xxx,yy4, 'k')
+    ax.set_ylim(0, 80)
+    ax.set_xlim(-1.5, 1.5)
+    print(allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 2.0), "dnll"].values)
+    #print(allPoints.loc[(allPoints["rescalecv"] == 2.02), "rescalect"].values)
+    print(allPoints.loc[(allPoints["rescalecv"] == 1.82), "rescalect"].values)
+    fff2 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.0), 'dnll'].values,
+        kind='cubic'
+        )
+    fff4 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.82), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 1.82), 'dnll'],
+        kind='cubic'
+        )
+    fff5 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 1.5), 'dnll'],
+        kind='cubic'
+        )
+    fff6 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 1.52), 'dnll'],
+        kind='cubic'
+        )
+    fff7 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.54), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 1.54), 'dnll'],
+        kind='cubic'
+        )
+    print ("hfhagsfa", int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.52).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"].values)*100))
+    xxx2 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.0).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values)*100))
+    xxx4 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.82).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.82), "rescalect"].values)*100))
+    xxx5 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.5).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"].values)*100))
+    xxx6 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.52).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"].values)*100))
+    xxx7 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.54).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.54), "rescalect"].values)*100))
+    #print (xxx2) #
+    yyy2 = fff2([float(x) / 100. for x in xxx2])
+    yyy4 = fff4([float(x) / 100. for x in xxx4])
+    yyy5 = fff5([float(x) / 100. for x in xxx5])
+    yyy6 = fff6([float(x) / 100. for x in xxx6])
+    yyy7 = fff7([float(x) / 100. for x in xxx7])
+    plt.plot([float(x) / 100. for x in xxx2], yyy2, 'r-', label="kv = 1.0 interpolated")
+    plt.plot([float(x) / 100. for x in xxx4], yyy4, 'k-', label="kv = 1.82 interpolated")
+    plt.plot([float(x) / 100. for x in xxx5], yyy5, 'g-', label="kv = 1.5 interpolated")
+    plt.plot([float(x) / 100. for x in xxx6], yyy6, 'y-', label="kv = 1.52 interpolated")
+    plt.plot([float(x) / 100. for x in xxx7], yyy7, 'b-', label="kv = 1.54 interpolated")
+    #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 1.04), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 1.04), "dnll"].values, 'ko', ms=3)
+    #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 0.52), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 0.52), "dnll"].values, 'go', ms=3)
+    #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 2.6), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 2.6), "dnll"].values, 'ro', ms=3)
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 1.82), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.82), "dnll"].values, 'ko', ms=3,
+        label="kv = 1.82"
+        )
+    #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 0.52), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 0.52), "dnll"].values, 'go', ms=3)
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.0), "dnll"].values, 'ro', ms=3,
+        label="kv = 1.0"
+    )
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.5), "dnll"].values, 'go', ms=3,
+        label="kv = 1.5"
+    )
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.52), "dnll"].values, 'yo', ms=3,
+        label="kv = 1.52"
+    )
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 1.54), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.54), "dnll"].values, 'bo', ms=3,
+        label="kv = 1.54"
+    )
+    plt.legend(loc='best', fancybox=False, shadow=False, ncol=1, fontsize=8)
+    plt.savefig("%s_func.pdf"%outfile, bbox_inches='tight')
+    print ("saved", "%s_func.pdf"%outfile)
+
+    ## those are the attemps to a 2D fit
+    """fig, ax = plt.subplots(figsize=(5, 5))
+    xx = np.linspace(0.5,2.5,300)
+    yy1 = ff(0.0, xx)
+    yy2 = ff(1.0, xx)
+    yy3 = ff(2.0, xx)
+    #print(yy1[0])
+    #print(len(yy1[0]), len(xxx), ff(0.6, 0.6))
+    #plt.plot(xx, yy1[0], 'k')
+    #plt.plot(xx, yy2[0], 'g')
+    #plt.plot(xx, yy3[0], 'g')
+    plt.plot(xx, yy1, 'k')
+    plt.plot(xx, yy2, 'g')
+    ax.set_ylim(0, 500)
+    ax.set_xlim(0.5, 2.5)
+    plt.plot(allPoints.loc[(allPoints["rescalect"] == 0.0), "rescalecv"].values, allPoints.loc[(allPoints["rescalect"] == 0.0), "dnll"].values, 'ko', ms=3)
+    plt.plot(allPoints.loc[(allPoints["rescalect"] == 1.0), "rescalecv"].values, allPoints.loc[(allPoints["rescalect"] == 1.0), "dnll"].values, 'go', ms=3)
+    plt.savefig("%s_funcY.pdf"%outfile, bbox_inches='tight')"""
+
+    """fig, ax = plt.subplots(figsize=(5, 5))
+    yy1 = ff(xx, xxx)
+    #yy2 = ff(xx, xxx)
+    #yy3 = ff(xx, xxx)
+    #print(yy1)
+    #print(len(yy1[0]), len(xxx), ff(0.6, 0.6))
+    #plt.plot(xx,yy1[0], 'g')
+    #plt.plot(xx,yy2[0], 'g')
+    #plt.plot(xx,yy3[0], 'g')
+    cp = plt.contour( xxx,  xx, yy1, levels, colors='k', linestyles=['solid', 'dashed'] )
+    plt.savefig("%s_funcInterpolated.pdf"%outfile, bbox_inches='tight')"""
