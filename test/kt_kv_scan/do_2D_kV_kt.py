@@ -31,9 +31,9 @@ def print_header(axes, x_low, x_high, y_low, y_high, inside = False, logscale = 
   #axes.text(x_low + (x_high - x_low) * 0.14, y_val, 'Preliminary', fontsize=15, style='italic') # for a 6 X 6 figure
   axes.text(x_low + (x_high - x_low) * 0.15, y_val, 'Preliminary', fontsize=14, style='italic') # for a 5 X 5 figure
   if logscale:
-    axes.text(x_low + (x_high - x_low) * 0.67, y_high + 0.05 * (y_high - y_low), '137.2 fb$^{-1}$ (13 TeV)', fontsize=12)
+    axes.text(x_low + (x_high - x_low) * 0.67, y_high + 0.05 * (y_high - y_low), '137 fb$^{-1}$ (13 TeV)', fontsize=12)
   else:
-    axes.text(x_low + (x_high - x_low) * 0.57, y_high + 0.01 * (y_high - y_low), '137.2 fb$^{-1}$ (13 TeV)', fontsize=12)
+    axes.text(x_low + (x_high - x_low) * 0.57, y_high + 0.01 * (y_high - y_low), '137 fb$^{-1}$ (13 TeV)', fontsize=12)
 
 # auxiliary function for mesh generation
 def gimme_mesh(n):
@@ -94,9 +94,9 @@ def process(inputfile, inputfile2, xaxis, shiftBy):
     return df
 
 allPoints = pd.DataFrame()
-init = 50
+init = 54
 points = [
-52,
+#52,
 54,
 55,
 56,
@@ -152,10 +152,16 @@ points = [
 147,
 148,
 150,
+151,
 152,
+153,
 154,
+155,
 156,
 158,
+160,
+162,
+164,
 166,
 168,
 170,
@@ -192,159 +198,7 @@ points = [
 ]
 
 
-"""
-
-"""
-
-"""
-30,
---
-35,
-40,
-45,
-46,
-48,
-50, --> running
---
-52,--done
-54,
-55,
-56,
-58,
-60,
---
-62,
-64,
-65,
-66,
-68,
-70, --> running from 54
---
-72,
-74,
-75,
-76,
-78,
-80,
---
-82,
-84,
-85,
-86,
-88,
-90, --> running from 72
---
-92, -- done
-94,
-95,
-96,
-98,
-100,
---
-102,
-104,
-105,
-106,
-108,
-110, --> running from 94
---
-112,
-114,
-115,
-116,
-118,
-120,
---
-122,
-124,
-125,
-126,
-128,
-130, --> running from 112
---
-132,
-134,
-135,
-136,
-138,
-140,
---
-142,
-144,
-145,
-146,
-147,
-148,
-150,-- runnning from 132
---
-155
---
-152,
-154
-156,
-158,
-160,
-162,
-164
---------------------------
-"""
-
-"""
-52,
-54,
-55,
-56,
-58,
-60,
-62,
-64,
-65,
-66,
-68,
-70,
-72,
-74,
-75,
-76,
-78,
-80,
-82,
-84,
-85,
-92,
-94,
-95,
-96,
-98,
-104,
-105,
-106,
-108,
-100,
-112,
-114,
-115,
-116,
-118,
-110,
-122,
-124,
-125,
-126,
-128,
-120,
-132,
-134,
-135,
-136,
-138,
-142,
-144,
-140,
-
-"""
-
-shiftBy = 32.95 +1.1243172592437487+ 2.2444828832823793 # 86.536 # hardcode the SM minimum to shift all kVs accordingly
+shiftBy = 32.95 +1.1243172592437487+2.2444828832823793+0.11292214961477559# + 2.2444828832823793  86.536 # hardcode the SM minimum to shift all kVs accordingly
 for kVint in points : #range(init, 155, 5) :
     kV = float(kVint)/100
     #print ("doing kV = " + str(kV))
@@ -367,6 +221,7 @@ for kVint in points : #range(init, 155, 5) :
         if kVint == init :
             allPoints = process(filename, filename2, "rescalect", shiftBy)
         else :
+            print(filename)
             allPoints = allPoints.append(process(filename, filename2, "rescalect", shiftBy), ignore_index=True) #
 allPoints.dropna(inplace=True)
 # drop one suspicious point
@@ -432,7 +287,7 @@ if 1 > 0  :
         for pointY in points :
             #if 1 > 0 : continue
             kv_local = float(pointY)/100
-            if not (pointY >= 50 and pointY <= 200): continue
+            if not (pointY >= 100 and pointY <= 150): continue
             print(kv_local)
             if (len(allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"]) > 4) :
                 #print (kv_local, allPoints.loc[(allPoints["rescalecv"] == kv_local), "rescalect"])
@@ -506,7 +361,7 @@ if 1 > 0  :
     legend.get_frame().set_facecolor('white')
     legend.get_frame().set_linewidth(0)
     line_SM = ax.scatter([1], [1], marker="*", label="SM expected", s=50, c='k')
-    line_BF = ax.scatter([kt_BF], [kv_BF], marker="*", label="Best fit", s=50, c='r')
+    line_BF = ax.scatter([kt_BF], [kv_BF], marker="*", label="Best fit", s=60, c='w')
 
     legend2 = plt.legend(handles=[ line_SM, line_BF ], loc='lower right', title="", frameon=True, framealpha=1.0, fontsize=12, scatterpoints=1)
     legend2.get_frame().set_facecolor('white')
@@ -539,14 +394,14 @@ if 1 > 0  :
     #plt.plot(xxx,yy2, 'r')
     #plt.plot(xxx,yy3, 'g')
     #plt.plot(xxx,yy4, 'k')
-    ax.set_ylim(0, 80)
+    ax.set_ylim(0, 50)
     ax.set_xlim(-1.5, 1.5)
     print(allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 2.0), "dnll"].values)
     #print(allPoints.loc[(allPoints["rescalecv"] == 2.02), "rescalect"].values)
     print(allPoints.loc[(allPoints["rescalecv"] == 1.82), "rescalect"].values)
     fff2 = interp1d(
-        allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values,
-        allPoints.loc[(allPoints["rescalecv"] == 1.0), 'dnll'].values,
+        allPoints.loc[(allPoints["rescalecv"] == 0.98), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 0.98), 'dnll'].values,
         kind='cubic'
         )
     fff4 = interp1d(
@@ -555,37 +410,53 @@ if 1 > 0  :
         kind='cubic'
         )
     fff5 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.51), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 1.51), 'dnll'],
+        kind='cubic'
+        )
+    fff6 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 0.96), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 0.96), 'dnll'],
+        kind='cubic'
+        )
+    fff7 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.68), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 1.68), 'dnll'],
+        kind='cubic'
+        )
+    fff8 = interp1d(
         allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"],
         allPoints.loc[(allPoints["rescalecv"] == 1.5), 'dnll'],
         kind='cubic'
         )
-    fff6 = interp1d(
-        allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"],
-        allPoints.loc[(allPoints["rescalecv"] == 1.52), 'dnll'],
+    fff9 = interp1d(
+        allPoints.loc[(allPoints["rescalecv"] == 1.04), "rescalect"],
+        allPoints.loc[(allPoints["rescalecv"] == 1.04), 'dnll'],
         kind='cubic'
         )
-    fff7 = interp1d(
-        allPoints.loc[(allPoints["rescalecv"] == 1.54), "rescalect"],
-        allPoints.loc[(allPoints["rescalecv"] == 1.54), 'dnll'],
-        kind='cubic'
-        )
-    print ("hfhagsfa", int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.52).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"].values)*100))
-    xxx2 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.0).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values)*100))
+    print ("hfhagsfa", int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.5).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"].values)*100))
+    xxx2 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 0.98).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 0.98), "rescalect"].values)*100))
     xxx4 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.82).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.82), "rescalect"].values)*100))
     xxx5 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.5).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"].values)*100))
-    xxx6 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.52).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"].values)*100))
-    xxx7 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.54).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.54), "rescalect"].values)*100))
+    xxx6 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 0.96).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 0.96), "rescalect"].values)*100))
+    xxx7 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.68).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.68), "rescalect"].values)*100))
+    xxx8 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.5).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"].values)*100))
+    xxx9 = range(int(np.min(allPoints.loc[(allPoints["rescalecv"] == 1.04).values, "rescalect"])*100), int(np.max(allPoints.loc[(allPoints["rescalecv"] == 1.04), "rescalect"].values)*100))
     #print (xxx2) #
     yyy2 = fff2([float(x) / 100. for x in xxx2])
     yyy4 = fff4([float(x) / 100. for x in xxx4])
     yyy5 = fff5([float(x) / 100. for x in xxx5])
     yyy6 = fff6([float(x) / 100. for x in xxx6])
     yyy7 = fff7([float(x) / 100. for x in xxx7])
-    plt.plot([float(x) / 100. for x in xxx2], yyy2, 'r-', label="kv = 1.0 interpolated")
-    plt.plot([float(x) / 100. for x in xxx4], yyy4, 'k-', label="kv = 1.82 interpolated")
-    plt.plot([float(x) / 100. for x in xxx5], yyy5, 'g-', label="kv = 1.5 interpolated")
-    plt.plot([float(x) / 100. for x in xxx6], yyy6, 'y-', label="kv = 1.52 interpolated")
-    plt.plot([float(x) / 100. for x in xxx7], yyy7, 'b-', label="kv = 1.54 interpolated")
+    yyy8 = fff8([float(x) / 100. for x in xxx8])
+    yyy9 = fff9([float(x) / 100. for x in xxx9])
+    plt.plot([float(x) / 100. for x in xxx2], yyy2, 'r-') #, label="kv = 0.98 interpolated")
+    plt.plot([float(x) / 100. for x in xxx4], yyy4, 'k-') #, label="kv = 1.82 interpolated")
+    plt.plot([float(x) / 100. for x in xxx5], yyy5, 'g-') #, label="kv = 1.5 interpolated")
+    plt.plot([float(x) / 100. for x in xxx6], yyy6, 'y-') #, label="kv = 1.66 interpolated")
+    plt.plot([float(x) / 100. for x in xxx7], yyy7, 'b-') #, label="kv = 1.68 interpolated")
+    plt.plot([float(x) / 100. for x in xxx8], yyy8, 'm-') #, label="kv = 1.5 interpolated")
+    plt.plot([float(x) / 100. for x in xxx9], yyy9, 'c-') #, label="kv = 1.04 interpolated")
     #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 1.04), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 1.04), "dnll"].values, 'ko', ms=3)
     #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 0.52), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 0.52), "dnll"].values, 'go', ms=3)
     #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 2.6), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 2.6), "dnll"].values, 'ro', ms=3)
@@ -596,24 +467,34 @@ if 1 > 0  :
         )
     #plt.plot(allPoints.loc[(allPoints["rescalecv"] == 0.52), "rescalect"].values, allPoints.loc[(allPoints["rescalecv"] == 0.52), "dnll"].values, 'go', ms=3)
     plt.plot(
-        allPoints.loc[(allPoints["rescalecv"] == 1.0), "rescalect"].values,
-        allPoints.loc[(allPoints["rescalecv"] == 1.0), "dnll"].values, 'ro', ms=3,
-        label="kv = 1.0"
+        allPoints.loc[(allPoints["rescalecv"] == 0.98), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 0.98), "dnll"].values, 'ro', ms=3,
+        label="kv = 0.98"
+    )
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 1.51), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.51), "dnll"].values, 'go', ms=3,
+        label="kv = 1.51"
+    )
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 0.96), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 0.96), "dnll"].values, 'yo', ms=3,
+        label="kv = 0.96"
+    )
+    plt.plot(
+        allPoints.loc[(allPoints["rescalecv"] == 1.68), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.68), "dnll"].values, 'bo', ms=3,
+        label="kv = 1.68"
     )
     plt.plot(
         allPoints.loc[(allPoints["rescalecv"] == 1.5), "rescalect"].values,
-        allPoints.loc[(allPoints["rescalecv"] == 1.5), "dnll"].values, 'go', ms=3,
+        allPoints.loc[(allPoints["rescalecv"] == 1.5), "dnll"].values, 'mo', ms=3,
         label="kv = 1.5"
     )
     plt.plot(
-        allPoints.loc[(allPoints["rescalecv"] == 1.52), "rescalect"].values,
-        allPoints.loc[(allPoints["rescalecv"] == 1.52), "dnll"].values, 'yo', ms=3,
-        label="kv = 1.52"
-    )
-    plt.plot(
-        allPoints.loc[(allPoints["rescalecv"] == 1.54), "rescalect"].values,
-        allPoints.loc[(allPoints["rescalecv"] == 1.54), "dnll"].values, 'bo', ms=3,
-        label="kv = 1.54"
+        allPoints.loc[(allPoints["rescalecv"] == 1.04), "rescalect"].values,
+        allPoints.loc[(allPoints["rescalecv"] == 1.04), "dnll"].values, 'co', ms=3,
+        label="kv = 1.04"
     )
     plt.legend(loc='best', fancybox=False, shadow=False, ncol=1, fontsize=8)
     plt.savefig("%s_func.pdf"%outfile, bbox_inches='tight')
