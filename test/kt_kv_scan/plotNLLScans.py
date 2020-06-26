@@ -55,6 +55,8 @@ def process(inputfile, filename_r0, xaxis, shiftBy, added=None):
         df['dnll'] = -2*(df.dnll)
 
     # drop one suspicious point
+    #df = df[~((df.cv == 1.0) & (abs(df.cf) == 0.5))] 1.0 -0.75
+    df.drop(df.loc[ ((df.cv == 1.0) & (df.cf == 0.5)) | ((df.cv == 1.0) & (df.cf == -0.75)) ].index, inplace=True)
     """
     if "kV_1p" in inputfile and not "kV_1p0" in inputfile :
         df = df[~((df.cv == 1.0) & (abs(df.cf) == 0.75))]
