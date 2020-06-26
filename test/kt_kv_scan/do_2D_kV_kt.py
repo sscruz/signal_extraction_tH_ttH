@@ -13,11 +13,12 @@ from scipy.interpolate import griddata
 from scipy.interpolate import interp2d, SmoothBivariateSpline, interp1d
 import scipy.interpolate as interp
 import matplotlib
+matplotlib.use('Qt4Agg')
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 #from mpl_toolkits.mplot3d import axes3d
-
+import pickle
 import sys, os, re, shlex
 import multiprocessing
 from subprocess import Popen, PIPE
@@ -198,10 +199,10 @@ points = [
 ]
 
 
-shiftBy = 32.95 +1.1243172592437487+2.2444828832823793+0.11292214961477559# + 2.2444828832823793  86.536 # hardcode the SM minimum to shift all kVs accordingly
+shiftBy = 50.38317923404347-13.951456941902565
 for kVint in points : #range(init, 155, 5) :
     kV = float(kVint)/100
-    #print ("doing kV = " + str(kV))
+    print ("doing kV = " + str(kV))
     if 0 > 0 :
         runCombineCommand(
             "python test/kt_kv_scan/runNLLScan.py  -c /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/ -t kV_%s --kV %s -r 0 -j 8  --outputFolder /home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/" % (str(kV).replace(".","p"), str(kV)),
@@ -216,8 +217,10 @@ for kVint in points : #range(init, 155, 5) :
         #    "/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH"
         #)
     elif 1 > 0 :
-        filename = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/nll_scan_r1_kV_%s.csv" % str(kV).replace(".","p")
-        filename2 = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_15May20_kt_scan/results/nll_scan_r0_kV_%s.csv" % str(kV).replace(".","p")
+      #filename = "/nfs/fanae/user/sscruz/TTH/nanov6/CMSSW_10_4_0/src/CMGTools/TTHAnalysis/python/plotter/cards/jun16_ewkcorrs_comb/ktkv_results/nll_scan_r1_kV_%s.csv" % (('%4.2f'%kV).replace(".","p"))
+      # filename2 = "/nfs/fanae/user/sscruz/TTH/nanov6/CMSSW_10_4_0/src/CMGTools/TTHAnalysis/python/plotter/cards/jun16_ewkcorrs_comb/ktkv_results/nll_scan_r0_kV_%s.csv" %(('%4.2f'%kV).replace(".","p"))
+        filename = "tests_jun26/nll_scan_r1_kV_%s.csv" % str(kV).replace(".","p")#(('%4.2f'%kV).replace(".","p"))
+        filename2 = "tests_jun26/nll_scan_r0_kV_%s.csv" % str(kV).replace(".","p") # (('%4.2f'%kV).replace(".","p"))
         if kVint == init :
             allPoints = process(filename, filename2, "rescalect", shiftBy)
         else :
@@ -337,6 +340,8 @@ if 1 > 0  :
     x1 = np.linspace(-2, 2, len(allPoints["rescalect"].unique()))
     y1 = np.linspace(-2, 2, len(allPoints["rescalecv"].unique()))
     x2, y2 = np.meshgrid(x1, y1, sparse=False)
+    todump=[allPoints["rescalect"], allPoints["rescalecv"], allPoints['dnll']]
+    pickle.dump( todump, open('save.p','wb'))
     z2 = griddata((allPoints["rescalect"], allPoints["rescalecv"]), allPoints['dnll'], (x2, y2), method='cubic')
 
     fig, ax = plt.subplots(figsize=(5, 5))
