@@ -25,6 +25,11 @@ parser.add_option(
     #default="/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/posfit_3poi_ttVFromZero/ttH_fitDiagnostics.Test_shapes.root"
     )
 parser.add_option(
+    "--input_ITC", type="string", dest="input_ITC",
+    help="A valid file with the shapes as output of combine FitDiagnostics",
+    default="none"
+    )
+parser.add_option(
     "--odir", type="string", dest="odir",
     help="Directory for the output plots",
     default="/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/posfit_3poi_ttVFromZero/"
@@ -105,6 +110,11 @@ parser.add_option(
     default=False
     )
 parser.add_option(
+    "--tH_separated", action="store_true", dest="tH_separated",
+    help="Draw tH not on the stack",
+    default=False
+    )
+parser.add_option(
     "--era", type="int",
     dest="era",
     help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
@@ -131,7 +141,10 @@ else :
 print ("category", category, typeCat)
 do_bottom = options.do_bottom
 shapes_input = options.input
+shapes_input_ITC = options.input_ITC
 HH           = options.HH
+tH_separated = options.tH_separated
+input_ITC    = options.input_ITC
 
 binToRead = options.binToRead
 if binToRead == "none" :
@@ -187,9 +200,11 @@ procs  = list_channels_draw("ttH")[category]
 print procs
 leading_minor_H = list_channels_draw("ttH")[category]["leading_minor_H"]
 print ("leading_minor_H", leading_minor_H)
-dprocs = options_plot ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg_procs_from_MC'] + procs["signal"], leading_minor_H)
-if HH :
-    dprocsHH = options_plot ("ttH", category,  procs["signal_HH"], "HH")
+if not HH :
+    dprocs = options_plot ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg_procs_from_MC'] + procs["signal"], leading_minor_H, False) # tH_separated
+else :
+    dprocs = options_plot ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg_procs_from_MC'], leading_minor_H, False) # tH_separated
+    dprocsHH = options_plot ("ttH", category,  procs["signal_HH"], "HH", tH_separated)
 
 label_head = options_plot_ranges("ttH")[typeCat]["label"]
 print (options_plot_ranges("ttH")[typeCat])
@@ -262,7 +277,7 @@ if not options.original == "none" :
     elif HH :
         histRead = "TTH"
     else :
-        histRead = "ttH_htt"
+        histRead = "TTW" #"ttH_htt"
     template = fileorriginal.Get(readFrom + histRead )
     template.GetYaxis().SetTitle(labelY)
     template.SetTitle(" ")
@@ -466,10 +481,20 @@ for kk, key in  enumerate(dprocs.keys()) :
             else :
                 poslinebinW_X += [options_plot_ranges("ttH")[typeCat]["catsX"][cc]]
             pos_linebinW_Y += [y0]
-
     if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # : (info_hist["labelPos"] == 0 and not options.original == "none" )
         continue
     print (key,  0 if hist_rebin == 0 else hist_rebin.Integral() )
+    ####
+    """
+    CX_ITC_o_SM_tHq = 0.7927/0.07096
+    CX_ITC_o_SM_tHW = 0.1472/0.01561
+    ####
+    #hist_rebin.Scale(1.18)
+    if "tHq" in key :
+        hist_rebin.Scale(CX_ITC_o_SM_tHq)
+    if "tHW" in key :
+        hist_rebin.Scale(CX_ITC_o_SM_tHW)
+    """
     dumb = histogramStack_mc.Add(hist_rebin)
     del dumb
 
@@ -489,7 +514,9 @@ if HH :
             readFrom,
             fin,
             divideByBinWidth,
-            "signal_ggf_nonresonant_hh_bbvvSM",
+            #"signal_ggf_nonresonant_hh_bbvvSM",
+            #"signal_ggf_nonresonant_hh_bbvv_slkl_1p00",
+            "signal_ggf_spin0_900_hh_bbvv_sl",
             lastbin,
             do_bottom,
             labelX,
@@ -502,7 +529,9 @@ if HH :
     histHH.SetFillColor(1)
     histHH.SetLineColor(1)
     histHH.SetFillStyle(3315)
-    legend1.AddEntry(histHH, "HH SM bbvv dl", "f")
+    #histHH.Scale(1.18)
+    legend1.AddEntry(histHH, "HH SM bbvv sl", "f")
+    print("HH SM bbvv sl", histHH.Integral())
     ###
     #histHH2 = fin[0].Get("shapes_prefit/HH_2l_0tau/signal_ggf_nonresonant_hh_bbttSM")
     histHH2 = template.Clone()
@@ -519,7 +548,9 @@ if HH :
             readFrom,
             fin,
             divideByBinWidth,
-            "signal_ggf_nonresonant_hh_bbttSM",
+            #"signal_ggf_nonresonant_hh_bbttSM",
+            #"signal_ggf_nonresonant_hh_bbttkl_1p00",
+            "signal_ggf_spin0_900_hh_bbtt",
             lastbin,
             do_bottom,
             labelX,
@@ -531,36 +562,141 @@ if HH :
     histHH2.SetFillColor(4)
     histHH2.SetLineColor(4)
     histHH2.SetFillStyle(3351)
-    legend1.AddEntry(histHH2, "HH SM tt", "f")
-    #"""
-    ###
-    """
-    #print("test HH =====> ", histHH.Integral())
-    histogramStack_mcHH = ROOT.THStack()
-    for key in procs["signal_HH"] :
+    #histHH2.Scale(1.18)
+    legend1.AddEntry(histHH2, "HH SM bbtt", "f")
+    print("HH SM bbtt", histHH2.Integral())
+    ##
+    histHH3 = template.Clone()
+    lastbin = 0
+    for cc, catcat in enumerate(catcats) :
         if not options.fromHavester :
             readFrom = folder + "/" + catcat
         else :
             readFrom = catcat
             readFrom += "_prefit"
+        print ("read the hist with total uncertainties", readFrom, catcat)
+        lastbin += rebin_total(
+            histHH3,
+            readFrom,
+            fin,
+            divideByBinWidth,
+            #"signal_ggf_nonresonant_hh_bbttSM",
+            #"signal_ggf_nonresonant_hh_bbvvkl_1p00",
+            "signal_ggf_spin0_900_hh_bbvv",
+            lastbin,
+            do_bottom,
+            labelX,
+            nbinscatlist[cc]
+            )
+    # "color" : 8, "fillStype" : 3315,
+    histHH3.SetMarkerSize(0)
+    histHH3.SetLineWidth(3)
+    histHH3.SetFillColor(8)
+    histHH3.SetLineColor(8)
+    histHH3.SetFillStyle(3351)
+    #histHH3.Scale(1.18)
+    legend1.AddEntry(histHH3, "HH SM bbvv dl", "f")
+    print("HH SM bbvv dl", histHH3.Integral())
+    #"""
+
+if tH_separated :
+    histogramtH = [ROOT.TH1F(), ROOT.TH1F()]
+    CX_ITC_o_SM_tHq = 0.7927/0.07096
+    CX_ITC_o_SM_tHW = 0.1472/0.01561
+
+    files_read = [ fin ]
+    if not input_ITC == "none" :
+        print ('getting ITC shape')
+        fin_tH = [ROOT.TFile(shapes_input_ITC, "READ")]
+        if options.era == 0 :
+            fin_tH = fin_tH + [ROOT.TFile(shapes_input_ITC.replace("2018", "2017"), "READ")]
+            fin_tH = fin_tH + [ROOT.TFile(shapes_input_ITC.replace("2018", "2016"), "READ")]
+            print ("will sum up " + str(len(fin)) + " eras")
+            print (shapes_input.replace("2018", "2017"))
+            print (shapes_input.replace("2018", "2016"))
+        files_read += [ fin_tH ]
+    print (len (files_read))
+    dprocs_tH = options_plot_tH ("ttH", category, procs["bkg_proc_from_data"] + procs['bkg_procs_from_MC'] + procs["signal"])
+    for  mm, mmm in enumerate(files_read) : #
+      #histogramStack_mc_tH = ROOT.THStack()
+      hSumAll = ROOT.TH1F()
+      for kk, key in enumerate( ["tHW_hzz", "tHW_htt", "tHW_hww", "tHq_hzz", "tHq_htt", "tHq_hww"] ) :
         hist_rebin2 = template.Clone()
+        lastbin = 0
         for cc, catcat in enumerate(catcats) :
-            if not cc == 0 : addlegend = False
+            if not options.fromHavester :
+                readFrom = folder + "/" + catcat
+            else :
+                readFrom = catcat
+                readFrom += "_prefit"
+            if not cc == 0 :
+                addlegend = False
             info_hist2 = rebin_hist(
                 hist_rebin2,
-                fin,
+                files_read[mm],
                 readFrom,
                 key,
-                dprocsHH[key],
+                dprocs_tH[key],
                 divideByBinWidth,
                 addlegend,
                 lastbin,
                 nbinscatlist[cc],
                 options.original
                 )
-        print("signal HH stack", key, hist_rebin2.Integral())
-    dumb = histogramStack_mcHH.Add(hist_rebin2)
-    del dumb
+            print("tH stack", key, hist_rebin2.Integral())
+            print (info_hist2["lastbin"] , lastbin, nbinscatlist[cc] )
+            lastbin += info_hist2["lastbin"]
+            if kk == 0 :
+                print (info_hist2)
+                print ("info_hist[binEdge]", info_hist["binEdge"])
+                if info_hist["binEdge"] > 0 :
+                    linebin += [ROOT.TLine(info_hist2["binEdge"], 0., info_hist2["binEdge"], y0*1.1)] # (legend_y0 + 0.05)*maxY
+                x0 = float(lastbin - info_hist2["labelPos"] - 1)
+                sum_inX = 0.1950
+                if len(catcat) > 2 :
+                    if len(catcat) == 3 :
+                        sum_inX = 5.85
+                    else :
+                        sum_inX = 4.0
+                if len(catcat) == 0 :
+                    poslinebinW_X += [x0 - sum_inX]
+                else :
+                    poslinebinW_X += [options_plot_ranges("ttH")[typeCat]["catsX"][cc]]
+                pos_linebinW_Y += [y0]
+        if hist_rebin2 == 0 or not hist_rebin2.Integral() > 0 or (info_hist2["labelPos"] == 0 and not options.original == "none" )  :
+            continue
+        print (key,  0 if hist_rebin2 == 0 else hist_rebin2.Integral() )
+        if mm == 1 :
+            if "tHq" in key : hist_rebin2.Scale(CX_ITC_o_SM_tHq)
+            if "tHW" in key: hist_rebin2.Scale(CX_ITC_o_SM_tHW)
+        if not hSumAll.Integral() > 0 :
+            hist_rebin2.SetLineWidth(4)
+            hSumAll = hist_rebin2.Clone()
+        else :
+            hSumAll.Add(hist_rebin2)
+      histogramtH[mm] = hSumAll #.Clone()
+      histogramtH[mm].SetFillStyle(3315)
+
+    for  mm, mmm in enumerate(files_read) :
+        print ('getting tH shape: ', files_read[mm], histogramtH[mm].Integral())
+        if mm == 0 :
+            #histogramtH[mm].SetLineColor(dprocs_tH[key]["color"])
+            histogramtH[mm].SetLineColor(1)
+            histogramtH[mm].SetFillColor(1)
+            #histogramtH[mm].SetFillStyle(3315)
+            #histogramtH[mm].SetLineStyle(9)
+            #histogramtH[mm].Scale(10.)
+            #legend1.AddEntry(histogramtH[mm], "tH (SM)*10", "f")
+            legend1.AddEntry(histogramtH[mm], "tH (SM)", "f")
+        if mm == 1 :
+            histogramtH[mm].SetLineColor(8)
+            histogramtH[mm].SetFillColor(8)
+            #histogramtH[mm].Scale(20.)
+            #histogramtH[mm].SetFillStyle(3315)
+            #histogramtH[mm].Scale(100.)
+            histogramtH[mm].SetLineStyle(9)
+            #legend1.AddEntry(histogramtH[mm], "tH (ITC)*100", "f")
+            legend1.AddEntry(histogramtH[mm], "tH (ITC)", "f")
     #"""
 
 
@@ -569,6 +705,7 @@ for line1 in linebin :
     line1.SetLineStyle(3)
     line1.Draw()
 
+dumb = hist_total.Draw("axis,same")
 dumb = histogramStack_mc.Draw("hist,same")
 del dumb
 dumb = hist_total.Draw("e2,same")
@@ -578,15 +715,19 @@ if HH :
     #del dumb
     dumb = histHH.Draw("hist,same")
     dumb = histHH2.Draw("hist,same")
+    dumb = histHH3.Draw("hist,same")
     del dumb
 if options.unblind :
     dumb = dataTGraph1.Draw("e1P,same")
     del dumb
 dumb = hist_total.Draw("axis,same")
 del dumb
-#if HH  :
-#    dumb = histogramStack_mcHH.Draw("hist,same")
-#    del dumb
+if tH_separated  :
+    for mm, mmm in enumerate(histogramtH) :
+        print ("Drawing tH ", mm)
+        mmm.Draw("hist,same")
+
+
 dumb = legend1.Draw("same")
 del dumb
 

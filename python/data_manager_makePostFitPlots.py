@@ -77,7 +77,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
     hist.SetMaximum(maxY)
     #hist.Sumw2() ## if prefit
     for ii in xrange(1, allbins + 1) :
-        print ("total content", total_hist.GetBinContent(ii), total_hist.GetBinError(ii))
+        #print ("total content", total_hist.GetBinContent(ii), total_hist.GetBinError(ii))
         bin_width = 1.
         if divideByBinWidth : bin_width = total_hist.GetXaxis().GetBinWidth(ii)
         hist.SetBinContent(ii + lastbin, total_hist.GetBinContent(ii)/bin_width)
@@ -102,7 +102,7 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
 def rebin_hist(hist_rebin_local, fin, folder, name, itemDict, divideByBinWidth, addlegend, lastbin, catbin, original) :
     print folder+"/"+name
     hist = fin[0].Get(folder+"/"+name)
-    print("signal HH stack inside 1", key, hist_rebin_local.Integral(), fin[0])
+    #print("signal HH stack inside 1", key, hist_rebin_local.Integral(), fin[0])
     allbins = catbin #hist.GetNbinsX() #GetNonZeroBins(hist)
     try  : hist.Integral()
     except :
@@ -136,10 +136,13 @@ def rebin_hist(hist_rebin_local, fin, folder, name, itemDict, divideByBinWidth, 
                     continue
     hist_rebin_local.SetMarkerSize(0)
     hist_rebin_local.SetFillColor(itemDict["color"])
-    hist_rebin_local.SetFillStyle(itemDict["fillStype"])
-    print("signal HH stack inside", key, hist_rebin_local.Integral())
+    if not itemDict["fillStype"] == 0 :
+        hist_rebin_local.SetFillStyle(itemDict["fillStype"])
+    #print("signal HH stack inside", key, hist_rebin_local.Integral())
 
-    if "none" not in itemDict["label"] and addlegend : legend1.AddEntry(hist_rebin_local, itemDict["label"], "f")
+
+    if "none" not in itemDict["label"] and addlegend :
+        legend1.AddEntry(hist_rebin_local, itemDict["label"], "f")
     if itemDict["make border"] == True :  hist_rebin_local.SetLineColor(1)
     else : hist_rebin_local.SetLineColor(itemDict["color"])
     for ii in xrange(1, allbins + 1) :
@@ -222,11 +225,13 @@ def rebin_data(template, dataTGraph1, folder, fin, fromHavester, lastbin, histto
         for ii in xrange(1, allbins+1) :
             bin_width = 1.
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
-            ## if we would like to blind the last 2 bins
-            #if ii == template.GetXaxis().GetNbins() or ii == template.GetXaxis().GetNbins()-1 :
+            ## if we would like to blind the last 10 bins
+            #if ii > template.GetXaxis().GetNbins()-10 :
             #  dataTGraph1.SetBinContent(ii + lastbin, 0)
             #  dataTGraph1.SetBinError(  ii + lastbin, 0)
             #else :
+            #  dataTGraph1.SetBinContent(ii + lastbin, dataTGraph.GetBinContent(ii)/bin_width)
+            #  dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)
             dataTGraph1.SetBinContent(ii + lastbin, dataTGraph.GetBinContent(ii)/bin_width)
             dataTGraph1.SetBinError(  ii + lastbin, dataTGraph.GetBinError(ii)/bin_width)
         #del dataTGraph
@@ -343,7 +348,7 @@ def addLabel_CMS_preliminary(era) :
     if era == 2016 : lumi = "35.92"
     if era == 2017 : lumi = "41.53"
     if era == 2018 : lumi = "59.74"
-    if era == 0    : lumi = "137.2"
+    if era == 0    : lumi = "137"
     label_luminosity.AddText(lumi + " fb^{-1} (13 TeV)")
     label_luminosity.SetTextFont(42)
     label_luminosity.SetTextAlign(13)
@@ -461,6 +466,7 @@ def ReadLimits(limits_output):
       if "Expected 50.0%:" in line : central=float(tokens[4])
       if "Expected 84.0%:" in line : up1=float(tokens[4])
       if "Expected 97.5%:" in line : up2=float(tokens[4])
+    print("read", limits_output, central)
     return [do2,do1,central,up1,up2]
 
 

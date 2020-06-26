@@ -5,7 +5,7 @@
     "tag3" : "",
     "tag4" : "",
     "header_left" : "$\\mathbf{CMS}\\,\\,$ Preliminary",
-    "header_right": "137.2 fb^{-1} (13 TeV)",
+    "header_right": "137 fb$^{-1}$ (13 TeV)",
     "xaxis" : "rescalect",
     "x_axis_label" : "$\\kappa_{t}$",
     "xmax" : 2.0,
@@ -21,8 +21,8 @@
           "SM" : 30.943
       },
       {
-        "csv_file"    : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r1_obs.csv",
-        "csv_file_r0" : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_15May20_unblinded/nll_scan_r0_obs.csv",
+        "csv_file"    : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_22June20_unblinded/nll_scan_1D/nll_scan_r1_comb6.csv",
+        "csv_file_r0" : "/afs/cern.ch/work/a/acarvalh/public/to_ttH/legacy_22June20_unblinded/nll_scan_1D/nll_scan_r0_comb6.csv",
           "label" : "Observed",
           "color" : "black",
           "line_width" : 2.0,

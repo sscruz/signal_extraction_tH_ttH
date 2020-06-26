@@ -744,7 +744,7 @@ if doCategoriesMu_tH :
         cmd += " -P r_%s" % rate.replace("ttH", "tH")
         cmd += " -n rate_%s_%s" % (rate.replace("ttH", "tH"), namePlot)
         cmd += " --floatOtherPOI=1 --keepFailures " #  -S 0
-        cmd += " --freezeParameters r_ttH "
+        #cmd += " --freezeParameters r_ttH "
         cmd += " --robustFit 1"
         cmd += "  --cminDefaultMinimizerStrategy 0 " # --robustFit  --X-rtd MINIMIZER_analytic
         if sendToCondor :
@@ -933,8 +933,11 @@ if preparePlotHavester or preparePlotCombine :
     cmd += " --nameOut %s" % cardToRead.replace(str(era), str(eraDraw))
     cmd += " --do_bottom "
     cmd += " --channel %s" % channel
+    if HH :
+        cmd += " --HH --binToRead HH_1l_0tau --binToReadOriginal  HH_1l_0tau "
+        cmd += "--nameLabel %s_%s_%s --labelX %s_%s" % (cardToRead.split("_")[2], cardToRead.split("_")[3], cardToRead.split("_")[6], cardToRead.split("_")[4], cardToRead.split("_")[5])
     if not blinded         :
-        cmd += " --unblind "
+        cmd += " --unblind  "
     if drawPlot and not doPostFit :
         output = run_cmd(cmd)
         fileInfo = "%s/%s.log" % (savePlotsOn, cardToRead)

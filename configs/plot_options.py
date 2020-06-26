@@ -4,7 +4,7 @@ def sigmatHW(KT, KV):
     return (2.91*KT**2 + 2.31*KV**2 - 4.22*KT*KV)
 
 
-def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
+def options_plot (analysis, channel, all_procs, leading_minor_H_local, tH_separated) :
     dprocs = OrderedDict()
     Hdecays_long = [ "hww", "hzz", "htt",] #  "hzg", "hmm"
     Hdecays      = ["hww", "htt" , "hzz"]
@@ -52,42 +52,25 @@ def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
                     #    dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "Other H processes"       , "make border" : False}
                     #    other_H_proc = 1
                     if "%s_%s" % (hig_proc, decay) == leading_minor_H_local : #
-                        dprocs[leading_minor_H_local]       = {"color" : 4, "fillStype" : 1001, "label" : "VH + ggH + qqH"      , "make border" : False} # "Other H processes" "tHW + VH + ggH + qqH + HH + ttVH"
+                        dprocs[leading_minor_H_local]       = {"color" : 208, "fillStype" : 1001, "label" : "VH + ggH + qqH"      , "make border" : False} # "Other H processes" "tHW + VH + ggH + qqH + HH + ttVH"
                     else :
-                        dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
+                        dprocs["%s_%s" % (hig_proc, decay)]       = {"color" : 208, "fillStype" : 1001, "label" : "none"         , "make border" : False}
                     #dprocs["%s_htt" % hig_proc]       = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
-        """if "qqH" in all_procs :
-            for decay in list(set(list(Hdecays)) - set(["htt"])) :
-                dprocs["qqH_%s" % decay]               = {"color" :    4, "fillStype" : 1001, "label" : "none"         , "make border" : False} # ["VH_%s" % decay]
-            dprocs["qqH_htt"]                           = {"color" :   4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
-            #dprocs["qqH"]                           = {"color" :   4, "fillStype" : 1001, "label" : "none"         , "make border" : False}
-        if "tHW" in all_procs :
-            for decay in list(set(list(Hdecays)) - set(["htt"]))  :
-                dprocs["tHW_%s" % decay]              = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False} # "tHW_%s" % decay
-            dprocs["tHW_htt"]                         = {"color" : 4, "fillStype" : 1001, "label" : "none"        , "make border" : False}
-            #dprocs["tHW"]                         = {"color" : 4, "fillStype" : 1001, "label" : "none"        , "make border" : False}
-        if "VH" in all_procs :
-            for decay in list(set(list(Hdecays)) - set(["htt"])) :
-                dprocs["VH_%s" % decay]                   = {"color" : 4, "fillStype" : 1001, "label" : "none"         , "make border" : False} # ["VH_%s" % decay]
-            dprocs["VH_htt"]                              = {"color" : 4, "fillStype" : 1001, "label" : "other Higgs proc"           , "make border" : True}
-            dprocs["VH"]                              = {"color" : 4, "fillStype" : 1001, "label" : "other Higgs proc"           , "make border" : True}
-        if "ggH" in all_procs :
-            for decay in list(set(list(Hdecays)) - set(["htt"])) :
-                dprocs["ggH_%s" % decay]               = {"color" :   2, "fillStype" : 3005, "label" : "none"         , "make border" : False} # ["VH_%s" % decay]
-            dprocs["ggH_htt"]                           = {"color" :   2, "fillStype" : 3005, "label" : "ggH"         , "make border" : True}
-            #dprocs["ggH"]                           = {"color" :   2, "fillStype" : 3005, "label" : "ggH"         , "make border" : True}"""
-        if "tHW" in all_procs :
-            #for decay in list(set(list(Hdecays)) - set(["htt"])) :
-            #    dprocs["tHW_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
-            #dprocs["tHW_htt"]                             = {"color" : 208, "fillStype" : 1001, "label" : "tH"           , "make border" : True}
-            for decay in list(Hdecays) :
-                dprocs["tHW_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
-        if "tHq" in all_procs :
-            for decay in list(set(list(Hdecays)) - set(["hww"])) :
-                dprocs["tHq_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
-            dprocs["tHq_hww"]                             = {"color" : 208, "fillStype" : 1001, "label" : "tH"           , "make border" : True}
-            #dprocs["tHq"]                             = {"color" : 205, "fillStype" : 1001, "label" : "tHq * 3"           , "make border" : True}
-        if "TTH" in all_procs     : dprocs["TH"]           = {"color" : 2, "fillStype" : 1001, "label" : 'TH'   , "make border" : True}
+        if not tH_separated :
+            if "tHW" in all_procs :
+                for decay in list(set(list(Hdecays)) - set(["hww"])) :
+                    dprocs["tHW_%s" % decay]              = {"color" : 4, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
+                dprocs["tHW_hww"]                             = {"color" : 4, "fillStype" : 1001, "label" : "tH (SM)"           , "make border" : True}
+                #for decay in list(Hdecays) :
+                for decay in list(set(list(Hdecays)) - set(["htt"])) :
+                    dprocs["tHW_%s" % decay]              = {"color" : 4, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
+            if "tHq" in all_procs :
+                #for decay in list(set(list(Hdecays)) - set(["htt"])) :
+                for decay in list(Hdecays) :
+                    dprocs["tHq_%s" % decay]              = {"color" : 4, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
+                dprocs["tHq_htt"]                             = {"color" : 4, "fillStype" : 1001, "label" : "tH (SM)"           , "make border" : True}
+                #dprocs["tHq"]                             = {"color" : 205, "fillStype" : 1001, "label" : "tHq * 3"           , "make border" : True}
+        if "TTH" in all_procs     : dprocs["TH"]           = {"color" : 4, "fillStype" : 1001, "label" : 'TH'   , "make border" : True}
         # change the order of the stack if channel is dominated by fakes
         if "ttH" in all_procs :
             for decay in list(set(list(Hdecays_long)) - set(["htt"])) :
@@ -99,6 +82,10 @@ def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
         if "signal_ggf_nonresonant_hh_bbttSM" in all_procs         : dprocs["signal_ggf_nonresonant_hh_bbttSM"]         = {"color" : 4, "fillStype" : 3351, "label" : "HH SM bbtt"           , "make border" : True}
         if "signal_ggf_nonresonant_hh_bbvv_slSM" in all_procs      : dprocs["signal_ggf_nonresonant_hh_bbvv_slSM"]   = {"color" : 6, "fillStype" : 3315, "label" : "HH SM bbvv sl"           , "make border" : True}
         if "signal_ggf_nonresonant_hh_bbvvSM" in all_procs         : dprocs["signal_ggf_nonresonant_hh_bbvvSM"]         = {"color" : 1, "fillStype" : 3315, "label" : "HH SM bbvv dl"           , "make border" : True}
+        ####
+        #"signal_ggf_nonresonant_hh_bbttkl_1p00",
+        #"signal_ggf_nonresonant_hh_bbvv_slkl_1p00",
+        #"signal_ggf_nonresonant_hh_bbvvkl_1p00"
 
         if channel in [ "1l_2tau", "2l_2tau"] :
             ## remove "fakes_data" from first entry and add as last
@@ -125,8 +112,38 @@ def options_plot (analysis, channel, all_procs, leading_minor_H_local) :
             dprocs["DY"]                                  = {"color" : 221, "fillStype" : 1001, "label" : "DY"         , "make border" : True}
             del dprocs["TT"]
             dprocs["TT"]                                  = {"color" : 17, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
+        if channel in ["1l_0tau"] and not leading_minor_H_local =="HH" :
+            del dprocs[conversions]
+            dprocs[conversions]                           = {"color" :   5, "fillStype" : 1001, "label" : "Conv."        , "make border" : True}
+            del dprocs[fakes]
+            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
+            #del dprocs["DY"]
+            dprocs["DY"]                                  = {"color" : 221, "fillStype" : 1001, "label" : "DY"         , "make border" : True}
+            del dprocs["W"]
+            dprocs["W"]                                   = {"color" : 610, "fillStype" : 1001, "label" : 'W + jets'   , "make border" : True}
+            del dprocs["TT"]
+            dprocs["TT"]                                  = {"color" : 17, "fillStype" : 1001, "label" : 'TT + jets'   , "make border" : True}
     else : sys.exit("analysis " + analysis + " not implemented")
     return dprocs
+
+def options_plot_tH (analysis, channel, all_procs) :
+    Hdecays      = ["hww", "htt" , "hzz"]
+    if analysis == "ttH" :
+        if "tHW" in all_procs :
+            #for decay in list(set(list(Hdecays)) - set(["htt"])) :
+            #    dprocs["tHW_%s" % decay]              = {"color" : 208, "fillStype" : 1001, "label" : "none"        , "make border" : False} # "tHq_%s" % decay
+            #dprocs["tHW_htt"]                             = {"color" : 208, "fillStype" : 1001, "label" : "tH"           , "make border" : True}
+            for decay in list(set(list(Hdecays)) - set(["hww"])) :
+                dprocs["tHW_%s" % decay]                  = {"color" : 8, "fillStype" : 3315, "label" : "none"           , "make border" : False}
+            dprocs["tHW_hww"]                             = {"color" : 8, "fillStype" : 3315, "label" : "tHW * 10"       , "make border" : True}
+        if "tHq" in all_procs :
+            for decay in list(set(list(Hdecays)) - set(["hww"])) :
+                dprocs["tHq_%s" % decay]                  = {"color" : 8, "fillStype" : 3351, "label" : "none"          , "make border" : False}
+            dprocs["tHq_hww"]                             = {"color" : 8, "fillStype" : 3351, "label" : "tHq * 10"      , "make border" : True}
+            #dprocs["tHq"]                             = {"color" : 205, "fillStype" : 1001, "label" : "tHq * 3"           , "make border" : True}
+    else : sys.exit("analysis " + analysis + " not implemented")
+    return dprocs
+
 
 def Higgs_proc_decay (proc) :
     Hdecays_long = [  "htt",  "hww", "hzz",  "hzg", "hmm"] #
@@ -520,10 +537,22 @@ def options_plot_ranges (analysis) :
                 },
             ##################
             "2l_0tau" : {
-                "minY" : 0.1,    "maxY" :  100000000.,
+                "minY" : 0.1,    "maxY" :  22000.,
+                "minYerr": -0.32, "maxYerr" : 0.32,
+                "useLogPlot" : True,
+                "label" : 'HH bbWW 2l ', # (HH SM normalized to 1pb)
+                "labelX" : "BDT bin#",
+                "position_cats": 300. ,
+                "list_cats" : [],
+                "list_cats_original" : [],
+                "cats" : [""],
+                "catsX" :  [0.0]
+                },
+            "1l_0tau" : {
+                "minY" : 0.1,    "maxY" :  1000000000.,
                 "minYerr": -1.02, "maxYerr" : 1.32,
                 "useLogPlot" : True,
-                "label" : 'HH bbWW 2l (HH SM normalized to 1pb)',
+                "label" : 'HH bbWW 1l (HH SM normalized to 1pb)',
                 "labelX" : "BDT bin#",
                 "position_cats": 300. ,
                 "list_cats" : [],
@@ -796,7 +825,7 @@ def list_channels_draw(analysis) :
         "4l_0tau"   : {
             "bkg_proc_from_data" : [fakes       ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "WZ", "ZZ", "DY", "Rares", "TT", conversions, "EWK"],
-            "signal" : ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"],
+            "signal" : ["ttH",  "WH", "ZH", "ggH", "qqH", "VH", "HH", "TTWH", "TTZH"], # "tHq", "tHW",
             "leading_minor_H" : "ggH_htt" ## The legend for the mino H proc will only appear if this process is in the card
             },
         "2l_0tau"   : {
@@ -804,6 +833,12 @@ def list_channels_draw(analysis) :
             "bkg_procs_from_MC"  : [ "TT", "Convs", "TTH", "TH", "TTZ", "TTW", "TTWW", "TT", "Other", "VH", "DY", "W", "WW", "WZ", "ZZ"], #
             "signal" : [], # "signal_ggf_nonresonant_hh_bbttSM", "signal_ggf_nonresonant_hh_bbvv_slSM", "signal_ggf_nonresonant_hh_bbvvSM"
             "signal_HH" : ["signal_ggf_nonresonant_hh_bbttSM", "signal_ggf_nonresonant_hh_bbvv_slSM", "signal_ggf_nonresonant_hh_bbvvSM"], #
+            "leading_minor_H" : "TH" ## The legend for the mino H proc will only appear if this process is in the card
+            },
+        "1l_0tau"   : {
+            "bkg_proc_from_data" : [fakes       ],
+            "bkg_procs_from_MC"  : [ "TT", "Convs", "TTH", "TH", "TTZ", "TTW", "TTWW", "TT", "Other", "VH", "DY", "W", "WW", "WZ", "ZZ"],
+            "signal_HH" : ["signal_ggf_nonresonant_hh_bbttkl_1p00", "signal_ggf_nonresonant_hh_bbvv_slkl_1p00", "signal_ggf_nonresonant_hh_bbvvkl_1p00"], #
             "leading_minor_H" : "TH" ## The legend for the mino H proc will only appear if this process is in the card
             },
         }
